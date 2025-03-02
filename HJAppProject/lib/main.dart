@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
               ],// 支持的语言
       title: 'Login',
       darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.dark,
+      themeMode: ThemeMode.system,
       theme: ThemeData(
         textSelectionTheme:
             const TextSelectionThemeData(cursorColor: Colors.orange),

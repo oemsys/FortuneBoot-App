@@ -119,6 +119,306 @@ class S {
       args: [],
     );
   }
+
+  /// `Forgot huh?`
+  String get forgot_huh {
+    return Intl.message(
+      'Forgot huh?',
+      name: 'forgot_huh',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `User`
+  String get login_account {
+    return Intl.message(
+      'User',
+      name: 'login_account',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Pass`
+  String get login_pass {
+    return Intl.message(
+      'Pass',
+      name: 'login_pass',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm`
+  String get login_confirm {
+    return Intl.message(
+      'Confirm',
+      name: 'login_confirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Term of services`
+  String get term_of_services {
+    return Intl.message(
+      'Term of services',
+      name: 'term_of_services',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email must contain '@' and end with '.com'`
+  String get email_auth {
+    return Intl.message(
+      'Email must contain \'@\' and end with \'.com\'',
+      name: 'email_auth',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password is empty`
+  String get password_is_empty {
+    return Intl.message(
+      'Password is empty',
+      name: 'password_is_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Required`
+  String get service_required {
+    return Intl.message(
+      'Required',
+      name: 'service_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `HELP ME`
+  String get help_me {
+    return Intl.message(
+      'HELP ME',
+      name: 'help_me',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `GO BACK`
+  String get go_back {
+    return Intl.message(
+      'GO BACK',
+      name: 'go_back',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not match!`
+  String get not_match {
+    return Intl.message(
+      'Not match!',
+      name: 'not_match',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Don't feel bad. Happens all the time.`
+  String get dont_worry_be_happy {
+    return Intl.message(
+      'Don\'t feel bad. Happens all the time.',
+      name: 'dont_worry_be_happy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lorem Ipsum is simply dummy text of the printing and typesetting industry`
+  String get default_comment {
+    return Intl.message(
+      'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
+      name: 'default_comment',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password rescued successfully`
+  String get password_rescued_successfully {
+    return Intl.message(
+      'Password rescued successfully',
+      name: 'password_rescued_successfully',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Oh no!`
+  String get oh_no {
+    return Intl.message(
+      'Oh no!',
+      name: 'oh_no',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Succes!`
+  String get succes {
+    return Intl.message(
+      'Succes!',
+      name: 'succes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Username`
+  String get username {
+    return Intl.message(
+      'Username',
+      name: 'username',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please fill in this form to complete the signup`
+  String get fill_to_signup {
+    return Intl.message(
+      'Please fill in this form to complete the signup',
+      name: 'fill_to_signup',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Phone Number`
+  String get phone_number {
+    return Intl.message(
+      'Phone Number',
+      name: 'phone_number',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `SUBMIT`
+  String get sign_up_submit {
+    return Intl.message(
+      'SUBMIT',
+      name: 'sign_up_submit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This isn't a valid phone number`
+  String get valid_phone_number {
+    return Intl.message(
+      'This isn\'t a valid phone number',
+      name: 'valid_phone_number',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Account is empty`
+  String get user_auth_vaild {
+    return Intl.message(
+      'Account is empty',
+      name: 'user_auth_vaild',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `User not exists`
+  String get user_not_exist {
+    return Intl.message(
+      'User not exists',
+      name: 'user_not_exist',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign Up Success!`
+  String get sign_up_success {
+    return Intl.message(
+      'Sign Up Success!',
+      name: 'sign_up_success',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nickname`
+  String get login_nickname {
+    return Intl.message(
+      'Nickname',
+      name: 'login_nickname',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email`
+  String get login_email {
+    return Intl.message(
+      'Email',
+      name: 'login_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `sex`
+  String get sex {
+    return Intl.message(
+      'sex',
+      name: 'sex',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `female`
+  String get female {
+    return Intl.message(
+      'female',
+      name: 'female',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `male`
+  String get male {
+    return Intl.message(
+      'male',
+      name: 'male',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Currently, only two genders are supported. Please fill in 'Male' or 'Female'.`
+  String get sex_valid {
+    return Intl.message(
+      'Currently, only two genders are supported. Please fill in \'Male\' or \'Female\'.',
+      name: 'sex_valid',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

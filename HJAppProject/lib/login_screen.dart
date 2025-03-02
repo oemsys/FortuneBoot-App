@@ -13,12 +13,12 @@ class LoginScreen extends StatelessWidget {
 
   const LoginScreen({super.key});
 
-  Duration get loginTime => Duration(milliseconds: timeDilation.ceil() * 2250);
+  Duration get loginTime => Duration(milliseconds: timeDilation.ceil() * 0);
 
   Future<String?> _loginUser(LoginData data) {
     return Future.delayed(loginTime).then((_) {
       if (!mockUsers.containsKey(data.name)) {
-        return 'User not exists';
+        return S.current.user_not_exist;
       }
       if (mockUsers[data.name] != data.password) {
         return 'Password does not match';
@@ -28,15 +28,16 @@ class LoginScreen extends StatelessWidget {
   }
 
   Future<String?> _signupUser(SignupData data) {
+    // lxjtodo 注册
     return Future.delayed(loginTime).then((_) {
-      return null;
+      return 'no';
     });
   }
 
   Future<String?> _recoverPassword(String name) {
     return Future.delayed(loginTime).then((_) {
       if (!mockUsers.containsKey(name)) {
-        return 'User not exists';
+        return S.current.user_not_exist;
       }
       return null;
     });
@@ -58,7 +59,7 @@ class LoginScreen extends StatelessWidget {
       titleTag: Constants.titleTag,
       navigateBackAfterRecovery: true,
       onConfirmRecover: _signupConfirm,
-      onConfirmSignup: _signupConfirm,
+      // onConfirmSignup: _signupConfirm,
       loginAfterSignUp: false,
       // loginProviders: [
       //   LoginProvider(
@@ -90,28 +91,61 @@ class LoginScreen extends StatelessWidget {
       //   ),
       // ],
       termsOfService: [
-        TermOfService(
-          id: 'newsletter',
-          mandatory: false,
-          text: 'Newsletter subscription',
-        ),
+        // TermOfService(
+        //   id: 'newsletter',
+        //   mandatory: false,
+        //   text: 'Newsletter subscription',
+        // ),
         TermOfService(
           id: 'general-term',
           mandatory: true,
-          text: 'Term of services',
-          linkUrl: 'https://github.com/NearHuscarl/flutter_login',
+          text: S.of(context).term_of_services,
+          linkUrl: 'https://www.baidu.com',
+          validationErrorMessage: S.of(context).service_required,
         ),
       ],
       additionalSignupFields: [
-        const UserFormField(
-          keyName: 'Username',
-          icon: Icon(FontAwesomeIcons.userLarge),
-        ),
-        const UserFormField(keyName: 'Name'),
-        const UserFormField(keyName: 'Surname'),
         UserFormField(
+          // username
+          keyName: 'nickname',
+          displayName: S.of(context).login_nickname,
+          icon: const Icon(FontAwesomeIcons.userLarge),
+          fieldValidator: (value) {
+            if (value!.isEmpty) {
+              return S.of(context).user_auth_vaild;
+            }
+            return null;
+          },
+        ),
+        UserFormField(
+          // username
+          keyName: 'sex',
+          displayName: S.of(context).sex,
+          icon: const Icon(FontAwesomeIcons.userLarge),
+          fieldValidator: (value) {
+            if (value!.isEmpty || value == S.of(context).male || value == S.of(context).female) {
+              return null;
+            }
+            return S.of(context).sex_valid;
+          },
+        ),
+        UserFormField(
+          // username
+          keyName: 'email',
+          displayName: S.of(context).login_email,
+          userType: LoginUserType.email,
+          icon: const Icon(Icons.email),
+          fieldValidator: (value) {
+            if (!value!.contains('@') || !value.endsWith('.com')) {
+              return S.of(context).email_auth;
+            }
+            return null;
+          },
+        ),
+        UserFormField(
+          // phone
           keyName: 'phone_number',
-          displayName: 'Phone Number',
+          displayName: S.of(context).phone_number,
           userType: LoginUserType.phone,
           fieldValidator: (value) {
             final phoneRegExp = RegExp(
@@ -120,7 +154,7 @@ class LoginScreen extends StatelessWidget {
             if (value != null &&
                 value.length < 7 &&
                 !phoneRegExp.hasMatch(value)) {
-              return "This isn't a valid phone number";
+              return S.of(context).valid_phone_number;
             }
             return null;
           },
@@ -133,26 +167,29 @@ class LoginScreen extends StatelessWidget {
       // hideSignUpButton: true,
       // disableCustomPageTransformer: true,
       messages: LoginMessages(
-        userHint: 'User',
-        passwordHint: 'Pass',
-        confirmPasswordHint: 'Confirm',
+        userHint: S.of(context).login_account,
+        passwordHint: S.of(context).login_pass,
+        confirmPasswordHint: S.of(context).login_confirm,
         loginButton: S.of(context).login_button_text,
         signupButton: S.of(context).register,
-        forgotPasswordButton: 'Forgot huh?',
-        recoverPasswordButton: 'HELP ME',
-        goBackButton: 'GO BACK',
-        confirmPasswordError: 'Not match!',
-        recoverPasswordIntro: 'Don\'t feel bad. Happens all the time.',
-        recoverPasswordDescription: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
-        recoverPasswordSuccess: 'Password rescued successfully',
-        flushbarTitleError: 'Oh no!',
-        flushbarTitleSuccess: 'Succes!',
-        providersTitleFirst: S.of(context).or_login_with
+        forgotPasswordButton: S.of(context).forgot_huh,
+        recoverPasswordButton: S.of(context).help_me,
+        goBackButton: S.of(context).go_back,
+        confirmPasswordError: S.of(context).not_match,
+        recoverPasswordIntro: S.of(context).dont_worry_be_happy,
+        recoverPasswordDescription: S.of(context).default_comment,
+        recoverPasswordSuccess: S.of(context).password_rescued_successfully,
+        flushbarTitleError: S.of(context).oh_no,
+        flushbarTitleSuccess: S.of(context).succes,
+        providersTitleFirst: S.of(context).or_login_with,
+        additionalSignUpFormDescription: S.of(context).fill_to_signup,
+        additionalSignUpSubmitButton: S.of(context).sign_up_submit,
+        signUpSuccess: S.of(context).sign_up_success,
         // providersTitle: 'login with'
       ),
       theme: LoginTheme(
         primaryColor: Colors.teal,
-        accentColor: Colors.yellow,
+        accentColor: Theme.of(context).colorScheme.secondary,
         errorColor: Colors.deepOrange,
         pageColorLight: Colors.indigo.shade300,
         pageColorDark: Colors.indigo.shade500,
@@ -161,7 +198,8 @@ class LoginScreen extends StatelessWidget {
           color: Colors.greenAccent,
           fontFamily: 'Quicksand',
           letterSpacing: 4,
-        ),),
+        ),
+      ),
       //   // beforeHeroFontSize: 50,
       //   // afterHeroFontSize: 20,
       //   bodyStyle: TextStyle(
@@ -228,14 +266,17 @@ class LoginScreen extends StatelessWidget {
       //   ),
       // ),
       userValidator: (value) {
-        if (!value!.contains('@') || !value.endsWith('.com')) {
-          return "Email must contain '@' and end with '.com'";
+        // if (!value!.contains('@') || !value.endsWith('.com')) {
+        //   return S.of(context).email_auth;
+        // }
+        if (value!.isEmpty) {
+          return S.of(context).user_auth_vaild;
         }
         return null;
       },
       passwordValidator: (value) {
         if (value!.isEmpty) {
-          return 'Password is empty';
+          return S.of(context).password_is_empty;
         }
         return null;
       },
