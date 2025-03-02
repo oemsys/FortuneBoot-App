@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter_login/flutter_login.dart';
+import 'package:flutter_login_example/Login/login_model.dart';
+import 'package:flutter_login_example/Login/login_request.dart';
 import 'package:flutter_login_example/constants.dart';
 import 'package:flutter_login_example/custom_route.dart';
 import 'package:flutter_login_example/dashboard_screen.dart';
 import 'package:flutter_login_example/users.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'generated/l10n.dart';
+import 'package:dio/dio.dart';
 
 class LoginScreen extends StatelessWidget {
   static const routeName = '/auth';
@@ -29,9 +32,41 @@ class LoginScreen extends StatelessWidget {
 
   Future<String?> _signupUser(SignupData data) {
     // lxjtodo 注册
-    return Future.delayed(loginTime).then((_) {
-      return 'no';
-    });
+    try {
+      final dio = Dio();
+      final loginService = LoginService(dio);
+      String userName = data.name!;
+      String nickName = data.additionalSignupData!['nickname']!;
+      String email = data.additionalSignupData!['email']!;
+      String phoneNumber = data.additionalSignupData!['phone_number']!;
+      int sex =
+          (data.additionalSignupData!['sex'] ?? S.current.male) == S.current.male
+              ? 1
+              : 0;
+      String password = data.password!;
+      final ResisterLogin post = ResisterLogin(
+        userName,
+        nickName,
+        email,
+        phoneNumber,
+        sex,
+        "",
+        password,
+        0,
+        0,
+        "",
+        0,
+      );
+      debugPrint(post.toString());
+      return loginService.loginRegister(post).then((value) {
+        debugPrint(value.toString());
+        return 'no';
+      });
+    } catch (e) {
+      return Future.delayed(loginTime).then((_) {
+        return 'service err';
+      });
+    }
   }
 
   Future<String?> _recoverPassword(String name) {
@@ -123,7 +158,9 @@ class LoginScreen extends StatelessWidget {
           displayName: S.of(context).sex,
           icon: const Icon(FontAwesomeIcons.userLarge),
           fieldValidator: (value) {
-            if (value!.isEmpty || value == S.of(context).male || value == S.of(context).female) {
+            if (value!.isEmpty ||
+                value == S.of(context).male ||
+                value == S.of(context).female) {
               return null;
             }
             return S.of(context).sex_valid;
