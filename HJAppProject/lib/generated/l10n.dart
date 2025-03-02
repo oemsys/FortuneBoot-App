@@ -49,6 +49,76 @@ class S {
   static S? maybeOf(BuildContext context) {
     return Localizations.of<S>(context, S);
   }
+
+  /// `Easy Money`
+  String get main_logo {
+    return Intl.message(
+      'Easy Money',
+      name: 'main_logo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You are trying to login/sign up on server hosted on`
+  String get login_message {
+    return Intl.message(
+      'You are trying to login/sign up on server hosted on',
+      name: 'login_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `haoji.com`
+  String get login_host {
+    return Intl.message(
+      'haoji.com',
+      name: 'login_host',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `LOGIN`
+  String get login_button_text {
+    return Intl.message(
+      'LOGIN',
+      name: 'login_button_text',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `REGISTER`
+  String get register {
+    return Intl.message(
+      'REGISTER',
+      name: 'register',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `or login with`
+  String get or_login_with {
+    return Intl.message(
+      'or login with',
+      name: 'or_login_with',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Authenticate`
+  String get authenticate {
+    return Intl.message(
+      'Authenticate',
+      name: 'authenticate',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
@@ -57,6 +127,7 @@ class AppLocalizationDelegate extends LocalizationsDelegate<S> {
   List<Locale> get supportedLocales {
     return const <Locale>[
       Locale.fromSubtags(languageCode: 'en'),
+      Locale.fromSubtags(languageCode: 'zh'),
     ];
   }
 

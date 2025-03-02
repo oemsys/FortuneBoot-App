@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_login/theme.dart';
 import 'package:flutter_login/widgets.dart';
 import 'package:flutter_login_example/constants.dart';
+import 'package:flutter_login_example/generated/l10n.dart';
 import 'package:flutter_login_example/transition_route_observer.dart';
 import 'package:flutter_login_example/widgets/animated_numeric_text.dart';
 import 'package:flutter_login_example/widgets/fade_in.dart';
@@ -95,7 +96,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
           ),
           HeroText(
-            Constants.appName,
+            S.of(context).main_logo,
             tag: Constants.titleTag,
             viewState: ViewState.shrunk,
             style: LoginThemeHelper.loginTextStyle,

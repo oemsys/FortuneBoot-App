@@ -1,1 +1,9 @@
-{}
+{
+    "main_logo": "Easy Money",
+    "login_message": "You are trying to login/sign up on server hosted on",
+    "login_host": "haoji.com",
+    "login_button_text": "LOGIN",
+    "register": "REGISTER",
+    "or_login_with": "or login with",
+    "authenticate": "Authenticate"
+}

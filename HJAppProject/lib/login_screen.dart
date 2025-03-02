@@ -6,6 +6,7 @@ import 'package:flutter_login_example/custom_route.dart';
 import 'package:flutter_login_example/dashboard_screen.dart';
 import 'package:flutter_login_example/users.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'generated/l10n.dart';
 
 class LoginScreen extends StatelessWidget {
   static const routeName = '/auth';
@@ -50,44 +51,44 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FlutterLogin(
-      title: Constants.appName,
+      title: S.of(context).main_logo,
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      logo: const AssetImage('assets/images/ecorp.png'),
+      logo: const AssetImage('assets/images/LOGO.png'),
       logoTag: Constants.logoTag,
       titleTag: Constants.titleTag,
       navigateBackAfterRecovery: true,
       onConfirmRecover: _signupConfirm,
       onConfirmSignup: _signupConfirm,
       loginAfterSignUp: false,
-      loginProviders: [
-        LoginProvider(
-          button: Buttons.linkedIn,
-          label: 'Sign in with LinkedIn',
-          callback: () async {
-            return null;
-          },
-          providerNeedsSignUpCallback: () {
-            // put here your logic to conditionally show the additional fields
-            return Future.value(true);
-          },
-        ),
-        LoginProvider(
-          icon: FontAwesomeIcons.google,
-          label: 'Google',
-          callback: () async {
-            return null;
-          },
-        ),
-        LoginProvider(
-          icon: FontAwesomeIcons.githubAlt,
-          callback: () async {
-            debugPrint('start github sign in');
-            await Future.delayed(loginTime);
-            debugPrint('stop github sign in');
-            return null;
-          },
-        ),
-      ],
+      // loginProviders: [
+      //   LoginProvider(
+      //     button: Buttons.linkedIn,
+      //     label: 'Sign in with LinkedIn',
+      //     callback: () async {
+      //       return null;
+      //     },
+      //     providerNeedsSignUpCallback: () {
+      //       // put here your logic to conditionally show the additional fields
+      //       return Future.value(true);
+      //     },
+      //   ),
+      //   LoginProvider(
+      //     icon: FontAwesomeIcons.google,
+      //     label: 'Google',
+      //     callback: () async {
+      //       return null;
+      //     },
+      //   ),
+      //   LoginProvider(
+      //     icon: FontAwesomeIcons.githubAlt,
+      //     callback: () async {
+      //       debugPrint('start github sign in');
+      //       await Future.delayed(loginTime);
+      //       debugPrint('stop github sign in');
+      //       return null;
+      //     },
+      //   ),
+      // ],
       termsOfService: [
         TermOfService(
           id: 'newsletter',
@@ -131,35 +132,36 @@ class LoginScreen extends StatelessWidget {
       // hideForgotPasswordButton: true,
       // hideSignUpButton: true,
       // disableCustomPageTransformer: true,
-      // messages: LoginMessages(
-      //   userHint: 'User',
-      //   passwordHint: 'Pass',
-      //   confirmPasswordHint: 'Confirm',
-      //   loginButton: 'LOG IN',
-      //   signupButton: 'REGISTER',
-      //   forgotPasswordButton: 'Forgot huh?',
-      //   recoverPasswordButton: 'HELP ME',
-      //   goBackButton: 'GO BACK',
-      //   confirmPasswordError: 'Not match!',
-      //   recoverPasswordIntro: 'Don\'t feel bad. Happens all the time.',
-      //   recoverPasswordDescription: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
-      //   recoverPasswordSuccess: 'Password rescued successfully',
-      //   flushbarTitleError: 'Oh no!',
-      //   flushbarTitleSuccess: 'Succes!',
-      //   providersTitle: 'login with'
-      // ),
-      // theme: LoginTheme(
-      //   primaryColor: Colors.teal,
-      //   accentColor: Colors.yellow,
-      //   errorColor: Colors.deepOrange,
-      //   pageColorLight: Colors.indigo.shade300,
-      //   pageColorDark: Colors.indigo.shade500,
-      //   logoWidth: 0.80,
-      //   titleStyle: TextStyle(
-      //     color: Colors.greenAccent,
-      //     fontFamily: 'Quicksand',
-      //     letterSpacing: 4,
-      //   ),
+      messages: LoginMessages(
+        userHint: 'User',
+        passwordHint: 'Pass',
+        confirmPasswordHint: 'Confirm',
+        loginButton: S.of(context).login_button_text,
+        signupButton: S.of(context).register,
+        forgotPasswordButton: 'Forgot huh?',
+        recoverPasswordButton: 'HELP ME',
+        goBackButton: 'GO BACK',
+        confirmPasswordError: 'Not match!',
+        recoverPasswordIntro: 'Don\'t feel bad. Happens all the time.',
+        recoverPasswordDescription: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
+        recoverPasswordSuccess: 'Password rescued successfully',
+        flushbarTitleError: 'Oh no!',
+        flushbarTitleSuccess: 'Succes!',
+        providersTitleFirst: S.of(context).or_login_with
+        // providersTitle: 'login with'
+      ),
+      theme: LoginTheme(
+        primaryColor: Colors.teal,
+        accentColor: Colors.yellow,
+        errorColor: Colors.deepOrange,
+        pageColorLight: Colors.indigo.shade300,
+        pageColorDark: Colors.indigo.shade500,
+        logoWidth: 0.80,
+        titleStyle: TextStyle(
+          color: Colors.greenAccent,
+          fontFamily: 'Quicksand',
+          letterSpacing: 4,
+        ),),
       //   // beforeHeroFontSize: 50,
       //   // afterHeroFontSize: 20,
       //   bodyStyle: TextStyle(
@@ -284,16 +286,16 @@ class IntroWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
         Text.rich(
           TextSpan(
             children: [
               TextSpan(
-                text: "You are trying to login/sign up on server hosted on ",
+                text: S.of(context).login_message,
               ),
               TextSpan(
-                text: "example.com",
+                text: S.of(context).login_host,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ],
@@ -305,7 +307,7 @@ class IntroWidget extends StatelessWidget {
             Expanded(child: Divider()),
             Padding(
               padding: EdgeInsets.all(8.0),
-              child: Text("Authenticate"),
+              child: Text(S.of(context).authenticate),
             ),
             Expanded(child: Divider()),
           ],

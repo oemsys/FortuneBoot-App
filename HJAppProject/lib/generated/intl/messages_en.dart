@@ -21,5 +21,14 @@ class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
   final messages = _notInlinedMessages(_notInlinedMessages);
-  static Map<String, Function> _notInlinedMessages(_) => <String, Function>{};
+  static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+        "authenticate": MessageLookupByLibrary.simpleMessage("Authenticate"),
+        "login_button_text": MessageLookupByLibrary.simpleMessage("LOGIN"),
+        "login_host": MessageLookupByLibrary.simpleMessage("haoji.com"),
+        "login_message": MessageLookupByLibrary.simpleMessage(
+            "You are trying to login/sign up on server hosted on"),
+        "main_logo": MessageLookupByLibrary.simpleMessage("Easy Money"),
+        "or_login_with": MessageLookupByLibrary.simpleMessage("or login with"),
+        "register": MessageLookupByLibrary.simpleMessage("REGISTER")
+      };
 }

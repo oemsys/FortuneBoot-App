@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_login_example/dashboard_screen.dart';
 import 'package:flutter_login_example/login_screen.dart';
 import 'package:flutter_login_example/transition_route_observer.dart';
+import 'generated/l10n.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(
@@ -20,7 +22,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Login Demo',
+      locale: const Locale('zh'),
+      localizationsDelegates: const [S.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate],
+      supportedLocales: const [
+                Locale('en'),
+                Locale('zh'),
+              ],// 支持的语言
+      title: 'Login',
+      darkTheme: ThemeData.dark(),
+      themeMode: ThemeMode.dark,
       theme: ThemeData(
         textSelectionTheme:
             const TextSelectionThemeData(cursorColor: Colors.orange),
