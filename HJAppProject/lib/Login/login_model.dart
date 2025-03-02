@@ -5,8 +5,8 @@ part 'login_model.g.dart';
 // flutter pub run build_runner build 
 @JsonSerializable()
 class ResisterLogin {
-  final String userName;
-  final String nickName;
+  final String username;
+  final String nickname;
   final String email;
   final String phoneNumber;
   final int sex;
@@ -18,7 +18,7 @@ class ResisterLogin {
   final int source;
 
 
-  ResisterLogin(this.userName, this.nickName, this.email, this.phoneNumber, this.sex, this.avatar, this.password, this.status, this.roleId, this.remark, this.source);
+  ResisterLogin(this.username, this.nickname, this.email, this.phoneNumber, this.sex, this.avatar, this.password, this.status, this.roleId, this.remark, this.source);
 
   factory ResisterLogin.fromJson(Map<String, dynamic> json) => _$ResisterLoginFromJson(json);
   Map<String, dynamic> toJson() => _$ResisterLoginToJson(this);

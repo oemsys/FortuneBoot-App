@@ -8,8 +8,8 @@ part of 'login_model.dart';
 
 ResisterLogin _$ResisterLoginFromJson(Map<String, dynamic> json) =>
     ResisterLogin(
-      json['userName'] as String,
-      json['nickName'] as String,
+      json['username'] as String,
+      json['nickname'] as String,
       json['email'] as String,
       json['phoneNumber'] as String,
       (json['sex'] as num).toInt(),
@@ -23,8 +23,8 @@ ResisterLogin _$ResisterLoginFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$ResisterLoginToJson(ResisterLogin instance) =>
     <String, dynamic>{
-      'userName': instance.userName,
-      'nickName': instance.nickName,
+      'username': instance.username,
+      'nickname': instance.nickname,
       'email': instance.email,
       'phoneNumber': instance.phoneNumber,
       'sex': instance.sex,
