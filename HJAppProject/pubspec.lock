@@ -102,9 +102,10 @@ packages:
   flutter_login:
     dependency: "direct main"
     description:
-      path: ".."
-      relative: true
-    source: path
+      name: flutter_login
+      sha256: "1f7c46d0d76081cf4c5180e3a265b1f5b1d7e48c81859f58f03a8dcd27338b85"
+      url: "https://pub.dev"
+    source: hosted
     version: "5.0.0"
   flutter_test:
     dependency: "direct dev"
