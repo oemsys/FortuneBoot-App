@@ -24,7 +24,7 @@ class ResisterLogin {
   Map<String, dynamic> toJson() => _$ResisterLoginToJson(this);
   @override
   String toString() {
-    return 'ResisterLogin{userName: $userName, nickName: $nickName, email: $email, phoneNumber: $phoneNumber, sex: $sex, avatar: $avatar, password: $password, status: $status, roleId: $roleId, remark: $remark, source: $source}';
+    return 'ResisterLogin{userName: $username, nickName: $nickname, email: $email, phoneNumber: $phoneNumber, sex: $sex, avatar: $avatar, password: $password, status: $status, roleId: $roleId, remark: $remark, source: $source}';
   }
 }
 
