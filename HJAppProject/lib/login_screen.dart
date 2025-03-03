@@ -39,10 +39,10 @@ class LoginScreen extends StatelessWidget {
       String nickName = data.additionalSignupData!['nickname']!;
       String email = data.additionalSignupData!['email']!;
       String phoneNumber = data.additionalSignupData!['phone_number']!;
-      int sex =
-          (data.additionalSignupData!['sex'] ?? S.current.male) == S.current.male
-              ? 1
-              : 0;
+      int sex = (data.additionalSignupData!['sex'] ?? S.current.male) ==
+              S.current.male
+          ? 1
+          : 0;
       String password = data.password!;
       final ResisterLogin post = ResisterLogin(
         userName,
@@ -61,6 +61,8 @@ class LoginScreen extends StatelessWidget {
       return loginService.loginRegister(post).then((value) {
         debugPrint(value.toString());
         return 'no';
+      }).catchError((err) {
+        return 'service error: $err';
       });
     } catch (e) {
       return Future.delayed(loginTime).then((_) {
