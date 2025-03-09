@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter_login/flutter_login.dart';
@@ -7,66 +9,178 @@ import 'package:flutter_login_example/constants.dart';
 import 'package:flutter_login_example/custom_route.dart';
 import 'package:flutter_login_example/dashboard_screen.dart';
 import 'package:flutter_login_example/users.dart';
+import 'package:flutter_login_example/util/base64_img.dart';
+import 'package:flutter_login_example/util/rsa_util.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:retrofit/error_logger.dart';
+import 'package:encrypt/encrypt.dart';
 import 'generated/l10n.dart';
 import 'package:dio/dio.dart';
+import 'main.dart';
+import 'package:flutter/services.dart';
+import 'package:pointycastle/pointycastle.dart' as PC;
 
 class LoginScreen extends StatelessWidget {
   static const routeName = '/auth';
 
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.roles = const []});
+
+  final List<Map<String, dynamic>> roles;
 
   Duration get loginTime => Duration(milliseconds: timeDilation.ceil() * 0);
 
-  Future<String?> _loginUser(LoginData data) {
-    return Future.delayed(loginTime).then((_) {
-      if (!mockUsers.containsKey(data.name)) {
-        return S.current.user_not_exist;
-      }
-      if (mockUsers[data.name] != data.password) {
-        return 'Password does not match';
-      }
-      return null;
-    });
+  String formatPublicKey(String rawBase64) {
+    final header = '-----BEGIN PUBLIC KEY-----\n';
+    final footer = '\n-----END PUBLIC KEY-----';
+    final sb = StringBuffer(header);
+
+    // 每64字符换行（RFC规范要求）
+    for (var i = 0; i < rawBase64.length; i += 64) {
+      final end = (i + 64) > rawBase64.length ? rawBase64.length : i + 64;
+      sb.writeln(rawBase64.substring(i, end));
+    }
+    return sb.toString() + footer;
   }
 
-  Future<String?> _signupUser(SignupData data) {
-    // lxjtodo 注册
+  Future<String?> _loginUser(LoginData data) async {
+    // lxjtodo：注册：1.验证码 2.rsa加密密码 3.login
+    final dio = Dio();
+    final loginService = LoginService(dio, errorLogger: LoginErrorReport());
+    var capImgRes = await loginService.captchaImage();
+    /**
+     * "data": {
+    "isCaptchaOn": true,
+    "captchaCodeKey": "string",
+    "captchaCodeImg": "string"
+  }
+     */
+    debugPrint('验证码：$capImgRes');
+    Map<String, dynamic> capDic =
+        Map<String, dynamic>.from(capImgRes.data as Map);
+    bool isCaptchaOn = capDic['isCaptchaOn'] as bool;
+    Map? userResDic = {};
+    if (isCaptchaOn) {
+      userResDic = await showCaptchaDialog(capDic);
+      if (userResDic == null) {
+        return '验证码错误或未输入验证码';
+      }
+    }
+    debugPrint('userCode $userResDic');
+    var rsaKey = await loginService.getRsaPublicKey();
+    /**
+     * "data": "string"
+     */
+    debugPrint('rsa公钥 $rsaKey');
     try {
-      final dio = Dio();
-      final loginService = LoginService(dio);
-      String userName = data.name!;
-      String nickName = data.additionalSignupData!['nickname']!;
-      String email = data.additionalSignupData!['email']!;
-      String phoneNumber = data.additionalSignupData!['phone_number']!;
-      int sex = (data.additionalSignupData!['sex'] ?? S.current.male) ==
-              S.current.male
-          ? 1
-          : 0;
-      String password = data.password!;
-      final ResisterLogin post = ResisterLogin(
+      String userName = data.name;
+      String password = data.password;
+      String formattedPublicKey = formatPublicKey(rsaKey.data as String);
+      debugPrint('公钥: $formattedPublicKey');
+      var publicKey =
+          RSAKeyParser().parse(formattedPublicKey) as PC.RSAPublicKey;
+      final encrypter = Encrypter(RSA(publicKey: publicKey));
+      final encrypted = encrypter.encrypt(password).base64;
+      debugPrint('加密结果: $encrypted');
+      Login loginRequest = Login(
         userName,
-        nickName,
-        email,
-        phoneNumber,
-        sex,
-        "",
-        password,
-        0,
-        0,
-        "",
-        0,
+        encrypted,
+        userResDic['captchaUserInput'] as String? ?? "",
+        userResDic['captchaCodeKey'] as String? ?? "",
       );
-      debugPrint(post.toString());
-      return loginService.loginRegister(post).then((value) {
-        debugPrint(value.toString());
-        return 'no';
+      return loginService.login(loginRequest).then((value) {
+        debugPrint('登录: $value');
+        if (value.code == 0) {
+          return null;
+        }
+        return value.msg ?? '注册失败';
       }).catchError((err) {
+        debugPrint(err.toString());
         return 'service error: $err';
       });
     } catch (e) {
-      return Future.delayed(loginTime).then((_) {
-        return 'service err';
+      debugPrint(e.toString());
+      return 'service error: $e';
+    }
+  }
+
+  void _selectRole(SignupData data, Map<String, dynamic> role) async {
+    debugPrint("选择角色: $role");
+    var str = await _signupUserWithRole(data, role);
+    MyApp.navigatorKey.currentState?.pop(str);
+  }
+
+  Future<String?> _signupUserWithRole(SignupData data, Map role) async {
+    final dio = Dio();
+    final loginService = LoginService(dio, errorLogger: LoginErrorReport());
+    String userName = data.name!;
+    String nickName = data.additionalSignupData!['nickname']!;
+    String email = data.additionalSignupData!['email']!;
+    String phoneNumber = data.additionalSignupData!['phone_number']!;
+    int sex =
+        (data.additionalSignupData!['sex'] ?? S.current.male) == S.current.male
+            ? 1
+            : 0;
+    String password = data.password!;
+    final ResisterLogin post = ResisterLogin(
+      userName,
+      nickName,
+      email,
+      phoneNumber,
+      sex,
+      "",
+      password,
+      0,
+      role['roleId'] as int? ?? 0,
+      "",
+      0,
+    );
+    debugPrint(post.toString());
+    return loginService.loginRegister(post).then((value) {
+      if (value.code == 0) {
+        return null;
+      }
+      debugPrint(value.toString());
+      return value.msg ?? '注册失败';
+    }).catchError((err) {
+      return 'service error: $err';
+    });
+  }
+
+  Future<String?> _signupUser(SignupData data) async {
+    // lxjtodo 注册
+    try {
+      final dio = Dio();
+      final loginService = LoginService(dio, errorLogger: LoginErrorReport());
+      var registerRoles = await loginService.getAllowRegisterRoles();
+      if (registerRoles.data is List<dynamic>) {
+        final List<Map<String, dynamic>> roles =
+            List<Map<String, dynamic>>.from(
+          registerRoles.data as List<dynamic>,
+        );
+        if (roles.length == 1) {
+          return _signupUserWithRole(
+              data, roles.first as Map<String, dynamic>? ?? {});
+        } else if (roles.length > 1) {
+          final List<SimpleDialogOption> simpleDialogs = roles.map((role) {
+            return SimpleDialogOption(
+              onPressed: () => _selectRole(data, role),
+              child: Text(role['roleName'] as String? ?? ''),
+            );
+          }).toList();
+          return showDialog<String?>(
+            context: MyApp.navigatorKey.currentContext!,
+            builder: (context) => SimpleDialog(
+              title: Text("选择角色"),
+              children: simpleDialogs,
+            ),
+          );
+        } else {
+          return 'service err role err';
+        }
+      }
+    } catch (e) {
+      return Future.delayed(loginTime).then((err) {
+        return 'service err $err';
       });
     }
   }
@@ -88,6 +202,7 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final additionalSignupFields = fetchUserForms(context);
     return FlutterLogin(
       title: S.of(context).main_logo,
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -141,64 +256,7 @@ class LoginScreen extends StatelessWidget {
           validationErrorMessage: S.of(context).service_required,
         ),
       ],
-      additionalSignupFields: [
-        UserFormField(
-          // username
-          keyName: 'nickname',
-          displayName: S.of(context).login_nickname,
-          icon: const Icon(FontAwesomeIcons.userLarge),
-          fieldValidator: (value) {
-            if (value!.isEmpty) {
-              return S.of(context).user_auth_vaild;
-            }
-            return null;
-          },
-        ),
-        UserFormField(
-          // username
-          keyName: 'sex',
-          displayName: S.of(context).sex,
-          icon: const Icon(FontAwesomeIcons.userLarge),
-          fieldValidator: (value) {
-            if (value!.isEmpty ||
-                value == S.of(context).male ||
-                value == S.of(context).female) {
-              return null;
-            }
-            return S.of(context).sex_valid;
-          },
-        ),
-        UserFormField(
-          // username
-          keyName: 'email',
-          displayName: S.of(context).login_email,
-          userType: LoginUserType.email,
-          icon: const Icon(Icons.email),
-          fieldValidator: (value) {
-            if (!value!.contains('@') || !value.endsWith('.com')) {
-              return S.of(context).email_auth;
-            }
-            return null;
-          },
-        ),
-        UserFormField(
-          // phone
-          keyName: 'phone_number',
-          displayName: S.of(context).phone_number,
-          userType: LoginUserType.phone,
-          fieldValidator: (value) {
-            final phoneRegExp = RegExp(
-              '^(\\+\\d{1,2}\\s)?\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}\$',
-            );
-            if (value != null &&
-                value.length < 7 &&
-                !phoneRegExp.hasMatch(value)) {
-              return S.of(context).valid_phone_number;
-            }
-            return null;
-          },
-        ),
-      ],
+      additionalSignupFields: additionalSignupFields,
       // scrollable: true,
       // hideProvidersTitle: false,
       // loginAfterSignUp: false,
@@ -359,6 +417,76 @@ class LoginScreen extends StatelessWidget {
       headerWidget: const IntroWidget(),
     );
   }
+
+  List<UserFormField> fetchUserForms(BuildContext context) {
+    return [
+      UserFormField(
+        // username
+        keyName: 'nickname',
+        displayName: S.of(context).login_nickname,
+        icon: const Icon(FontAwesomeIcons.userLarge),
+        fieldValidator: (value) {
+          if (value!.isEmpty) {
+            return S.of(context).user_auth_vaild;
+          }
+          return null;
+        },
+      ),
+      UserFormField(
+        // username
+        keyName: 'sex',
+        displayName: S.of(context).sex,
+        icon: const Icon(FontAwesomeIcons.userLarge),
+        fieldValidator: (value) {
+          if (value!.isEmpty ||
+              value == S.of(context).male ||
+              value == S.of(context).female) {
+            return null;
+          }
+          return S.of(context).sex_valid;
+        },
+      ),
+      UserFormField(
+        // username
+        keyName: 'email',
+        displayName: S.of(context).login_email,
+        userType: LoginUserType.email,
+        icon: const Icon(Icons.email),
+        fieldValidator: (value) {
+          if (!value!.contains('@') || !value.endsWith('.com')) {
+            return S.of(context).email_auth;
+          }
+          return null;
+        },
+      ),
+      UserFormField(
+        // phone
+        keyName: 'phone_number',
+        displayName: S.of(context).phone_number,
+        userType: LoginUserType.phone,
+        fieldValidator: (value) {
+          final phoneRegExp = RegExp(
+            '^(\\+\\d{1,2}\\s)?\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}\$',
+          );
+          if (value != null &&
+              value.length < 7 &&
+              !phoneRegExp.hasMatch(value)) {
+            return S.of(context).valid_phone_number;
+          }
+          return null;
+        },
+      ),
+      UserFormField(
+        // phone
+        keyName: 'role_list',
+        displayName: '角色',
+        userType: LoginUserType.checkbox,
+        fieldValidator: (value) {
+          return null;
+        },
+      ),
+    ];
+  }
 }
 
 class IntroWidget extends StatelessWidget {
@@ -395,4 +523,92 @@ class IntroWidget extends StatelessWidget {
       ],
     );
   }
+}
+
+// 验证码弹窗组件
+Future<Map?> showCaptchaDialog(Map captchaDic) async {
+  final controller = TextEditingController();
+  final focusNode = FocusNode();
+  String captchaCode = captchaDic['captchaCodeImg'] as String;
+  Map captchaData = captchaDic;
+  final Dio dio = Dio();
+  final LoginService loginService =
+      LoginService(dio, errorLogger: LoginErrorReport());
+  return showDialog<Map?>(
+    context: MyApp.navigatorKey.currentContext!,
+    barrierDismissible: false,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) {
+        return SimpleDialog(
+          title: Column(
+            children: [
+              GestureDetector(
+                onTap: () async {
+                  final capImgRes = await loginService.captchaImage();
+                  debugPrint('刷新验证码：$capImgRes');
+                  final Map<String, dynamic> capDic =
+                      Map<String, dynamic>.from(capImgRes.data as Map);
+                  final String resKey = capDic['captchaCodeImg'] as String;
+                  setState(() {
+                    captchaCode = resKey;
+                    captchaData = capDic;
+                  });
+                },
+                child: Base64Image(base64String: captchaCode),
+              ),
+              const SizedBox(height: 20),
+              const Text('请输入验证码'),
+            ],
+          ),
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: TextField(
+                controller: controller,
+                focusNode: focusNode,
+                autofocus: true,
+                maxLength: 4,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  counterText: '',
+                  hintText: '请输入图片中的数字',
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () async {
+                      final capImgRes = await loginService.captchaImage();
+                      debugPrint('刷新验证码：$capImgRes');
+                      final Map<String, dynamic> capDic =
+                          Map<String, dynamic>.from(capImgRes.data as Map);
+                      final String resKey = capDic['captchaCodeImg'] as String;
+                      setState(() {
+                        captchaCode = resKey;
+                        captchaData = capDic;
+                      });
+                    },
+                  ),
+                ),
+              ),
+            ),
+            OverflowBar(
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('取消'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Map<String, dynamic> userDic = {};
+                    userDic['captchaUserInput'] = controller.text;
+                    userDic['captchaCodeKey'] = captchaData['captchaCodeKey'];
+                    Navigator.pop(context, userDic);
+                  },
+                  child: const Text('确认'),
+                ),
+              ],
+            )
+          ],
+        );
+      },
+    ),
+  );
 }

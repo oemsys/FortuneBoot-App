@@ -36,11 +36,25 @@ Map<String, dynamic> _$ResisterLoginToJson(ResisterLogin instance) =>
       'source': instance.source,
     };
 
+Login _$LoginFromJson(Map<String, dynamic> json) => Login(
+      json['username'] as String,
+      json['password'] as String,
+      json['captchaCode'] as String,
+      json['captchaCodeKey'] as String,
+    );
+
+Map<String, dynamic> _$LoginToJson(Login instance) => <String, dynamic>{
+      'username': instance.username,
+      'password': instance.password,
+      'captchaCode': instance.captchaCode,
+      'captchaCodeKey': instance.captchaCodeKey,
+    };
+
 LoginResponse _$LoginResponseFromJson(Map<String, dynamic> json) =>
     LoginResponse(
       (json['code'] as num).toInt(),
       json['msg'] as String,
-      json['data'] as String?,
+      json['data'],
     );
 
 Map<String, dynamic> _$LoginResponseToJson(LoginResponse instance) =>

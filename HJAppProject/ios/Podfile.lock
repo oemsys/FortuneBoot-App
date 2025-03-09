@@ -31,9 +31,9 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  libphonenumber_plugin: 48bf4078546377eedaab4aa54978cd0f6fa23072
+  libphonenumber_plugin: d134f173b22bfa5ede50887071f087f309277f8c
   PhoneNumberKit: 5b1be7ee4955dfeeb855f51eecdd829ab24b3484
-  url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
+  url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
 
 PODFILE CHECKSUM: c4c93c5f6502fe2754f48404d3594bf779584011
 
