@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_login_example/dashboard_screen.dart';
 import 'package:flutter_login_example/login_screen.dart';
 import 'package:flutter_login_example/Login/base_url_config_page.dart';
+import 'package:flutter_login_example/theme/app_theme.dart';
 import 'package:flutter_login_example/transition_route_observer.dart';
 import 'generated/l10n.dart';
 
@@ -38,43 +39,9 @@ class MyApp extends StatelessWidget {
         Locale('zh'),
       ], // 支持的语言
       title: 'Login',
-      darkTheme: ThemeData.dark(),
+      darkTheme: AppTheme.lightTheme(), // 使用统一的亮色主题作为暗色主题的基础
       themeMode: ThemeMode.light, // 暗黑模式报错，待解决
-      theme: ThemeData(
-        textSelectionTheme:
-            const TextSelectionThemeData(cursorColor: Colors.orange),
-        // fontFamily: 'SourceSansPro',
-        textTheme: TextTheme(
-          displaySmall: const TextStyle(
-            fontFamily: 'OpenSans',
-            fontSize: 45.0,
-            // fontWeight: FontWeight.w400,
-            color: Colors.orange,
-          ),
-          labelLarge: const TextStyle(
-            // OpenSans is similar to NotoSans but the uppercases look a bit better IMO
-            fontFamily: 'OpenSans',
-          ),
-          bodySmall: TextStyle(
-            fontFamily: 'NotoSans',
-            fontSize: 12.0,
-            fontWeight: FontWeight.normal,
-            color: Colors.deepPurple[300],
-          ),
-          displayLarge: const TextStyle(fontFamily: 'Quicksand'),
-          displayMedium: const TextStyle(fontFamily: 'Quicksand'),
-          headlineMedium: const TextStyle(fontFamily: 'Quicksand'),
-          headlineSmall: const TextStyle(fontFamily: 'NotoSans'),
-          titleLarge: const TextStyle(fontFamily: 'NotoSans'),
-          titleMedium: const TextStyle(fontFamily: 'NotoSans'),
-          bodyLarge: const TextStyle(fontFamily: 'NotoSans'),
-          bodyMedium: const TextStyle(fontFamily: 'NotoSans'),
-          titleSmall: const TextStyle(fontFamily: 'NotoSans'),
-          labelSmall: const TextStyle(fontFamily: 'NotoSans'),
-        ),
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.deepPurple)
-            .copyWith(secondary: Colors.orange),
-      ),
+      theme: AppTheme.lightTheme(),
       navigatorObservers: [TransitionRouteObserver()],
       initialRoute: BaseUrlConfigPage.routeName,
       routes: {

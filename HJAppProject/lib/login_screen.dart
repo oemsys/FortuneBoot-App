@@ -8,6 +8,7 @@ import 'package:flutter_login_example/Login/login_request.dart';
 import 'package:flutter_login_example/constants.dart';
 import 'package:flutter_login_example/custom_route.dart';
 import 'package:flutter_login_example/dashboard_screen.dart';
+import 'package:flutter_login_example/theme/app_theme.dart';
 import 'package:flutter_login_example/users.dart';
 import 'package:flutter_login_example/util/base64_img.dart';
 import 'package:flutter_login_example/util/rsa_util.dart';
@@ -296,19 +297,7 @@ class LoginScreen extends StatelessWidget {
         signUpSuccess: S.of(context).sign_up_success,
         // providersTitle: 'login with'
       ),
-      theme: LoginTheme(
-        primaryColor: Colors.teal,
-        accentColor: Theme.of(context).colorScheme.secondary,
-        errorColor: Colors.deepOrange,
-        pageColorLight: Colors.indigo.shade300,
-        pageColorDark: Colors.indigo.shade500,
-        logoWidth: 0.80,
-        titleStyle: TextStyle(
-          color: Colors.greenAccent,
-          fontFamily: 'Quicksand',
-          letterSpacing: 4,
-        ),
-      ),
+      theme: AppTheme.loginTheme(context),
       //   // beforeHeroFontSize: 50,
       //   // afterHeroFontSize: 20,
       //   bodyStyle: TextStyle(
@@ -528,74 +517,89 @@ Future<Map?> showCaptchaDialog(Map captchaDic) async {
     barrierDismissible: false,
     builder: (context) => StatefulBuilder(
       builder: (context, setState) {
-        return SimpleDialog(
-          title: Column(
-            children: [
-              GestureDetector(
-                onTap: () async {
-                  final capImgRes = await loginService.captchaImage();
-                  debugPrint('刷新验证码：$capImgRes');
-                  final Map<String, dynamic> capDic =
-                      Map<String, dynamic>.from(capImgRes.data as Map);
-                  final String resKey = capDic['captchaCodeImg'] as String;
-                  setState(() {
-                    captchaCode = resKey;
-                    captchaData = capDic;
-                  });
-                },
-                child: Base64Image(base64String: captchaCode),
-              ),
-              const SizedBox(height: 20),
-              const Text('请输入验证码'),
-            ],
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
           ),
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: TextField(
-                controller: controller,
-                focusNode: focusNode,
-                autofocus: true,
-                maxLength: 4,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  counterText: '',
-                  hintText: '请输入图片中的数字',
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: () async {
-                      final capImgRes = await loginService.captchaImage();
-                      debugPrint('刷新验证码：$capImgRes');
-                      final Map<String, dynamic> capDic =
-                          Map<String, dynamic>.from(capImgRes.data as Map);
-                      final String resKey = capDic['captchaCodeImg'] as String;
-                      setState(() {
-                        captchaCode = resKey;
-                        captchaData = capDic;
-                      });
-                    },
+          child: Padding(
+            padding: const EdgeInsets.all(AppTheme.spacing),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '请输入验证码',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: AppTheme.spacing),
+                GestureDetector(
+                  onTap: () async {
+                    final capImgRes = await loginService.captchaImage();
+                    debugPrint('刷新验证码：$capImgRes');
+                    final Map<String, dynamic> capDic =
+                        Map<String, dynamic>.from(capImgRes.data as Map);
+                    final String resKey = capDic['captchaCodeImg'] as String;
+                    setState(() {
+                      captchaCode = resKey;
+                      captchaData = capDic;
+                    });
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppTheme.dividerColor),
+                      borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                    ),
+                    child: Base64Image(base64String: captchaCode),
                   ),
                 ),
-              ),
-            ),
-            OverflowBar(
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('取消'),
+                const SizedBox(height: AppTheme.spacing),
+                TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  autofocus: true,
+                  maxLength: 4,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    counterText: '',
+                    hintText: '请输入图片中的数字',
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: () async {
+                        final capImgRes = await loginService.captchaImage();
+                        debugPrint('刷新验证码：$capImgRes');
+                        final Map<String, dynamic> capDic =
+                            Map<String, dynamic>.from(capImgRes.data as Map);
+                        final String resKey = capDic['captchaCodeImg'] as String;
+                        setState(() {
+                          captchaCode = resKey;
+                          captchaData = capDic;
+                        });
+                      },
+                    ),
+                  ),
                 ),
-                TextButton(
-                  onPressed: () {
-                    Map<String, dynamic> userDic = {};
-                    userDic['captchaUserInput'] = controller.text;
-                    userDic['captchaCodeKey'] = captchaData['captchaCodeKey'];
-                    Navigator.pop(context, userDic);
-                  },
-                  child: const Text('确认'),
+                const SizedBox(height: AppTheme.spacing),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('取消'),
+                    ),
+                    const SizedBox(width: AppTheme.spacingSmall),
+                    ElevatedButton(
+                      onPressed: () {
+                        Map<String, dynamic> userDic = {};
+                        userDic['captchaUserInput'] = controller.text;
+                        userDic['captchaCodeKey'] = captchaData['captchaCodeKey'];
+                        Navigator.pop(context, userDic);
+                      },
+                      child: const Text('确认'),
+                    ),
+                  ],
                 ),
               ],
-            )
-          ],
+            ),
+          ),
         );
       },
     ),

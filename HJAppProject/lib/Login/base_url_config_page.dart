@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_login_example/Login/login_constants.dart';
 import 'package:flutter_login_example/login_screen.dart';
 import 'package:flutter_login_example/generated/l10n.dart';
+import 'package:flutter_login_example/theme/app_theme.dart';
 import 'package:dio/dio.dart';
 
 class BaseUrlConfigPage extends StatefulWidget {
@@ -29,78 +30,97 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
         key: _formKey,
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
+            padding: const EdgeInsets.all(AppTheme.spacing),
+            child: Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.cardBorderRadius),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(AppTheme.spacing),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Expanded(
-                      flex: 2,
-                      child: DropdownButtonFormField<String>(
-                        value: _protocol,
-                        items: ['http', 'https'].map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _protocol = newValue!;
-                          });
-                        },
-                        decoration: InputDecoration(labelText: S.of(context).protocol),
-                      ),
+                    Text(
+                      S.of(context).baseUrlConfig,
+                      style: Theme.of(context).textTheme.titleLarge,
+                      textAlign: TextAlign.center,
                     ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      flex: 4,
-                      child: TextFormField(
-                        controller: _domainController,
-                        decoration: InputDecoration(labelText: S.of(context).domain),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return S.of(context).pleaseEnterDomain;
-                          }
-                          // IPv4, IPv6, 或域名的简单验证
-                          final ipv4Regex = RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
-                          final ipv6Regex = RegExp(r'^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$');
-                          final domainRegex = RegExp(r'^[a-zA-Z0-9.-]+(\.[a-zA-Z]{2,})?$');
-                          if (value != 'localhost' && !ipv4Regex.hasMatch(value) && !ipv6Regex.hasMatch(value) && !domainRegex.hasMatch(value)) {
-                            return S.of(context).invalidDomain;
-                          }
-                          return null;
-                        },
-                      ),
+                    const SizedBox(height: AppTheme.spacingLarge),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: DropdownButtonFormField<String>(
+                            value: _protocol,
+                            items: ['http', 'https'].map((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                _protocol = newValue!;
+                              });
+                            },
+                            decoration: InputDecoration(labelText: S.of(context).protocol),
+                          ),
+                        ),
+                        const SizedBox(width: AppTheme.spacingSmall),
+                        Expanded(
+                          flex: 4,
+                          child: TextFormField(
+                            controller: _domainController,
+                            decoration: InputDecoration(labelText: S.of(context).domain),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return S.of(context).pleaseEnterDomain;
+                              }
+                              // IPv4, IPv6, 或域名的简单验证
+                              final ipv4Regex = RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
+                              final ipv6Regex = RegExp(r'^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$');
+                              final domainRegex = RegExp(r'^[a-zA-Z0-9.-]+(\.[a-zA-Z]{2,})?$');
+                              if (value != 'localhost' && !ipv4Regex.hasMatch(value) && !ipv6Regex.hasMatch(value) && !domainRegex.hasMatch(value)) {
+                                return S.of(context).invalidDomain;
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: AppTheme.spacingSmall),
+                        Expanded(
+                          flex: 2,
+                          child: TextFormField(
+                            controller: _portController,
+                            decoration: InputDecoration(labelText: S.of(context).port),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return S.of(context).pleaseEnterPort;
+                              }
+                              final port = int.tryParse(value);
+                              if (port == null || port < 0 || port > 65535) {
+                                return S.of(context).invalidPort;
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      flex: 2,
-                      child: TextFormField(
-                        controller: _portController,
-                        decoration: InputDecoration(labelText: S.of(context).port),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return S.of(context).pleaseEnterPort;
-                          }
-                          final port = int.tryParse(value);
-                          if (port == null || port < 0 || port > 65535) {
-                            return S.of(context).invalidPort;
-                          }
-                          return null;
-                        },
+                    const SizedBox(height: AppTheme.spacingLarge),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _submitForm,
+                        child: Text(S.of(context).confirm),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _submitForm,
-                  child: Text(S.of(context).confirm),
-                ),
-              ],
+              ),
             ),
           ),
         ),
