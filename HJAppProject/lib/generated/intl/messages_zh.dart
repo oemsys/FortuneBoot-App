@@ -43,7 +43,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "login_button_text": MessageLookupByLibrary.simpleMessage("登录"),
     "login_confirm": MessageLookupByLibrary.simpleMessage("确认"),
     "login_email": MessageLookupByLibrary.simpleMessage("邮箱"),
-    "login_host": MessageLookupByLibrary.simpleMessage("haoji.com"),
+    "login_host": MessageLookupByLibrary.simpleMessage("fortuneboot.com"),
     "login_message": MessageLookupByLibrary.simpleMessage("你可以通过此界面注册/登录"),
     "login_nickname": MessageLookupByLibrary.simpleMessage("昵称"),
     "login_pass": MessageLookupByLibrary.simpleMessage("密码"),

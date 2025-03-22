@@ -59,7 +59,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "login_button_text": MessageLookupByLibrary.simpleMessage("LOGIN"),
     "login_confirm": MessageLookupByLibrary.simpleMessage("Confirm"),
     "login_email": MessageLookupByLibrary.simpleMessage("Email"),
-    "login_host": MessageLookupByLibrary.simpleMessage("haoji.com"),
+    "login_host": MessageLookupByLibrary.simpleMessage("fortuneboot.com"),
     "login_message": MessageLookupByLibrary.simpleMessage(
       "You are trying to login/sign up on server hosted on",
     ),

@@ -200,9 +200,9 @@ class S {
     );
   }
 
-  /// `haoji.com`
+  /// `fortuneboot.com`
   String get login_host {
-    return Intl.message('haoji.com', name: 'login_host', desc: '', args: []);
+    return Intl.message('fortuneboot.com', name: 'login_host', desc: '', args: []);
   }
 
   /// `LOGIN`
