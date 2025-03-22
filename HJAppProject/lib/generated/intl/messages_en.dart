@@ -22,55 +22,96 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
-        "authenticate": MessageLookupByLibrary.simpleMessage("Authenticate"),
-        "default_comment": MessageLookupByLibrary.simpleMessage(
-            "Lorem Ipsum is simply dummy text of the printing and typesetting industry"),
-        "dont_worry_be_happy": MessageLookupByLibrary.simpleMessage(
-            "Don\'t feel bad. Happens all the time."),
-        "email_auth": MessageLookupByLibrary.simpleMessage(
-            "Email must contain \'@\' and end with \'.com\'"),
-        "female": MessageLookupByLibrary.simpleMessage("female"),
-        "fill_to_signup": MessageLookupByLibrary.simpleMessage(
-            "Please fill in this form to complete the signup"),
-        "forgot_huh": MessageLookupByLibrary.simpleMessage("Forgot huh?"),
-        "go_back": MessageLookupByLibrary.simpleMessage("GO BACK"),
-        "help_me": MessageLookupByLibrary.simpleMessage("HELP ME"),
-        "login_account": MessageLookupByLibrary.simpleMessage("User"),
-        "login_button_text": MessageLookupByLibrary.simpleMessage("LOGIN"),
-        "login_confirm": MessageLookupByLibrary.simpleMessage("Confirm"),
-        "login_email": MessageLookupByLibrary.simpleMessage("Email"),
-        "login_host": MessageLookupByLibrary.simpleMessage("haoji.com"),
-        "login_message": MessageLookupByLibrary.simpleMessage(
-            "You are trying to login/sign up on server hosted on"),
-        "login_nickname": MessageLookupByLibrary.simpleMessage("Nickname"),
-        "login_pass": MessageLookupByLibrary.simpleMessage("Pass"),
-        "main_logo": MessageLookupByLibrary.simpleMessage("Easy Money"),
-        "male": MessageLookupByLibrary.simpleMessage("male"),
-        "not_match": MessageLookupByLibrary.simpleMessage("Not match!"),
-        "oh_no": MessageLookupByLibrary.simpleMessage("Oh no!"),
-        "or_login_with": MessageLookupByLibrary.simpleMessage("or login with"),
-        "password_is_empty":
-            MessageLookupByLibrary.simpleMessage("Password is empty"),
-        "password_rescued_successfully": MessageLookupByLibrary.simpleMessage(
-            "Password rescued successfully"),
-        "phone_number": MessageLookupByLibrary.simpleMessage("Phone Number"),
-        "register": MessageLookupByLibrary.simpleMessage("REGISTER"),
-        "service_required": MessageLookupByLibrary.simpleMessage("Required"),
-        "sex": MessageLookupByLibrary.simpleMessage("sex"),
-        "sex_valid": MessageLookupByLibrary.simpleMessage(
-            "Currently, only two genders are supported. Please fill in \'Male\' or \'Female\'."),
-        "sign_up_submit": MessageLookupByLibrary.simpleMessage("SUBMIT"),
-        "sign_up_success":
-            MessageLookupByLibrary.simpleMessage("Sign Up Success!"),
-        "succes": MessageLookupByLibrary.simpleMessage("Succes!"),
-        "term_of_services":
-            MessageLookupByLibrary.simpleMessage("Term of services"),
-        "user_auth_vaild":
-            MessageLookupByLibrary.simpleMessage("Account is empty"),
-        "user_not_exist":
-            MessageLookupByLibrary.simpleMessage("User not exists"),
-        "username": MessageLookupByLibrary.simpleMessage("Username"),
-        "valid_phone_number": MessageLookupByLibrary.simpleMessage(
-            "This isn\'t a valid phone number")
-      };
+    "authenticate": MessageLookupByLibrary.simpleMessage("Authenticate"),
+    "baseUrlConfig": MessageLookupByLibrary.simpleMessage(
+      "Base URL Configuration",
+    ),
+    "confirm": MessageLookupByLibrary.simpleMessage("Confirm"),
+    "default_comment": MessageLookupByLibrary.simpleMessage(
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry",
+    ),
+    "domain": MessageLookupByLibrary.simpleMessage("Domain"),
+    "dont_worry_be_happy": MessageLookupByLibrary.simpleMessage(
+      "Don\'t feel bad. Happens all the time.",
+    ),
+    "email_auth": MessageLookupByLibrary.simpleMessage(
+      "Email must contain \'@\' and end with \'.com\'",
+    ),
+    "error": MessageLookupByLibrary.simpleMessage("Error"),
+    "female": MessageLookupByLibrary.simpleMessage("female"),
+    "fill_to_signup": MessageLookupByLibrary.simpleMessage(
+      "Please fill in this form to complete the signup",
+    ),
+    "forgot_huh": MessageLookupByLibrary.simpleMessage("Forgot huh?"),
+    "go_back": MessageLookupByLibrary.simpleMessage("GO BACK"),
+    "help_me": MessageLookupByLibrary.simpleMessage("HELP ME"),
+    "invalidDomain": MessageLookupByLibrary.simpleMessage(
+      "Invalid domain or IP address",
+    ),
+    "invalidPort": MessageLookupByLibrary.simpleMessage("Invalid port number"),
+    "invalid_email": MessageLookupByLibrary.simpleMessage(
+      "Invalid email address",
+    ),
+    "invalid_phone_number": MessageLookupByLibrary.simpleMessage(
+      "Invalid phone number",
+    ),
+    "login_account": MessageLookupByLibrary.simpleMessage("User"),
+    "login_button_text": MessageLookupByLibrary.simpleMessage("LOGIN"),
+    "login_confirm": MessageLookupByLibrary.simpleMessage("Confirm"),
+    "login_email": MessageLookupByLibrary.simpleMessage("Email"),
+    "login_host": MessageLookupByLibrary.simpleMessage("haoji.com"),
+    "login_message": MessageLookupByLibrary.simpleMessage(
+      "You are trying to login/sign up on server hosted on",
+    ),
+    "login_nickname": MessageLookupByLibrary.simpleMessage("Nickname"),
+    "login_pass": MessageLookupByLibrary.simpleMessage("Pass"),
+    "main_logo": MessageLookupByLibrary.simpleMessage("Easy Money"),
+    "male": MessageLookupByLibrary.simpleMessage("male"),
+    "nickname_required": MessageLookupByLibrary.simpleMessage(
+      "Nickname cannot be empty",
+    ),
+    "not_match": MessageLookupByLibrary.simpleMessage("Not match!"),
+    "oh_no": MessageLookupByLibrary.simpleMessage("Oh no!"),
+    "ok": MessageLookupByLibrary.simpleMessage("OK"),
+    "or_login_with": MessageLookupByLibrary.simpleMessage("or login with"),
+    "password_is_empty": MessageLookupByLibrary.simpleMessage(
+      "Password is empty",
+    ),
+    "password_rescued_successfully": MessageLookupByLibrary.simpleMessage(
+      "Password rescued successfully",
+    ),
+    "phone_number": MessageLookupByLibrary.simpleMessage("Phone Number"),
+    "pleaseEnterDomain": MessageLookupByLibrary.simpleMessage(
+      "Please enter a domain",
+    ),
+    "pleaseEnterPort": MessageLookupByLibrary.simpleMessage(
+      "Please enter a port",
+    ),
+    "port": MessageLookupByLibrary.simpleMessage("Port"),
+    "protocol": MessageLookupByLibrary.simpleMessage("Protocol"),
+    "register": MessageLookupByLibrary.simpleMessage("REGISTER"),
+    "registration_failed": MessageLookupByLibrary.simpleMessage(
+      "Registration failed",
+    ),
+    "serverConnectionFailed": MessageLookupByLibrary.simpleMessage(
+      "Server connection failed",
+    ),
+    "service_required": MessageLookupByLibrary.simpleMessage("Required"),
+    "sex": MessageLookupByLibrary.simpleMessage("sex"),
+    "sex_valid": MessageLookupByLibrary.simpleMessage(
+      "Currently, only two genders are supported. Please fill in \'Male\' or \'Female\'.",
+    ),
+    "sign_up_submit": MessageLookupByLibrary.simpleMessage("SUBMIT"),
+    "sign_up_success": MessageLookupByLibrary.simpleMessage("Sign Up Success!"),
+    "succes": MessageLookupByLibrary.simpleMessage("Succes!"),
+    "term_of_services": MessageLookupByLibrary.simpleMessage(
+      "Term of services",
+    ),
+    "user_auth_vaild": MessageLookupByLibrary.simpleMessage("Account is empty"),
+    "user_not_exist": MessageLookupByLibrary.simpleMessage("User not exists"),
+    "username": MessageLookupByLibrary.simpleMessage("Username"),
+    "valid_phone_number": MessageLookupByLibrary.simpleMessage(
+      "This isn\'t a valid phone number",
+    ),
+  };
 }

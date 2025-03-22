@@ -147,41 +147,53 @@ class LoginScreen extends StatelessWidget {
   }
 
   Future<String?> _signupUser(SignupData data) async {
-    // lxjtodo 注册
     try {
       final dio = Dio();
       final loginService = LoginService(dio, errorLogger: LoginErrorReport());
-      var registerRoles = await loginService.getAllowRegisterRoles();
-      if (registerRoles.data is List<dynamic>) {
-        final List<Map<String, dynamic>> roles =
-            List<Map<String, dynamic>>.from(
-          registerRoles.data as List<dynamic>,
-        );
-        if (roles.length == 1) {
-          return _signupUserWithRole(
-              data, roles.first as Map<String, dynamic>? ?? {});
-        } else if (roles.length > 1) {
-          final List<SimpleDialogOption> simpleDialogs = roles.map((role) {
-            return SimpleDialogOption(
-              onPressed: () => _selectRole(data, role),
-              child: Text(role['roleName'] as String? ?? ''),
-            );
-          }).toList();
-          return showDialog<String?>(
-            context: MyApp.navigatorKey.currentContext!,
-            builder: (context) => SimpleDialog(
-              title: Text("选择角色"),
-              children: simpleDialogs,
-            ),
-          );
-        } else {
-          return 'service err role err';
-        }
+      
+      String userName = data.name!;
+      String password = data.password!;
+      String nickName = data.additionalSignupData!['nickname'] ?? '';
+      String email = data.additionalSignupData!['email'] ?? '';
+      String phoneNumber = data.additionalSignupData!['phone_number'] ?? '';
+      int sex = (data.additionalSignupData!['sex'] ?? S.current.male) == S.current.male ? 1 : 0;
+
+      // 验证昵称不为空
+      if (nickName.isEmpty) {
+        return S.current.nickname_required;
       }
+
+      // 验证邮箱格式
+      if (email.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+        return S.current.invalid_email;
+      }
+
+      // 验证手机号格式
+      if (phoneNumber.isNotEmpty && !RegExp(r'^1[3-9]\d{9}$').hasMatch(phoneNumber)) {
+        return S.current.invalid_phone_number;
+      }
+
+      final ResisterLogin post = ResisterLogin(
+        userName,
+        nickName,
+        email,
+        phoneNumber,
+        sex,
+        "",
+        password,
+        0,
+        0,
+        "",
+        0,
+      );
+
+      var response = await loginService.loginRegister(post);
+      if (response.code == 0) {
+        return null;
+      }
+      return response.msg ?? S.current.registration_failed;
     } catch (e) {
-      return Future.delayed(loginTime).then((err) {
-        return 'service err $err';
-      });
+      return 'service error: $e';
     }
   }
 
@@ -421,67 +433,44 @@ class LoginScreen extends StatelessWidget {
   List<UserFormField> fetchUserForms(BuildContext context) {
     return [
       UserFormField(
-        // username
         keyName: 'nickname',
         displayName: S.of(context).login_nickname,
         icon: const Icon(FontAwesomeIcons.userLarge),
         fieldValidator: (value) {
           if (value!.isEmpty) {
-            return S.of(context).user_auth_vaild;
+            return S.of(context).nickname_required;
           }
           return null;
         },
       ),
       UserFormField(
-        // username
         keyName: 'sex',
         displayName: S.of(context).sex,
-        icon: const Icon(FontAwesomeIcons.userLarge),
-        fieldValidator: (value) {
-          if (value!.isEmpty ||
-              value == S.of(context).male ||
-              value == S.of(context).female) {
-            return null;
-          }
-          return S.of(context).sex_valid;
-        },
+        icon: const Icon(FontAwesomeIcons.venusMars),
+        userType: LoginUserType.text,
+        defaultValue: S.of(context).male,
       ),
       UserFormField(
-        // username
         keyName: 'email',
         displayName: S.of(context).login_email,
         userType: LoginUserType.email,
         icon: const Icon(Icons.email),
         fieldValidator: (value) {
-          if (!value!.contains('@') || !value.endsWith('.com')) {
-            return S.of(context).email_auth;
+          if (value!.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+            return S.of(context).invalid_email;
           }
           return null;
         },
       ),
       UserFormField(
-        // phone
         keyName: 'phone_number',
         displayName: S.of(context).phone_number,
         userType: LoginUserType.phone,
+        icon: const Icon(Icons.phone),
         fieldValidator: (value) {
-          final phoneRegExp = RegExp(
-            '^(\\+\\d{1,2}\\s)?\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}\$',
-          );
-          if (value != null &&
-              value.length < 7 &&
-              !phoneRegExp.hasMatch(value)) {
-            return S.of(context).valid_phone_number;
+          if (value!.isNotEmpty && !RegExp(r'^1[3-9]\d{9}$').hasMatch(value)) {
+            return S.of(context).invalid_phone_number;
           }
-          return null;
-        },
-      ),
-      UserFormField(
-        // phone
-        keyName: 'role_list',
-        displayName: '角色',
-        userType: LoginUserType.checkbox,
-        fieldValidator: (value) {
           return null;
         },
       ),

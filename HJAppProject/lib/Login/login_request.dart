@@ -8,13 +8,15 @@ part 'login_request.g.dart'; // 代码生成文件
 
 // 使用下面命令自动生成代码
 // flutter pub run build_runner build
-@RestApi(baseUrl: LoginConstants.loginHost)
+@RestApi()
 abstract class LoginService {
   factory LoginService(
     Dio dio, {
-    String baseUrl,
-    ParseErrorLogger errorLogger,
-  }) = _LoginService;
+    String? baseUrl,
+    ParseErrorLogger? errorLogger,
+  }) {
+    return _LoginService(dio, baseUrl: baseUrl ?? LoginConstants.baseUrl, errorLogger: errorLogger);
+  }
 
   @GET(LoginConstants.getRsaPublicKey)
   Future<LoginResponse> getRsaPublicKey();

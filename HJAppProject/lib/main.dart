@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_login_example/dashboard_screen.dart';
 import 'package:flutter_login_example/login_screen.dart';
+import 'package:flutter_login_example/Login/base_url_config_page.dart';
 import 'package:flutter_login_example/transition_route_observer.dart';
 import 'generated/l10n.dart';
 
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: navigatorKey,
-      locale: const Locale('zh'),
+      locale: const Locale('zh', 'CN'),
       localizationsDelegates: const [
         S.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -75,8 +76,9 @@ class MyApp extends StatelessWidget {
             .copyWith(secondary: Colors.orange),
       ),
       navigatorObservers: [TransitionRouteObserver()],
-      initialRoute: LoginScreen.routeName,
+      initialRoute: BaseUrlConfigPage.routeName,
       routes: {
+        BaseUrlConfigPage.routeName: (context) => const BaseUrlConfigPage(),
         LoginScreen.routeName: (context) => const LoginScreen(),
         DashboardScreen.routeName: (context) => const DashboardScreen(),
       },

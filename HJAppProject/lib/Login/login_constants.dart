@@ -1,5 +1,5 @@
 class LoginConstants {
-  static const String loginHost = 'http://fortuneboot.com:38580';
+  static String baseUrl = 'http://fortuneboot.com:38580';
   static const String register = '/register'; // 注册
   static const String login = '/login'; // 登录
   static const String getRsaPublicKey = '/getRsaPublicKey'; // RSA key
