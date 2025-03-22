@@ -155,7 +155,7 @@ class LoginScreen extends StatelessWidget {
       var registerRoles = await loginService.getAllowRegisterRoles();
       if (registerRoles.data is List<dynamic>) {
         final List<Map<String, dynamic>> roles =
-        List<Map<String, dynamic>>.from(
+            List<Map<String, dynamic>>.from(
           registerRoles.data as List<dynamic>,
         );
         if (roles.length == 1) {
@@ -364,6 +364,15 @@ class LoginScreen extends StatelessWidget {
         if (value!.isEmpty) {
           return S.of(context).password_is_empty;
         }
+
+        // 使用指定的正则表达式进行密码校验
+        final passwordRegExp = RegExp(
+            r'^(?![0-9]+$)(?![a-z]+$)(?![A-Z]+$)(?!([^(0-9a-zA-Z)]|[()])+$)(?!^.*[\u4E00-\u9FA5].*$)([^(0-9a-zA-Z)]|[()]|[a-z]|[A-Z]|[0-9]){8,18}$');
+
+        if (!passwordRegExp.hasMatch(value)) {
+          return '密码必须包含字母、数字或特殊字符，长度8-18位，不能包含中文';
+        }
+
         return null;
       },
       onLogin: (loginData) {
@@ -425,7 +434,6 @@ class LoginScreen extends StatelessWidget {
         displayName: S.of(context).sex,
         icon: const Icon(FontAwesomeIcons.venusMars),
         userType: LoginUserType.text,
-        defaultValue: S.of(context).male,
       ),
       UserFormField(
         keyName: 'email',
@@ -433,7 +441,8 @@ class LoginScreen extends StatelessWidget {
         userType: LoginUserType.email,
         icon: const Icon(Icons.email),
         fieldValidator: (value) {
-          if (value!.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+          if (value!.isNotEmpty &&
+              !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
             return S.of(context).invalid_email;
           }
           return null;
@@ -443,13 +452,30 @@ class LoginScreen extends StatelessWidget {
         keyName: 'phone_number',
         displayName: S.of(context).phone_number,
         userType: LoginUserType.phone,
+        // 允许手机号为空
         fieldValidator: (value) {
+          // 允许手机号为空
+          if (value == null || value.isEmpty) {
+            return null;
+          }
+
           final phoneRegExp = RegExp(
-            '^(\\+\\d{1,2}\\s)?\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}\$',
+              r'^'
+              r'(?:' // 国际号码匹配组
+              r'\+1[ -]?(?:\(\d{3}\)|\d{3})[ -]?\d{3}[ -]?\d{4}'  // 美国
+              r'|\+81[ -]?(?:0\d{1,4}[ -]?\d{1,4}[ -]?\d{4}|\d{1,4}[ -]?\d{1,4}[ -]?\d{4})' // 日本
+              r'|\+82[ -]?0?1[0-9]{1}[ -]?\d{3,4}[ -]?\d{4}'  // 韩国
+              r'|\+33[ -]?(?:[1-9]\d{1}[ -]?){3}\d{2}'  // 法国
+              r'|\+44[ -]?7(?:[0-9][ -]?){9}'  // 英国
+              r'|\+7[ -]?[3489]\d{2}[ -]?\d{3}[ -]?\d{2}[ -]?\d{2}'  // 俄罗斯
+              r'|\+91[ -]?[6-9]\d{4}[ -]?\d{5}'  // 印度
+              r'|\+86[ -]?1[3-9]\d[ -]?\d{4}[ -]?\d{4}'  // 中国国际格式
+              r')'
+              r'|' // 或中国国内简写格式
+              r'(?:1[3-9]\d[ -]?\d{4}[ -]?\d{4})'  // 中国国内
+              r'$'
           );
-          if (value != null &&
-              value.length < 7 &&
-              !phoneRegExp.hasMatch(value)) {
+          if (!phoneRegExp.hasMatch(value)) {
             return S.of(context).valid_phone_number;
           }
           return null;
@@ -547,7 +573,8 @@ Future<Map?> showCaptchaDialog(Map captchaDic) async {
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border.all(color: AppTheme.dividerColor),
-                      borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.borderRadius),
                     ),
                     child: Base64Image(base64String: captchaCode),
                   ),
@@ -569,7 +596,8 @@ Future<Map?> showCaptchaDialog(Map captchaDic) async {
                         debugPrint('刷新验证码：$capImgRes');
                         final Map<String, dynamic> capDic =
                             Map<String, dynamic>.from(capImgRes.data as Map);
-                        final String resKey = capDic['captchaCodeImg'] as String;
+                        final String resKey =
+                            capDic['captchaCodeImg'] as String;
                         setState(() {
                           captchaCode = resKey;
                           captchaData = capDic;
@@ -591,7 +619,8 @@ Future<Map?> showCaptchaDialog(Map captchaDic) async {
                       onPressed: () {
                         Map<String, dynamic> userDic = {};
                         userDic['captchaUserInput'] = controller.text;
-                        userDic['captchaCodeKey'] = captchaData['captchaCodeKey'];
+                        userDic['captchaCodeKey'] =
+                            captchaData['captchaCodeKey'];
                         Navigator.pop(context, userDic);
                       },
                       child: const Text('确认'),
