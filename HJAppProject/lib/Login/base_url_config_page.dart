@@ -1,9 +1,11 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_login_example/Login/login_constants.dart';
 import 'package:flutter_login_example/login_screen.dart';
 import 'package:flutter_login_example/generated/l10n.dart';
 import 'package:flutter_login_example/theme/app_theme.dart';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BaseUrlConfigPage extends StatefulWidget {
   static const routeName = '/base_url_config';
@@ -17,8 +19,23 @@ class BaseUrlConfigPage extends StatefulWidget {
 class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
   final _formKey = GlobalKey<FormState>();
   String _protocol = 'http';
-  final TextEditingController _domainController = TextEditingController(text: 'localhost');
-  final TextEditingController _portController = TextEditingController(text: '8080');
+  final TextEditingController _domainController =
+      TextEditingController(text: 'localhost');
+  final TextEditingController _portController =
+      TextEditingController(text: '8080');
+
+  @override
+  void initState() {
+    SharedPreferences.getInstance().then((sharePre) {
+      var domainText = sharePre.getString('login_domain') ?? '';
+      var portText = sharePre.getString('login_port') ?? '';
+      if (domainText.isNotEmpty && portText.isNotEmpty) {
+        _domainController.text = domainText;
+        _portController.text = portText;
+      }
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +68,7 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
                     Row(
                       children: [
                         Expanded(
-                          flex: 2,
+                          flex: 3,
                           child: DropdownButtonFormField<String>(
                             value: _protocol,
                             items: ['http', 'https'].map((String value) {
@@ -65,7 +82,8 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
                                 _protocol = newValue!;
                               });
                             },
-                            decoration: InputDecoration(labelText: S.of(context).protocol),
+                            decoration: InputDecoration(
+                                labelText: S.of(context).protocol),
                           ),
                         ),
                         const SizedBox(width: AppTheme.spacingSmall),
@@ -73,16 +91,23 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
                           flex: 4,
                           child: TextFormField(
                             controller: _domainController,
-                            decoration: InputDecoration(labelText: S.of(context).domain),
+                            decoration: InputDecoration(
+                                labelText: S.of(context).domain),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return S.of(context).pleaseEnterDomain;
                               }
                               // IPv4, IPv6, 或域名的简单验证
-                              final ipv4Regex = RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
-                              final ipv6Regex = RegExp(r'^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$');
-                              final domainRegex = RegExp(r'^[a-zA-Z0-9.-]+(\.[a-zA-Z]{2,})?$');
-                              if (value != 'localhost' && !ipv4Regex.hasMatch(value) && !ipv6Regex.hasMatch(value) && !domainRegex.hasMatch(value)) {
+                              final ipv4Regex =
+                                  RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
+                              final ipv6Regex = RegExp(
+                                  r'^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$');
+                              final domainRegex =
+                                  RegExp(r'^[a-zA-Z0-9.-]+(\.[a-zA-Z]{2,})?$');
+                              if (value != 'localhost' &&
+                                  !ipv4Regex.hasMatch(value) &&
+                                  !ipv6Regex.hasMatch(value) &&
+                                  !domainRegex.hasMatch(value)) {
                                 return S.of(context).invalidDomain;
                               }
                               return null;
@@ -94,7 +119,8 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
                           flex: 2,
                           child: TextFormField(
                             controller: _portController,
-                            decoration: InputDecoration(labelText: S.of(context).port),
+                            decoration:
+                                InputDecoration(labelText: S.of(context).port),
                             keyboardType: TextInputType.number,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -130,7 +156,8 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      final baseUrl = '$_protocol://${_domainController.text}:${_portController.text}';
+      final baseUrl =
+          '$_protocol://${_domainController.text}:${_portController.text}';
       LoginConstants.baseUrl = baseUrl;
 
       try {
@@ -138,8 +165,13 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
         final response = await dio.get('$baseUrl/getApiVersion');
         if (response.statusCode == 200) {
           final responseData = response.data;
-          if (responseData is Map<String, dynamic> && responseData['code'] == 0) {
+          if (responseData is Map<String, dynamic> &&
+              responseData['code'] == 0) {
             final apiVersion = responseData['data'] as String;
+            SharedPreferences.getInstance().then((sharePre) {
+              sharePre.setString('login_domain', _domainController.text);
+              sharePre.setString('login_port', _portController.text);
+            });
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                 builder: (context) => LoginScreen(),

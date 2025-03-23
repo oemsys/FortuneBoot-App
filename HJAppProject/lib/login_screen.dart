@@ -148,7 +148,7 @@ class LoginScreen extends StatelessWidget {
   }
 
   Future<String?> _signupUser(SignupData data) async {
-    // lxjtodo 注册
+    print('lxjtodo _signupConfirm');
     try {
       final dio = Dio();
       final loginService = LoginService(dio, errorLogger: LoginErrorReport());
@@ -196,6 +196,7 @@ class LoginScreen extends StatelessWidget {
   }
 
   Future<String?> _signupConfirm(String error, LoginData data) {
+    print('lxjtodo _signupConfirm');
     return Future.delayed(loginTime).then((_) {
       return null;
     });
@@ -212,43 +213,19 @@ class LoginScreen extends StatelessWidget {
       titleTag: Constants.titleTag,
       navigateBackAfterRecovery: true,
       onConfirmRecover: _signupConfirm,
-      // onConfirmSignup: _signupConfirm,
+      onSwitchToAdditionalFields: (p0) async {
+        Dio dio = Dio();
+        final loginService = LoginService(dio, errorLogger: LoginErrorReport());
+        var response = await loginService.checkRepeat(p0.name ?? '');
+        print('lxjtodo: $response');
+        if (response.code == 0) {
+          return null;
+        } else {
+          return S.current.account_valid;
+        }
+      },
       loginAfterSignUp: false,
-      // loginProviders: [
-      //   LoginProvider(
-      //     button: Buttons.linkedIn,
-      //     label: 'Sign in with LinkedIn',
-      //     callback: () async {
-      //       return null;
-      //     },
-      //     providerNeedsSignUpCallback: () {
-      //       // put here your logic to conditionally show the additional fields
-      //       return Future.value(true);
-      //     },
-      //   ),
-      //   LoginProvider(
-      //     icon: FontAwesomeIcons.google,
-      //     label: 'Google',
-      //     callback: () async {
-      //       return null;
-      //     },
-      //   ),
-      //   LoginProvider(
-      //     icon: FontAwesomeIcons.githubAlt,
-      //     callback: () async {
-      //       debugPrint('start github sign in');
-      //       await Future.delayed(loginTime);
-      //       debugPrint('stop github sign in');
-      //       return null;
-      //     },
-      //   ),
-      // ],
       termsOfService: [
-        // TermOfService(
-        //   id: 'newsletter',
-        //   mandatory: false,
-        //   text: 'Newsletter subscription',
-        // ),
         TermOfService(
           id: 'general-term',
           mandatory: true,
@@ -258,12 +235,6 @@ class LoginScreen extends StatelessWidget {
         ),
       ],
       additionalSignupFields: additionalSignupFields,
-      // scrollable: true,
-      // hideProvidersTitle: false,
-      // loginAfterSignUp: false,
-      // hideForgotPasswordButton: true,
-      // hideSignUpButton: true,
-      // disableCustomPageTransformer: true,
       messages: LoginMessages(
         userHint: S.of(context).login_account,
         passwordHint: S.of(context).login_pass,
@@ -286,75 +257,7 @@ class LoginScreen extends StatelessWidget {
         // providersTitle: 'login with'
       ),
       theme: AppTheme.loginTheme(context),
-      //   // beforeHeroFontSize: 50,
-      //   // afterHeroFontSize: 20,
-      //   bodyStyle: TextStyle(
-      //     fontStyle: FontStyle.italic,
-      //     decoration: TextDecoration.underline,
-      //   ),
-      //   textFieldStyle: TextStyle(
-      //     color: Colors.orange,
-      //     shadows: [Shadow(color: Colors.yellow, blurRadius: 2)],
-      //   ),
-      //   buttonStyle: TextStyle(
-      //     fontWeight: FontWeight.w800,
-      //     color: Colors.yellow,
-      //   ),
-      //   cardTheme: CardTheme(
-      //     color: Colors.yellow.shade100,
-      //     elevation: 5,
-      //     margin: EdgeInsets.only(top: 15),
-      //     shape: ContinuousRectangleBorder(
-      //         borderRadius: BorderRadius.circular(100.0)),
-      //   ),
-      //   inputTheme: InputDecorationTheme(
-      //     filled: true,
-      //     fillColor: Colors.purple.withOpacity(.1),
-      //     contentPadding: EdgeInsets.zero,
-      //     errorStyle: TextStyle(
-      //       backgroundColor: Colors.orange,
-      //       color: Colors.white,
-      //     ),
-      //     labelStyle: TextStyle(fontSize: 12),
-      //     enabledBorder: UnderlineInputBorder(
-      //       borderSide: BorderSide(color: Colors.blue.shade700, width: 4),
-      //       borderRadius: inputBorder,
-      //     ),
-      //     focusedBorder: UnderlineInputBorder(
-      //       borderSide: BorderSide(color: Colors.blue.shade400, width: 5),
-      //       borderRadius: inputBorder,
-      //     ),
-      //     errorBorder: UnderlineInputBorder(
-      //       borderSide: BorderSide(color: Colors.red.shade700, width: 7),
-      //       borderRadius: inputBorder,
-      //     ),
-      //     focusedErrorBorder: UnderlineInputBorder(
-      //       borderSide: BorderSide(color: Colors.red.shade400, width: 8),
-      //       borderRadius: inputBorder,
-      //     ),
-      //     disabledBorder: UnderlineInputBorder(
-      //       borderSide: BorderSide(color: Colors.grey, width: 5),
-      //       borderRadius: inputBorder,
-      //     ),
-      //   ),
-      //   buttonTheme: LoginButtonTheme(
-      //     splashColor: Colors.purple,
-      //     backgroundColor: Colors.pinkAccent,
-      //     highlightColor: Colors.lightGreen,
-      //     elevation: 9.0,
-      //     highlightElevation: 6.0,
-      //     shape: BeveledRectangleBorder(
-      //       borderRadius: BorderRadius.circular(10),
-      //     ),
-      //     // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-      //     // shape: CircleBorder(side: BorderSide(color: Colors.green)),
-      //     // shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(55.0)),
-      //   ),
-      // ),
       userValidator: (value) {
-        // if (!value!.contains('@') || !value.endsWith('.com')) {
-        //   return S.of(context).email_auth;
-        // }
         if (value!.isEmpty) {
           return S.of(context).user_auth_vaild;
         }
@@ -459,34 +362,23 @@ class LoginScreen extends StatelessWidget {
             return null;
           }
 
-          final phoneRegExp = RegExp(
-              r'^'
+          final phoneRegExp = RegExp(r'^'
               r'(?:' // 国际号码匹配组
-              r'\+1[ -]?(?:\(\d{3}\)|\d{3})[ -]?\d{3}[ -]?\d{4}'  // 美国
+              r'\+1[ -]?(?:\(\d{3}\)|\d{3})[ -]?\d{3}[ -]?\d{4}' // 美国
               r'|\+81[ -]?(?:0\d{1,4}[ -]?\d{1,4}[ -]?\d{4}|\d{1,4}[ -]?\d{1,4}[ -]?\d{4})' // 日本
-              r'|\+82[ -]?0?1[0-9]{1}[ -]?\d{3,4}[ -]?\d{4}'  // 韩国
-              r'|\+33[ -]?(?:[1-9]\d{1}[ -]?){3}\d{2}'  // 法国
-              r'|\+44[ -]?7(?:[0-9][ -]?){9}'  // 英国
-              r'|\+7[ -]?[3489]\d{2}[ -]?\d{3}[ -]?\d{2}[ -]?\d{2}'  // 俄罗斯
-              r'|\+91[ -]?[6-9]\d{4}[ -]?\d{5}'  // 印度
-              r'|\+86[ -]?1[3-9]\d[ -]?\d{4}[ -]?\d{4}'  // 中国国际格式
+              r'|\+82[ -]?0?1[0-9]{1}[ -]?\d{3,4}[ -]?\d{4}' // 韩国
+              r'|\+33[ -]?(?:[1-9]\d{1}[ -]?){3}\d{2}' // 法国
+              r'|\+44[ -]?7(?:[0-9][ -]?){9}' // 英国
+              r'|\+7[ -]?[3489]\d{2}[ -]?\d{3}[ -]?\d{2}[ -]?\d{2}' // 俄罗斯
+              r'|\+91[ -]?[6-9]\d{4}[ -]?\d{5}' // 印度
+              r'|\+86[ -]?1[3-9]\d[ -]?\d{4}[ -]?\d{4}' // 中国国际格式
               r')'
               r'|' // 或中国国内简写格式
-              r'(?:1[3-9]\d[ -]?\d{4}[ -]?\d{4})'  // 中国国内
-              r'$'
-          );
+              r'(?:1[3-9]\d[ -]?\d{4}[ -]?\d{4})' // 中国国内
+              r'$');
           if (!phoneRegExp.hasMatch(value)) {
             return S.of(context).valid_phone_number;
           }
-          return null;
-        },
-      ),
-      UserFormField(
-        // phone
-        keyName: 'role_list',
-        displayName: '角色',
-        userType: LoginUserType.checkbox,
-        fieldValidator: (value) {
           return null;
         },
       ),

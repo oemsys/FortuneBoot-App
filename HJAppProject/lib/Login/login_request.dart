@@ -15,8 +15,12 @@ abstract class LoginService {
     String? baseUrl,
     ParseErrorLogger? errorLogger,
   }) {
-    return _LoginService(dio, baseUrl: baseUrl ?? LoginConstants.baseUrl, errorLogger: errorLogger);
+    return _LoginService(dio,
+        baseUrl: baseUrl ?? LoginConstants.baseUrl, errorLogger: errorLogger);
   }
+
+  @POST('/{userName}/checkRepeat')
+  Future<LoginResponse> checkRepeat(@Path('userName') String userName);
 
   @GET(LoginConstants.getRsaPublicKey)
   Future<LoginResponse> getRsaPublicKey();
