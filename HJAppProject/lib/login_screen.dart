@@ -219,6 +219,12 @@ class LoginScreen extends StatelessWidget {
         var response = await loginService.checkRepeat(p0.name ?? '');
         print('lxjtodo: $response');
         if (response.code == 0) {
+          if (response.data is bool) {
+            bool res = response.data as bool;
+            if (res) {
+              return S.current.account_valid;
+            }
+          }
           return null;
         } else {
           return S.current.account_valid;
