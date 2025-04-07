@@ -45,7 +45,7 @@ class LoginScreen extends StatelessWidget {
 
   Future<String?> _loginUser(LoginData data) async {
     // lxjtodo：注册：1.验证码 2.rsa加密密码 3.login
-    final dio = Dio();
+    final dio = getDio();
     final loginService = LoginService(dio, errorLogger: LoginErrorReport());
     var capImgRes = await loginService.captchaImage();
     /**
@@ -111,7 +111,7 @@ class LoginScreen extends StatelessWidget {
   }
 
   Future<String?> _signupUserWithRole(SignupData data, Map role) async {
-    final dio = Dio();
+    final dio = getDio();
     final loginService = LoginService(dio, errorLogger: LoginErrorReport());
     String userName = data.name!;
     String nickName = data.additionalSignupData!['nickname']!;
@@ -150,7 +150,7 @@ class LoginScreen extends StatelessWidget {
   Future<String?> _signupUser(SignupData data) async {
     print('lxjtodo _signupConfirm');
     try {
-      final dio = Dio();
+      final dio = getDio();
       final loginService = LoginService(dio, errorLogger: LoginErrorReport());
       var registerRoles = await loginService.getAllowRegisterRoles();
       if (registerRoles.data is List<dynamic>) {
@@ -214,7 +214,7 @@ class LoginScreen extends StatelessWidget {
       navigateBackAfterRecovery: true,
       onConfirmRecover: _signupConfirm,
       onSwitchToAdditionalFields: (p0) async {
-        Dio dio = Dio();
+        Dio dio = getDio();
         final loginService = LoginService(dio, errorLogger: LoginErrorReport());
         var response = await loginService.checkRepeat(p0.name ?? '');
         print('lxjtodo: $response');
@@ -342,6 +342,7 @@ class LoginScreen extends StatelessWidget {
         keyName: 'sex',
         displayName: S.of(context).sex,
         icon: const Icon(FontAwesomeIcons.venusMars),
+        tooltip: TextSpan(text: '男/女'),
         userType: LoginUserType.text,
       ),
       UserFormField(
@@ -428,13 +429,23 @@ class IntroWidget extends StatelessWidget {
   }
 }
 
+Dio getDio() {
+  Dio dio = Dio();
+  dio.options.validateStatus = (status) {
+    return status! < 500; // 允许所有 5xx 以下状态码（包括 301）
+  };
+  dio.options.followRedirects = true; // 跟随重定向
+  dio.options.maxRedirects = 99; // 最大重定向次数
+  return dio;
+}
+
 // 验证码弹窗组件
 Future<Map?> showCaptchaDialog(Map captchaDic) async {
   final controller = TextEditingController();
   final focusNode = FocusNode();
   String captchaCode = captchaDic['captchaCodeImg'] as String;
   Map captchaData = captchaDic;
-  final Dio dio = Dio();
+  final Dio dio = getDio();
   final LoginService loginService =
       LoginService(dio, errorLogger: LoginErrorReport());
   return showDialog<Map?>(

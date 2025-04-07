@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_login_example/Login/login_constants.dart';
 import 'package:flutter_login_example/login_screen.dart';
@@ -18,7 +17,7 @@ class BaseUrlConfigPage extends StatefulWidget {
 
 class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
   final _formKey = GlobalKey<FormState>();
-  String _protocol = 'http';
+  String _protocol = 'https';
   final TextEditingController _domainController =
       TextEditingController(text: 'localhost');
   final TextEditingController _portController =
@@ -29,7 +28,7 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
     SharedPreferences.getInstance().then((sharePre) {
       var domainText = sharePre.getString('login_domain') ?? '';
       var portText = sharePre.getString('login_port') ?? '';
-      if (domainText.isNotEmpty && portText.isNotEmpty) {
+      if (domainText.isNotEmpty) {
         _domainController.text = domainText;
         _portController.text = portText;
       }
@@ -71,7 +70,7 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
                           flex: 3,
                           child: DropdownButtonFormField<String>(
                             value: _protocol,
-                            items: ['http', 'https'].map((String value) {
+                            items: ['https', 'http'].map((String value) {
                               return DropdownMenuItem<String>(
                                 value: value,
                                 child: Text(value),
@@ -95,21 +94,21 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
                                 labelText: S.of(context).domain),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return S.of(context).pleaseEnterDomain;
+                                return S.of(context).pleaseEnterDomain; // 可为空
                               }
-                              // IPv4, IPv6, 或域名的简单验证
-                              final ipv4Regex =
-                                  RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
-                              final ipv6Regex = RegExp(
-                                  r'^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$');
-                              final domainRegex =
-                                  RegExp(r'^[a-zA-Z0-9.-]+(\.[a-zA-Z]{2,})?$');
-                              if (value != 'localhost' &&
-                                  !ipv4Regex.hasMatch(value) &&
-                                  !ipv6Regex.hasMatch(value) &&
-                                  !domainRegex.hasMatch(value)) {
-                                return S.of(context).invalidDomain;
-                              }
+                              // // IPv4, IPv6, 或域名的简单验证
+                              // final ipv4Regex =
+                              //     RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
+                              // final ipv6Regex = RegExp(
+                              //     r'^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$');
+                              // final domainRegex =
+                              //     RegExp(r'^[a-zA-Z0-9.-]+(\.[a-zA-Z]{2,})?$');
+                              // if (value != 'localhost' &&
+                              //     !ipv4Regex.hasMatch(value) &&
+                              //     !ipv6Regex.hasMatch(value) &&
+                              //     !domainRegex.hasMatch(value)) {
+                              //   return S.of(context).invalidDomain;
+                              // }
                               return null;
                             },
                           ),
@@ -123,13 +122,6 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
                                 InputDecoration(labelText: S.of(context).port),
                             keyboardType: TextInputType.number,
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return S.of(context).pleaseEnterPort;
-                              }
-                              final port = int.tryParse(value);
-                              if (port == null || port < 0 || port > 65535) {
-                                return S.of(context).invalidPort;
-                              }
                               return null;
                             },
                           ),
@@ -156,8 +148,10 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      final baseUrl =
-          '$_protocol://${_domainController.text}:${_portController.text}';
+      var baseUrl = '$_protocol://${_domainController.text}';
+      if (_portController.text.isNotEmpty) {
+        baseUrl += _portController.text;
+      }
       LoginConstants.baseUrl = baseUrl;
 
       try {
