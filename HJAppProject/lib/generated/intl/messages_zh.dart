@@ -20,6 +20,8 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'zh';
 
+  static String m0(todoTitle) => "待办事项「${todoTitle}」已删除。";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
         "account_valid":
@@ -31,6 +33,12 @@ class MessageLookup extends MessageLookupByLibrary {
         "domain": MessageLookupByLibrary.simpleMessage("域名"),
         "dont_worry_be_happy":
             MessageLookupByLibrary.simpleMessage("别难过，这种事经常发生。"),
+        "editTodoAddAppBarTitle": MessageLookupByLibrary.simpleMessage("新建事项"),
+        "editTodoDescriptionLabel": MessageLookupByLibrary.simpleMessage("描述"),
+        "editTodoEditAppBarTitle": MessageLookupByLibrary.simpleMessage("编辑事项"),
+        "editTodoSaveButtonTooltip":
+            MessageLookupByLibrary.simpleMessage("保存修改"),
+        "editTodoTitleLabel": MessageLookupByLibrary.simpleMessage("标题"),
         "email_auth": MessageLookupByLibrary.simpleMessage("需要包含@，且用.com结尾"),
         "error": MessageLookupByLibrary.simpleMessage("错误"),
         "female": MessageLookupByLibrary.simpleMessage("女"),
@@ -76,8 +84,46 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("当前只支持两种性别，请填写‘男’或‘女’"),
         "sign_up_submit": MessageLookupByLibrary.simpleMessage("提交"),
         "sign_up_success": MessageLookupByLibrary.simpleMessage("注册成功"),
+        "statsActiveTodoCountLabel":
+            MessageLookupByLibrary.simpleMessage("未完成事项"),
+        "statsAppBarTitle": MessageLookupByLibrary.simpleMessage("统计概览"),
+        "statsCompletedTodoCountLabel":
+            MessageLookupByLibrary.simpleMessage("已完成事项"),
         "succes": MessageLookupByLibrary.simpleMessage("搞定！"),
         "term_of_services": MessageLookupByLibrary.simpleMessage("服务条款"),
+        "todoDetailsAppBarTitle": MessageLookupByLibrary.simpleMessage("事项详情"),
+        "todoDetailsDeleteButtonTooltip":
+            MessageLookupByLibrary.simpleMessage("删除"),
+        "todoDetailsEditButtonTooltip":
+            MessageLookupByLibrary.simpleMessage("编辑"),
+        "todosOverviewAppBarTitle":
+            MessageLookupByLibrary.simpleMessage("待办事项总览"),
+        "todosOverviewClearCompletedButtonText":
+            MessageLookupByLibrary.simpleMessage("清除已完成"),
+        "todosOverviewEmptyText":
+            MessageLookupByLibrary.simpleMessage("未找到符合筛选条件的待办事项。"),
+        "todosOverviewErrorSnackbarText":
+            MessageLookupByLibrary.simpleMessage("加载待办事项时发生错误。"),
+        "todosOverviewFilterActiveOnly":
+            MessageLookupByLibrary.simpleMessage("仅未完成"),
+        "todosOverviewFilterAll": MessageLookupByLibrary.simpleMessage("全部"),
+        "todosOverviewFilterCompletedOnly":
+            MessageLookupByLibrary.simpleMessage("仅已完成"),
+        "todosOverviewFilterTooltip":
+            MessageLookupByLibrary.simpleMessage("筛选"),
+        "todosOverviewMarkAllCompleteButtonText":
+            MessageLookupByLibrary.simpleMessage("全部标记为完成"),
+        "todosOverviewOptionsClearCompleted":
+            MessageLookupByLibrary.simpleMessage("清除已完成事项"),
+        "todosOverviewOptionsMarkAllComplete":
+            MessageLookupByLibrary.simpleMessage("全部标记为完成"),
+        "todosOverviewOptionsMarkAllIncomplete":
+            MessageLookupByLibrary.simpleMessage("全部标记为未完成"),
+        "todosOverviewOptionsTooltip":
+            MessageLookupByLibrary.simpleMessage("操作"),
+        "todosOverviewTodoDeletedSnackbarText": m0,
+        "todosOverviewUndoDeletionButtonText":
+            MessageLookupByLibrary.simpleMessage("撤销"),
         "user_auth_vaild": MessageLookupByLibrary.simpleMessage("账号不能为空"),
         "user_not_exist": MessageLookupByLibrary.simpleMessage("用户不存在"),
         "username": MessageLookupByLibrary.simpleMessage("用户名"),

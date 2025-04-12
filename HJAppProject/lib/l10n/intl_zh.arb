@@ -54,5 +54,114 @@
   "female": "女",
   "male": "男",
   "sex_valid": "当前只支持两种性别，请填写‘男’或‘女’",
-  "account_valid": "用户名重复，想个新的或者直接登录吧"
+  "account_valid": "用户名重复，想个新的或者直接登录吧",
+  "todosOverviewAppBarTitle": "待办事项总览",
+"@todosOverviewAppBarTitle": {
+  "description": "待办事项总览页面的 AppBar 标题文本"
+},
+"todosOverviewFilterTooltip": "筛选",
+"@todosOverviewFilterTooltip": {
+  "description": "待办事项总览页筛选下拉框的提示文本"
+},
+"todosOverviewFilterAll": "全部",
+"@todosOverviewFilterAll": {
+  "description": "待办事项总览页筛选下拉框中显示全部事项的选项文本"
+},
+"todosOverviewFilterActiveOnly": "仅未完成",
+"@todosOverviewFilterActiveOnly": {
+  "description": "待办事项总览页筛选下拉框中仅显示未完成事项的选项文本"
+},
+"todosOverviewFilterCompletedOnly": "仅已完成",
+"@todosOverviewFilterCompletedOnly": {
+  "description": "待办事项总览页筛选下拉框中仅显示已完成事项的选项文本"
+},
+"todosOverviewMarkAllCompleteButtonText": "全部标记为完成",
+"@todosOverviewMarkAllCompleteButtonText": {
+  "description": "待办事项总览页操作下拉框中将全部事项标记为完成的按钮文本"
+},
+"todosOverviewClearCompletedButtonText": "清除已完成",
+"@todosOverviewClearCompletedButtonText": {
+  "description": "待办事项总览页操作下拉框中删除所有已完成事项的按钮文本"
+},
+"todosOverviewEmptyText": "未找到符合筛选条件的待办事项。",
+"@todosOverviewEmptyText": {
+  "description": "待办事项总览页在筛选条件下无事项时显示的提示文本"
+},
+"todosOverviewTodoDeletedSnackbarText": "待办事项「{todoTitle}」已删除。",
+"@todosOverviewTodoDeletedSnackbarText": {
+  "description": "待办事项总览页删除事项时显示的 Snackbar 文本",
+  "placeholders": {
+    "todoTitle": {
+      "description": "被删除事项的标题"
+    }
+  }
+},
+"todosOverviewUndoDeletionButtonText": "撤销",
+"@todosOverviewUndoDeletionButtonText": {
+  "description": "Snackbar 中用于撤销删除操作的按钮文本"
+},
+"todosOverviewErrorSnackbarText": "加载待办事项时发生错误。",
+"@todosOverviewErrorSnackbarText": {
+  "description": "待办事项总览页加载数据出错时显示的 Snackbar 文本"
+},
+"todosOverviewOptionsTooltip": "操作",
+"@todosOverviewOptionsTooltip": {
+  "description": "待办事项总览页操作下拉框的提示文本"
+},
+"todosOverviewOptionsMarkAllComplete": "全部标记为完成",
+"@todosOverviewOptionsMarkAllComplete": {
+  "description": "操作下拉框中标记全部事项为完成的按钮文本"
+},
+"todosOverviewOptionsMarkAllIncomplete": "全部标记为未完成",
+"@todosOverviewOptionsMarkAllIncomplete": {
+  "description": "操作下拉框中标记全部事项为未完成的按钮文本"
+},
+"todosOverviewOptionsClearCompleted": "清除已完成事项",
+"@todosOverviewOptionsClearCompleted": {
+  "description": "操作下拉框中清除所有已完成事项的按钮文本"
+},
+"todoDetailsAppBarTitle": "事项详情",
+"@todoDetailsAppBarTitle": {
+  "description": "待办事项详情页面的 AppBar 标题文本"
+},
+"todoDetailsDeleteButtonTooltip": "删除",
+"@todoDetailsDeleteButtonTooltip": {
+  "description": "待办事项详情页删除按钮的提示文本"
+},
+"todoDetailsEditButtonTooltip": "编辑",
+"@todoDetailsEditButtonTooltip": {
+  "description": "待办事项详情页编辑按钮的提示文本"
+},
+"editTodoEditAppBarTitle": "编辑事项",
+"@editTodoEditAppBarTitle": {
+  "description": "编辑已有事项页面的 AppBar 标题文本"
+},
+"editTodoAddAppBarTitle": "新建事项",
+"@editTodoAddAppBarTitle": {
+  "description": "新建事项页面的 AppBar 标题文本"
+},
+"editTodoTitleLabel": "标题",
+"@editTodoTitleLabel": {
+  "description": "事项编辑页标题输入框的标签文本"
+},
+"editTodoDescriptionLabel": "描述",
+"@editTodoDescriptionLabel": {
+  "description": "事项编辑页描述输入框的标签文本"
+},
+"editTodoSaveButtonTooltip": "保存修改",
+"@editTodoSaveButtonTooltip": {
+  "description": "事项编辑页保存按钮的提示文本"
+},
+"statsAppBarTitle": "统计概览",
+"@statsAppBarTitle": {
+  "description": "统计数据页面的 AppBar 标题文本"
+},
+"statsCompletedTodoCountLabel": "已完成事项",
+"@statsCompletedTodoCountLabel": {
+  "description": "统计页已完成事项数量区域的标签文本"
+},
+"statsActiveTodoCountLabel": "未完成事项",
+"@statsActiveTodoCountLabel": {
+  "description": "统计页未完成事项数量区域的标签文本"
+}
 }

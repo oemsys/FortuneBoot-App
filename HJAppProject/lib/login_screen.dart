@@ -9,6 +9,8 @@ import 'package:flutter_login_example/constants.dart';
 import 'package:flutter_login_example/custom_route.dart';
 import 'package:flutter_login_example/dashboard_screen.dart';
 import 'package:flutter_login_example/theme/app_theme.dart';
+import 'package:flutter_login_example/todos/app/app.dart';
+import 'package:flutter_login_example/todos/home/view/home_page.dart';
 import 'package:flutter_login_example/users.dart';
 import 'package:flutter_login_example/util/base64_img.dart';
 import 'package:flutter_login_example/util/rsa_util.dart';
@@ -107,7 +109,7 @@ class LoginScreen extends StatelessWidget {
   void _selectRole(SignupData data, Map<String, dynamic> role) async {
     debugPrint("选择角色: $role");
     var str = await _signupUserWithRole(data, role);
-    MyApp.navigatorKey.currentState?.pop(str);
+    AppView.navigatorKey.currentState?.pop(str);
   }
 
   Future<String?> _signupUserWithRole(SignupData data, Map role) async {
@@ -169,7 +171,7 @@ class LoginScreen extends StatelessWidget {
             );
           }).toList();
           return showDialog<String?>(
-            context: MyApp.navigatorKey.currentContext!,
+            context: AppView.navigatorKey.currentContext!,
             builder: (context) => SimpleDialog(
               title: Text("选择角色"),
               children: simpleDialogs,
@@ -311,7 +313,7 @@ class LoginScreen extends StatelessWidget {
       onSubmitAnimationCompleted: () {
         Navigator.of(context).pushReplacement(
           FadePageRoute(
-            builder: (context) => const DashboardScreen(),
+            builder: (context) => const HomePage(),
           ),
         );
       },
@@ -441,6 +443,9 @@ Dio getDio() {
 
 // 验证码弹窗组件
 Future<Map?> showCaptchaDialog(Map captchaDic) async {
+  if (AppView.navigatorKey.currentContext == null) {
+    return null;
+  }
   final controller = TextEditingController();
   final focusNode = FocusNode();
   String captchaCode = captchaDic['captchaCodeImg'] as String;
@@ -449,7 +454,7 @@ Future<Map?> showCaptchaDialog(Map captchaDic) async {
   final LoginService loginService =
       LoginService(dio, errorLogger: LoginErrorReport());
   return showDialog<Map?>(
-    context: MyApp.navigatorKey.currentContext!,
+    context: AppView.navigatorKey.currentContext!,
     barrierDismissible: false,
     builder: (context) => StatefulBuilder(
       builder: (context, setState) {

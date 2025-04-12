@@ -8,6 +8,7 @@ environment:
   flutter: ">=3.16.0"
 
 dependencies:
+  bloc: ^9.0.0
   cupertino_icons: ^1.0.3
   encrypt: ^5.0.3
   flutter:
@@ -21,6 +22,13 @@ dependencies:
   logger: ^2.5.0
   retrofit: ^4.4.2
   shared_preferences: ^2.5.2
+  local_storage_todos_api:
+    path: packages/local_storage_todos_api
+  todos_api:
+    path: packages/todos_api
+  todos_repository:
+    path: packages/todos_repository
+  flutter_bloc: ^9.1.0
   # intl: ^0.19.0
 
 dev_dependencies:

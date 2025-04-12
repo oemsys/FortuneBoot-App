@@ -20,6 +20,8 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
+  static String m0(todoTitle) => "Todo \"${todoTitle}\" deleted.";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
         "account_valid": MessageLookupByLibrary.simpleMessage(
@@ -33,6 +35,15 @@ class MessageLookup extends MessageLookupByLibrary {
         "domain": MessageLookupByLibrary.simpleMessage("Domain"),
         "dont_worry_be_happy": MessageLookupByLibrary.simpleMessage(
             "Don\'t feel bad. Happens all the time."),
+        "editTodoAddAppBarTitle":
+            MessageLookupByLibrary.simpleMessage("Add Todo"),
+        "editTodoDescriptionLabel":
+            MessageLookupByLibrary.simpleMessage("Description"),
+        "editTodoEditAppBarTitle":
+            MessageLookupByLibrary.simpleMessage("Edit Todo"),
+        "editTodoSaveButtonTooltip":
+            MessageLookupByLibrary.simpleMessage("Save changes"),
+        "editTodoTitleLabel": MessageLookupByLibrary.simpleMessage("Title"),
         "email_auth": MessageLookupByLibrary.simpleMessage(
             "Email must contain \'@\' and end with \'.com\'"),
         "error": MessageLookupByLibrary.simpleMessage("Error"),
@@ -90,9 +101,48 @@ class MessageLookup extends MessageLookupByLibrary {
         "sign_up_submit": MessageLookupByLibrary.simpleMessage("SUBMIT"),
         "sign_up_success":
             MessageLookupByLibrary.simpleMessage("Sign Up Success!"),
+        "statsActiveTodoCountLabel":
+            MessageLookupByLibrary.simpleMessage("Active todos"),
+        "statsAppBarTitle": MessageLookupByLibrary.simpleMessage("Stats"),
+        "statsCompletedTodoCountLabel":
+            MessageLookupByLibrary.simpleMessage("Completed todos"),
         "succes": MessageLookupByLibrary.simpleMessage("Succes!"),
         "term_of_services":
             MessageLookupByLibrary.simpleMessage("Term of services"),
+        "todoDetailsAppBarTitle":
+            MessageLookupByLibrary.simpleMessage("Todo Details"),
+        "todoDetailsDeleteButtonTooltip":
+            MessageLookupByLibrary.simpleMessage("Delete"),
+        "todoDetailsEditButtonTooltip":
+            MessageLookupByLibrary.simpleMessage("Edit"),
+        "todosOverviewAppBarTitle":
+            MessageLookupByLibrary.simpleMessage("Flutter Todos"),
+        "todosOverviewClearCompletedButtonText":
+            MessageLookupByLibrary.simpleMessage("Clear completed"),
+        "todosOverviewEmptyText": MessageLookupByLibrary.simpleMessage(
+            "No todos found with the selected filters."),
+        "todosOverviewErrorSnackbarText": MessageLookupByLibrary.simpleMessage(
+            "An error occurred while loading todos."),
+        "todosOverviewFilterActiveOnly":
+            MessageLookupByLibrary.simpleMessage("Active only"),
+        "todosOverviewFilterAll": MessageLookupByLibrary.simpleMessage("All"),
+        "todosOverviewFilterCompletedOnly":
+            MessageLookupByLibrary.simpleMessage("Completed only"),
+        "todosOverviewFilterTooltip":
+            MessageLookupByLibrary.simpleMessage("Filter"),
+        "todosOverviewMarkAllCompleteButtonText":
+            MessageLookupByLibrary.simpleMessage("Mark all complete"),
+        "todosOverviewOptionsClearCompleted":
+            MessageLookupByLibrary.simpleMessage("Clear completed"),
+        "todosOverviewOptionsMarkAllComplete":
+            MessageLookupByLibrary.simpleMessage("Mark all as completed"),
+        "todosOverviewOptionsMarkAllIncomplete":
+            MessageLookupByLibrary.simpleMessage("Mark all as incomplete"),
+        "todosOverviewOptionsTooltip":
+            MessageLookupByLibrary.simpleMessage("Options"),
+        "todosOverviewTodoDeletedSnackbarText": m0,
+        "todosOverviewUndoDeletionButtonText":
+            MessageLookupByLibrary.simpleMessage("Undo"),
         "user_auth_vaild":
             MessageLookupByLibrary.simpleMessage("Account is empty"),
         "user_not_exist":
