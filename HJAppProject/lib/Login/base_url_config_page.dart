@@ -150,13 +150,13 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
     if (_formKey.currentState!.validate()) {
       var baseUrl = '$_protocol://${_domainController.text}';
       if (_portController.text.isNotEmpty) {
-        baseUrl += _portController.text;
+        baseUrl += ':${_portController.text}';
       }
-      LoginConstants.baseUrl = baseUrl;
+      LoginConstants.baseUrl = '$baseUrl/prod-api';
 
       try {
         final dio = Dio();
-        final response = await dio.get('$baseUrl/getApiVersion');
+        final response = await dio.get('${LoginConstants.baseUrl}/getApiVersion');
         if (response.statusCode == 200) {
           final responseData = response.data;
           if (responseData is Map<String, dynamic> &&
