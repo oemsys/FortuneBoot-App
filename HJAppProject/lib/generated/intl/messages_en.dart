@@ -72,6 +72,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "login_pass": MessageLookupByLibrary.simpleMessage("Pass"),
         "main_logo": MessageLookupByLibrary.simpleMessage("Easy Money"),
         "male": MessageLookupByLibrary.simpleMessage("male"),
+        "mine": MessageLookupByLibrary.simpleMessage("My"),
         "nickname_required":
             MessageLookupByLibrary.simpleMessage("Nickname cannot be empty"),
         "not_match": MessageLookupByLibrary.simpleMessage("Not match!"),

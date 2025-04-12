@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_login_example/dashboard_screen.dart';
-import 'package:flutter_login_example/login_screen.dart';
-import 'package:flutter_login_example/Login/base_url_config_page.dart';
+import 'package:flutter_login_example/tempNeedToDelete/dashboard_screen.dart';
+import 'package:flutter_login_example/Login/view/login_screen.dart';
+import 'package:flutter_login_example/Login/view/base_url_config_page.dart';
 import 'package:flutter_login_example/theme/app_theme.dart';
-import 'package:flutter_login_example/todos/bootstrap.dart';
+import 'package:flutter_login_example/Home/bootstrap.dart';
 import 'package:flutter_login_example/transition_route_observer.dart';
 import 'package:local_storage_todos_api/local_storage_todos_api.dart';
 import 'generated/l10n.dart';

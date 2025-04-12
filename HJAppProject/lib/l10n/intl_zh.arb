@@ -163,5 +163,6 @@
 "statsActiveTodoCountLabel": "未完成事项",
 "@statsActiveTodoCountLabel": {
   "description": "统计页未完成事项数量区域的标签文本"
-}
+},
+"mine": "我的"
 }

@@ -61,6 +61,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "login_pass": MessageLookupByLibrary.simpleMessage("密码"),
         "main_logo": MessageLookupByLibrary.simpleMessage("好记"),
         "male": MessageLookupByLibrary.simpleMessage("男"),
+        "mine": MessageLookupByLibrary.simpleMessage("我的"),
         "nickname_required": MessageLookupByLibrary.simpleMessage("昵称不能为空"),
         "not_match": MessageLookupByLibrary.simpleMessage("不匹配！"),
         "oh_no": MessageLookupByLibrary.simpleMessage("我的天呐"),
