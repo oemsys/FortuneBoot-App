@@ -42,6 +42,25 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     );
   }
 
+  void sortList(List<Setting> settings) {
+    Map<String, int> curSortList = {
+      "用户名": 0,
+      "账户概览": 1,
+      "当前账本": 2,
+      "当前主题": 3,
+      "当前语言": 4,
+      "API": 5,
+      "当前版本": 6,
+      "API版本": 7,
+    };
+    ;
+    settings.sort((a, b) {
+      int indexA = curSortList[a.title] as int? ?? 0;
+      int indexB = curSortList[b.title] as int? ?? 0;
+      return indexA - indexB;
+    });
+  }
+
   static int curId = 0;
 
   Future<void> _onInitData(
@@ -70,6 +89,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     var settings = await _fetchStaticSettings();
     var remoteSetting = await _fetchSettings();
     settings.addAll(remoteSetting);
+    sortList(settings);
     emit(
       state.copyWith(status: SettingStatus.success, settings: settings),
     );
@@ -90,7 +110,8 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     elements.add(Setting('当前语言',
         content: currentLocale, leadingWidget: Icon(Icons.translate)));
     elements.add(Setting('API',
-        content: DioClient().dio.options.baseUrl, leadingWidget: Icon(Icons.edit_note)));
+        content: DioClient().dio.options.baseUrl,
+        leadingWidget: Icon(Icons.edit_note)));
     elements.add(Setting('当前版本',
         content: '99.99', leadingWidget: Icon(Icons.abc))); // todo：当前版本号
     return elements;
@@ -103,6 +124,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     var settings = await _fetchStaticSettings();
     var remoteSetting = await _fetchSettings();
     settings.addAll(remoteSetting);
+    sortList(settings);
     try {
       emit(
         state.copyWith(status: SettingStatus.success, settings: settings),
@@ -128,10 +150,12 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
       Map<String, dynamic> accountData =
           Map<String, dynamic>.from(accountResponse.data as Map? ?? {});
       double totalAssets = accountData['totalAssets'] as double? ?? 0.0;
-      double totalLiabilities = accountData['totalLiabilities'] as double? ?? 0.0;
+      double totalLiabilities =
+          accountData['totalLiabilities'] as double? ?? 0.0;
       double netAssets = accountData['netAssets'] as double? ?? 0.0;
       settings.add(Setting('账户概览',
-          detail: '资产：$totalAssets，负债：$totalLiabilities，净资产：$netAssets', leadingWidget: const Icon(Icons.paid)));
+          detail: '资产：$totalAssets，负债：$totalLiabilities，净资产：$netAssets',
+          leadingWidget: const Icon(Icons.paid)));
     }
     return settings;
   }

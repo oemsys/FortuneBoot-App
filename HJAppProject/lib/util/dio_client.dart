@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/widgets.dart';
 import 'package:logger/logger.dart';
 
 class DioClient {
@@ -23,7 +24,7 @@ class DioClient {
       contentType: Headers.jsonContentType,
     ));
 
-    // 添加拦截器
+    // // 添加拦截器
     dio.interceptors.addAll([
       // 日志拦截器
       LogInterceptor(
@@ -32,7 +33,7 @@ class DioClient {
         requestHeader: true,
         responseHeader: true,
         error: true,
-        logPrint: (object) => _logger.d(object),
+        logPrint: (object) => debugPrint('$object'),
       ),
     ]);
   }
@@ -48,7 +49,11 @@ class DioClient {
       InterceptorsWrapper(
         onRequest: (options, handler) {
           // 动态注入token
-          options.headers.addAll(header);
+          bool needAuth = true;
+          needAuth = !options.path.contains('getApiVersion');
+          if (needAuth) {
+            options.headers.addAll(header);
+          }
           // options.headers['Authorization'] = 'Bearer ${_getToken()}';
           return handler.next(options);
         },
