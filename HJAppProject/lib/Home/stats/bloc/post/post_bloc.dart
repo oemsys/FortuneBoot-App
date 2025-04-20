@@ -1,21 +1,17 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_login_example/Request/include_request.dart';
 import 'package:flutter_login_example/Home/stats/models/mine_setting.dart';
 import 'package:flutter_login_example/Login/model/login_model.dart';
 import 'package:flutter_login_example/Login/model/users.dart';
+import 'package:flutter_login_example/Request/include_request.dart';
 import 'package:flutter_login_example/Request/login_request.dart';
 import 'package:flutter_login_example/util/dio_client.dart';
-import 'package:http/http.dart' as http;
-import 'package:stream_transform/stream_transform.dart';
 import 'package:intl/intl.dart';
-import 'package:dio/dio.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 part 'post_event.dart';
 part 'post_state.dart';
@@ -29,8 +25,9 @@ EventTransformer<E> throttleDroppable<E>(Duration duration) {
 }
 
 class SettingBloc extends Bloc<SettingEvent, SettingState> {
-  LoginService _loginService = LoginService();
-  IncludeService _accountService = IncludeService();
+  final LoginService _loginService = LoginService();
+  final IncludeService _accountService = IncludeService();
+
   SettingBloc() : super(const SettingState()) {
     on<SettingFetched>(
       _onFetched,
@@ -43,20 +40,20 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
   }
 
   void sortList(List<Setting> settings) {
-    Map<String, int> curSortList = {
+    final Map<String, int> curSortList = {
       "用户名": 0,
       "账户概览": 1,
-      "当前账本": 2,
-      "当前主题": 3,
-      "当前语言": 4,
-      "API": 5,
-      "当前版本": 6,
-      "API版本": 7,
+      "当前分组": 2,
+      "当前账本": 3,
+      "当前主题": 4,
+      "当前语言": 5,
+      "API": 6,
+      "当前版本": 7,
+      "API版本": 8,
     };
-    ;
     settings.sort((a, b) {
-      int indexA = curSortList[a.title] as int? ?? 0;
-      int indexB = curSortList[b.title] as int? ?? 0;
+      final int indexA = curSortList[a.title] ?? 0;
+      final int indexB = curSortList[b.title] ?? 0;
       return indexA - indexB;
     });
   }
@@ -77,10 +74,10 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     // 当前版本
     // API版本
     // 退出登录
-    var elements = await _fetchStaticSettings();
-    elements.add(Setting('API版本',
+    final elements = await _fetchStaticSettings();
+    elements.add(const Setting('API版本',
         content: '99.99', leadingWidget: Icon(Icons.cloud_queue))); // todo：调接口
-    elements.add(Setting('账户概览',
+    elements.add(const Setting('账户概览',
         detail: '资产：0.00，负债：0.00，净资产：0.00',
         leadingWidget: Icon(Icons.paid))); // todo：接口
     emit(
@@ -96,23 +93,25 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
   }
 
   Future<List<Setting>> _fetchStaticSettings() async {
-    var user = UserDataSingleton();
-    List<Setting> elements = [];
-    var curUser = user.get(UserDataSingleton.userInfo);
-    var userInfo = Map<String, dynamic>.from(curUser['userInfo'] as Map? ?? {});
-    var nickName = userInfo['nickname'] as String? ?? '';
+    final user = UserDataSingleton();
+    final List<Setting> elements = [];
+    final curUser = user.get(UserDataSingleton.userInfo);
+    final userInfo =
+        Map<String, dynamic>.from(curUser['userInfo'] as Map? ?? {});
+    final nickName = userInfo['nickname'] as String? ?? '';
     elements.add(Setting('用户名',
-        content: nickName, leadingWidget: Icon(Icons.face_retouching_natural)));
-    elements.add(Setting('当前主题',
+        content: nickName,
+        leadingWidget: const Icon(Icons.face_retouching_natural)));
+    elements.add(const Setting('当前主题',
         content: '跟随系统', leadingWidget: Icon(Icons.dark_mode))); // todo：主题
-    String currentLocale =
+    final String currentLocale =
         (Intl.defaultLocale ?? 'en') == 'en' ? '🇺🇸 English' : '🇨🇳 简体中文';
     elements.add(Setting('当前语言',
         content: currentLocale, leadingWidget: Icon(Icons.translate)));
     elements.add(Setting('API',
         detail: DioClient().dio.options.baseUrl,
-        leadingWidget: Icon(Icons.edit_note)));
-    elements.add(Setting('当前版本',
+        leadingWidget: const Icon(Icons.edit_note)));
+    elements.add(const Setting('当前版本',
         content: '99.99', leadingWidget: Icon(Icons.abc))); // todo：当前版本号
     return elements;
   }
@@ -121,8 +120,8 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     SettingFetched event,
     Emitter<SettingState> emit,
   ) async {
-    var settings = await _fetchStaticSettings();
-    var remoteSetting = await _fetchSettings();
+    final settings = await _fetchStaticSettings();
+    final remoteSetting = await _fetchSettings();
     settings.addAll(remoteSetting);
     sortList(settings);
     try {
@@ -137,25 +136,34 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
   }
 
   Future<List<Setting>> _fetchSettings() async {
-    HJResponse apiResponse = await _loginService.apiVersion();
-    HJResponse accountResponse =
+    final HJResponse apiResponse = await _loginService.apiVersion();
+    final HJResponse accountResponse =
         await _accountService.getFortuneAssetsLiabilities(1);
     var settings = <Setting>[];
     if (apiResponse.code == 0) {
-      String apiVersion = apiResponse.data as String? ?? '';
-      settings.add(Setting('API版本',
-          content: apiVersion, leadingWidget: const Icon(Icons.cloud_queue)));
+      final String apiVersion = apiResponse.data as String? ?? '';
+      settings.add(
+        Setting(
+          'API版本',
+          content: apiVersion,
+          leadingWidget: const Icon(Icons.cloud_queue),
+        ),
+      );
     }
     if (accountResponse.code == 0) {
-      Map<String, dynamic> accountData =
+      final Map<String, dynamic> accountData =
           Map<String, dynamic>.from(accountResponse.data as Map? ?? {});
-      double totalAssets = accountData['totalAssets'] as double? ?? 0.0;
-      double totalLiabilities =
+      final double totalAssets = accountData['totalAssets'] as double? ?? 0.0;
+      final double totalLiabilities =
           accountData['totalLiabilities'] as double? ?? 0.0;
-      double netAssets = accountData['netAssets'] as double? ?? 0.0;
-      settings.add(Setting('账户概览',
+      final double netAssets = accountData['netAssets'] as double? ?? 0.0;
+      settings.add(
+        Setting(
+          '账户概览',
           detail: '资产：$totalAssets，负债：$totalLiabilities，净资产：$netAssets',
-          leadingWidget: const Icon(Icons.paid)));
+          leadingWidget: const Icon(Icons.paid),
+        ),
+      );
     }
     return settings;
   }
