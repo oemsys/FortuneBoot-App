@@ -2,8 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:retrofit/retrofit.dart';
-import '../model/login_model.dart'; // 导入数据模型
-import '../model/login_constants.dart';
+import '../Login/model/login_model.dart'; // 导入数据模型
 
 part 'login_request.g.dart'; // 代码生成文件
 
@@ -16,7 +15,7 @@ abstract class LoginService {
   }) {
     final Dio dio = DioClient().dio;
     return _LoginService(dio,
-        baseUrl: baseUrl ?? LoginConstants.baseUrl,
+        baseUrl: baseUrl ?? dio.options.baseUrl,
         errorLogger: LoginErrorReport());
   }
 

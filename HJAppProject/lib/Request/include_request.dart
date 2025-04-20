@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_login_example/Login/model/login_constants.dart';
 import 'package:flutter_login_example/Login/model/login_model.dart';
 import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:retrofit/retrofit.dart';
@@ -18,7 +17,7 @@ abstract class IncludeService {
   }) {
     Dio dio = DioClient().dio;
     return _IncludeService(dio,
-        baseUrl: baseUrl ?? LoginConstants.baseUrl,
+        baseUrl: baseUrl ?? dio.options.baseUrl,
         errorLogger: AccountErrorReport());
   }
 

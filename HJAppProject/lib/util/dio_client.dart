@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_login_example/Login/model/login_constants.dart';
 import 'package:logger/logger.dart';
 
 class DioClient {
@@ -19,7 +18,6 @@ class DioClient {
   DioClient._internal() {
     // 初始化Dio基础配置
     dio = Dio(BaseOptions(
-      baseUrl: LoginConstants.baseUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 15),
       contentType: Headers.jsonContentType,

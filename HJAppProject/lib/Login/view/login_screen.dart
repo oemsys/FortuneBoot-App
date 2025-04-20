@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter_login/flutter_login.dart';
 import 'package:flutter_login_example/Login/model/login_model.dart';
-import 'package:flutter_login_example/Login/viewmodel/login_request.dart';
+import 'package:flutter_login_example/Request/login_request.dart';
 import 'package:flutter_login_example/util/constants.dart';
 import 'package:flutter_login_example/util/custom_route.dart';
 import 'package:flutter_login_example/tempNeedToDelete/dashboard_screen.dart';

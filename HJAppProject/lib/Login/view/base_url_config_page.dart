@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_login_example/Login/model/login_constants.dart';
 import 'package:flutter_login_example/Login/view/login_screen.dart';
 import 'package:flutter_login_example/generated/l10n.dart';
 import 'package:flutter_login_example/theme/app_theme.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BaseUrlConfigPage extends StatefulWidget {
@@ -152,11 +152,10 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
       if (_portController.text.isNotEmpty) {
         baseUrl += ':${_portController.text}';
       }
-      LoginConstants.baseUrl = '$baseUrl/prod-api';
-
+      DioClient().updateBaseUrl('$baseUrl/prod-api');
       try {
         final dio = Dio();
-        final response = await dio.get('${LoginConstants.baseUrl}/getApiVersion');
+        final response = await dio.get('$baseUrl/prod-api/getApiVersion');
         if (response.statusCode == 200) {
           final responseData = response.data;
           if (responseData is Map<String, dynamic> &&

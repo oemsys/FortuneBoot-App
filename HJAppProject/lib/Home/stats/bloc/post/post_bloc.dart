@@ -6,12 +6,12 @@ import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_login_example/Home/stats/bloc/viewModels/include_request.dart';
+import 'package:flutter_login_example/Request/include_request.dart';
 import 'package:flutter_login_example/Home/stats/models/mine_setting.dart';
-import 'package:flutter_login_example/Login/model/login_constants.dart';
 import 'package:flutter_login_example/Login/model/login_model.dart';
 import 'package:flutter_login_example/Login/model/users.dart';
-import 'package:flutter_login_example/Login/viewmodel/login_request.dart';
+import 'package:flutter_login_example/Request/login_request.dart';
+import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:http/http.dart' as http;
 import 'package:stream_transform/stream_transform.dart';
 import 'package:intl/intl.dart';
@@ -90,7 +90,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     elements.add(Setting('当前语言',
         content: currentLocale, leadingWidget: Icon(Icons.translate)));
     elements.add(Setting('API',
-        content: LoginConstants.baseUrl, leadingWidget: Icon(Icons.edit_note)));
+        content: DioClient().dio.options.baseUrl, leadingWidget: Icon(Icons.edit_note)));
     elements.add(Setting('当前版本',
         content: '99.99', leadingWidget: Icon(Icons.abc))); // todo：当前版本号
     return elements;
