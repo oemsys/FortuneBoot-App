@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:retrofit/retrofit.dart';
 import '../model/login_model.dart'; // 导入数据模型
 import '../model/login_constants.dart';
@@ -10,32 +11,41 @@ part 'login_request.g.dart'; // 代码生成文件
 // flutter pub run build_runner build
 @RestApi()
 abstract class LoginService {
-  factory LoginService(
-    Dio dio, {
+  factory LoginService({
     String? baseUrl,
-    ParseErrorLogger? errorLogger,
   }) {
+    final Dio dio = DioClient().dio;
     return _LoginService(dio,
-        baseUrl: baseUrl ?? LoginConstants.baseUrl, errorLogger: errorLogger);
+        baseUrl: baseUrl ?? LoginConstants.baseUrl,
+        errorLogger: LoginErrorReport());
   }
 
   @POST('/{userName}/checkRepeat')
-  Future<LoginResponse> checkRepeat(@Path('userName') String userName);
+  Future<HJResponse> checkRepeat(@Path('userName') String userName);
 
-  @GET(LoginConstants.getRsaPublicKey)
-  Future<LoginResponse> getRsaPublicKey();
+  // RSA key
+  @GET('/getRsaPublicKey')
+  Future<HJResponse> getRsaPublicKey();
 
-  @POST(LoginConstants.login)
-  Future<LoginResponse> login(@Body() Login post);
+  // 登录
+  @POST('/login')
+  Future<HJResponse> login(@Body() Login post);
 
-  @GET(LoginConstants.captchaImage)
-  Future<LoginResponse> captchaImage();
+  // 获取验证码
+  @GET('/captchaImage')
+  Future<HJResponse> captchaImage();
 
-  @GET(LoginConstants.getAllowRegisterRoles)
-  Future<LoginResponse> getAllowRegisterRoles();
+  // 获取允许注册的角色
+  @GET('/getAllowRegisterRoles')
+  Future<HJResponse> getAllowRegisterRoles();
 
-  @POST(LoginConstants.register)
-  Future<LoginResponse> loginRegister(@Body() ResisterLogin post);
+  // API版本号
+  @GET('/getApiVersion')
+  Future<HJResponse> apiVersion();
+
+  // 注册
+  @POST('/register')
+  Future<HJResponse> loginRegister(@Body() ResisterLogin post);
 }
 
 class LoginErrorReport extends ParseErrorLogger {

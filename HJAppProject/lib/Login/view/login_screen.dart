@@ -13,6 +13,7 @@ import 'package:flutter_login_example/Home/app/app.dart';
 import 'package:flutter_login_example/Home/home/view/home_page.dart';
 import 'package:flutter_login_example/Login/model/users.dart';
 import 'package:flutter_login_example/util/base64_img.dart';
+import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:flutter_login_example/util/rsa_util.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:retrofit/error_logger.dart';
@@ -47,8 +48,7 @@ class LoginScreen extends StatelessWidget {
 
   Future<String?> _loginUser(LoginData data) async {
     // lxjtodo：注册：1.验证码 2.rsa加密密码 3.login
-    final dio = getDio();
-    final loginService = LoginService(dio, errorLogger: LoginErrorReport());
+    final loginService = LoginService();
     var capImgRes = await loginService.captchaImage();
     /**
      *"data": {
@@ -98,6 +98,11 @@ class LoginScreen extends StatelessWidget {
                 Map<String, dynamic>.from(value.data as Map? ?? {});
             var userInfo = Map<String, dynamic>.from(
                 responseData["currentUser"] as Map? ?? {});
+            var token = responseData["token"] as String? ?? "";
+            DioClient().refreshToken({
+              "Cookie": 'authorized-token=${Uri.encodeComponent(jsonEncode(responseData))}}',
+              "Authorization": "Bearer $token"}
+            );
             var user = UserDataSingleton();
             user.set(UserDataSingleton.userInfo, userInfo);
             debugPrint('lxjtodo $user ${user.get(UserDataSingleton.userInfo)}');
@@ -122,8 +127,7 @@ class LoginScreen extends StatelessWidget {
   }
 
   Future<String?> _signupUserWithRole(SignupData data, Map role) async {
-    final dio = getDio();
-    final loginService = LoginService(dio, errorLogger: LoginErrorReport());
+    final loginService = LoginService();
     String userName = data.name!;
     String nickName = data.additionalSignupData!['nickname']!;
     String email = data.additionalSignupData!['email']!;
@@ -161,8 +165,7 @@ class LoginScreen extends StatelessWidget {
   Future<String?> _signupUser(SignupData data) async {
     print('lxjtodo _signupConfirm');
     try {
-      final dio = getDio();
-      final loginService = LoginService(dio, errorLogger: LoginErrorReport());
+      final loginService = LoginService();
       var registerRoles = await loginService.getAllowRegisterRoles();
       if (registerRoles.data is List<dynamic>) {
         final List<Map<String, dynamic>> roles =
@@ -225,8 +228,7 @@ class LoginScreen extends StatelessWidget {
       navigateBackAfterRecovery: true,
       onConfirmRecover: _signupConfirm,
       onSwitchToAdditionalFields: (p0) async {
-        Dio dio = getDio();
-        final loginService = LoginService(dio, errorLogger: LoginErrorReport());
+        final loginService = LoginService();
         var response = await loginService.checkRepeat(p0.name ?? '');
         print('lxjtodo: $response');
         if (response.code == 0) {
@@ -440,16 +442,6 @@ class IntroWidget extends StatelessWidget {
   }
 }
 
-Dio getDio() {
-  Dio dio = Dio();
-  dio.options.validateStatus = (status) {
-    return status! < 500; // 允许所有 5xx 以下状态码（包括 301）
-  };
-  dio.options.followRedirects = true; // 跟随重定向
-  dio.options.maxRedirects = 99; // 最大重定向次数
-  return dio;
-}
-
 // 验证码弹窗组件
 Future<Map?> showCaptchaDialog(Map captchaDic) async {
   if (AppView.navigatorKey.currentContext == null) {
@@ -459,9 +451,7 @@ Future<Map?> showCaptchaDialog(Map captchaDic) async {
   final focusNode = FocusNode();
   String captchaCode = captchaDic['captchaCodeImg'] as String;
   Map captchaData = captchaDic;
-  final Dio dio = getDio();
-  final LoginService loginService =
-      LoginService(dio, errorLogger: LoginErrorReport());
+  final LoginService loginService = LoginService();
   return showDialog<Map?>(
     context: AppView.navigatorKey.currentContext!,
     barrierDismissible: false,

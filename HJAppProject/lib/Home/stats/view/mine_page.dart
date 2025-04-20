@@ -2,7 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_login_example/Home/stats/bloc/post/post_bloc.dart';
 import 'package:flutter_login_example/Home/stats/bloc/stats_bloc.dart';
+import 'package:flutter_login_example/Home/stats/models/mine_setting.dart';
 import 'package:flutter_login_example/Login/model/login_constants.dart';
 import 'package:flutter_login_example/Login/model/users.dart';
 import 'package:todos_repository/todos_repository.dart';
@@ -16,9 +18,7 @@ class MinePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => StatsBloc(
-        todosRepository: context.read<TodosRepository>(),
-      )..add(const StatsSubscriptionRequested()),
+      create: (context) => SettingBloc()..add(SettingInitDataLoaded()),
       child: const MineView(),
     );
   }
@@ -27,37 +27,15 @@ class MinePage extends StatelessWidget {
 class MineView extends StatelessWidget {
   const MineView({super.key});
 
+  void getApiVersion() {}
+
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<StatsBloc>().state;
+    final state = context.watch<SettingBloc>().state;
     final textTheme = Theme.of(context).textTheme;
+    print('lxjtodo: ${state.settings}');
 
-    // nickname
-    // 用户名
-    // 账户概览
-    // 当前账本
-    // 当前主题
-    // 当前语言
-    // API：
-    // 当前版本
-    // API版本
-    // 退出登录
-    var user = UserDataSingleton();
-    debugPrint('lxjtodo ${user.get(UserDataSingleton.userInfo)}');
-    List<Element> elements = [];
-    var curUser = user.get(UserDataSingleton.userInfo);
-    var userInfo = Map<String, dynamic>.from(curUser['userInfo'] as Map? ?? {});
-    var nickName = userInfo['nickname'] as String? ?? '';
-    elements.add(Element('用户名', content: nickName, leadingWidget: Icon(Icons.face_retouching_natural)));
-    elements
-        .add(Element('账户概览', detail: '资产：0.00，负债：0.00，净资产：0.00', leadingWidget:Icon(Icons.paid) )); // todo：接口
-    elements.add(Element('当前主题', content: '跟随系统', leadingWidget:Icon(Icons.dark_mode))); // todo：主题
-    String currentLocale =
-        (Intl.defaultLocale ?? 'en') == 'en' ? '🇺🇸 English' : '🇨🇳 简体中文';
-    elements.add(Element('当前语言', content: currentLocale, leadingWidget: Icon(Icons.translate)));
-    elements.add(Element('API', content: LoginConstants.baseUrl, leadingWidget: Icon(Icons.edit_note))); // todo：调接口
-    elements.add(Element('当前版本', content: '99.99', leadingWidget: Icon(Icons.abc))); // todo：当前版本号
-    elements.add(Element('API版本', content: '99.99', leadingWidget: Icon(Icons.cloud_queue))); // todo：调接口
+    var elements = state.settings;
 
     Widget lists = ListView.builder(
       itemBuilder: (context, index) {
@@ -73,7 +51,7 @@ class MineView extends StatelessWidget {
     );
   }
 
-  Widget _getItem(BuildContext ctx, Element element) {
+  Widget _getItem(BuildContext ctx, Setting element) {
     final textTheme = Theme.of(ctx).textTheme;
     return Card(
       // shape: RoundedRectangleBorder(
@@ -103,13 +81,4 @@ class MineView extends StatelessWidget {
       ),
     );
   }
-}
-
-class Element {
-  String title;
-  String? detail;
-  String? content;
-  Widget? leadingWidget;
-
-  Element(this.title, {this.detail, this.content, this.leadingWidget});
 }

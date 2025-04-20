@@ -22,12 +22,12 @@ class _LoginService implements LoginService {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<LoginResponse> checkRepeat(String userName) async {
+  Future<HJResponse> checkRepeat(String userName) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<LoginResponse>(Options(
+    final _options = _setStreamType<HJResponse>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
@@ -44,9 +44,9 @@ class _LoginService implements LoginService {
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late LoginResponse _value;
+    late HJResponse _value;
     try {
-      _value = LoginResponse.fromJson(_result.data!);
+      _value = HJResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;
@@ -55,12 +55,12 @@ class _LoginService implements LoginService {
   }
 
   @override
-  Future<LoginResponse> getRsaPublicKey() async {
+  Future<HJResponse> getRsaPublicKey() async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<LoginResponse>(Options(
+    final _options = _setStreamType<HJResponse>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -77,9 +77,9 @@ class _LoginService implements LoginService {
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late LoginResponse _value;
+    late HJResponse _value;
     try {
-      _value = LoginResponse.fromJson(_result.data!);
+      _value = HJResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;
@@ -88,13 +88,13 @@ class _LoginService implements LoginService {
   }
 
   @override
-  Future<LoginResponse> login(Login post) async {
+  Future<HJResponse> login(Login post) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(post.toJson());
-    final _options = _setStreamType<LoginResponse>(Options(
+    final _options = _setStreamType<HJResponse>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
@@ -111,9 +111,9 @@ class _LoginService implements LoginService {
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late LoginResponse _value;
+    late HJResponse _value;
     try {
-      _value = LoginResponse.fromJson(_result.data!);
+      _value = HJResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;
@@ -122,12 +122,12 @@ class _LoginService implements LoginService {
   }
 
   @override
-  Future<LoginResponse> captchaImage() async {
+  Future<HJResponse> captchaImage() async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<LoginResponse>(Options(
+    final _options = _setStreamType<HJResponse>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -144,9 +144,9 @@ class _LoginService implements LoginService {
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late LoginResponse _value;
+    late HJResponse _value;
     try {
-      _value = LoginResponse.fromJson(_result.data!);
+      _value = HJResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;
@@ -155,12 +155,12 @@ class _LoginService implements LoginService {
   }
 
   @override
-  Future<LoginResponse> getAllowRegisterRoles() async {
+  Future<HJResponse> getAllowRegisterRoles() async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<LoginResponse>(Options(
+    final _options = _setStreamType<HJResponse>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
@@ -177,9 +177,9 @@ class _LoginService implements LoginService {
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late LoginResponse _value;
+    late HJResponse _value;
     try {
-      _value = LoginResponse.fromJson(_result.data!);
+      _value = HJResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;
@@ -188,13 +188,46 @@ class _LoginService implements LoginService {
   }
 
   @override
-  Future<LoginResponse> loginRegister(ResisterLogin post) async {
+  Future<HJResponse> apiVersion() async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<HJResponse>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          '/getApiVersion',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(
+            baseUrl: _combineBaseUrls(
+          _dio.options.baseUrl,
+          baseUrl,
+        )));
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late HJResponse _value;
+    try {
+      _value = HJResponse.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<HJResponse> loginRegister(ResisterLogin post) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(post.toJson());
-    final _options = _setStreamType<LoginResponse>(Options(
+    final _options = _setStreamType<HJResponse>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
@@ -211,9 +244,9 @@ class _LoginService implements LoginService {
           baseUrl,
         )));
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late LoginResponse _value;
+    late HJResponse _value;
     try {
-      _value = LoginResponse.fromJson(_result.data!);
+      _value = HJResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;

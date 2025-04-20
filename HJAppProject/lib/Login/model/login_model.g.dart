@@ -50,14 +50,13 @@ Map<String, dynamic> _$LoginToJson(Login instance) => <String, dynamic>{
       'captchaCodeKey': instance.captchaCodeKey,
     };
 
-LoginResponse _$LoginResponseFromJson(Map<String, dynamic> json) =>
-    LoginResponse(
+HJResponse _$HJResponseFromJson(Map<String, dynamic> json) => HJResponse(
       (json['code'] as num).toInt(),
       json['msg'] as String,
       json['data'],
     );
 
-Map<String, dynamic> _$LoginResponseToJson(LoginResponse instance) =>
+Map<String, dynamic> _$HJResponseToJson(HJResponse instance) =>
     <String, dynamic>{
       'code': instance.code,
       'msg': instance.msg,

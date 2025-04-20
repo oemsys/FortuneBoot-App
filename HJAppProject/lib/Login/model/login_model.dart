@@ -66,14 +66,14 @@ class Login {
 }
 
 @JsonSerializable()
-class LoginResponse {
+class HJResponse {
   final int code;
   final String msg;
   final dynamic? data;
-  LoginResponse(this.code, this.msg, this.data);
-  factory LoginResponse.fromJson(Map<String, dynamic> json) =>
-      _$LoginResponseFromJson(json);
-  Map<String, dynamic> toJson() => _$LoginResponseToJson(this);
+  HJResponse(this.code, this.msg, this.data);
+  factory HJResponse.fromJson(Map<String, dynamic> json) =>
+      _$HJResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$HJResponseToJson(this);
   @override
   String toString() {
     return 'LoginResponse{code: $code, msg: $msg, data: $data}';
