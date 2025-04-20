@@ -110,7 +110,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     elements.add(Setting('当前语言',
         content: currentLocale, leadingWidget: Icon(Icons.translate)));
     elements.add(Setting('API',
-        content: DioClient().dio.options.baseUrl,
+        detail: DioClient().dio.options.baseUrl,
         leadingWidget: Icon(Icons.edit_note)));
     elements.add(Setting('当前版本',
         content: '99.99', leadingWidget: Icon(Icons.abc))); // todo：当前版本号
