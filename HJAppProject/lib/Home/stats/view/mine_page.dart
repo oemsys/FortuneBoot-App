@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:dropdown_flutter/custom_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_example/Home/stats/bloc/post/post_bloc.dart';
@@ -32,7 +33,12 @@ class MineView extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<SettingBloc>().state;
     print('lxjtodo: ${state.settings}');
-    var elements = state.settings;
+    var elements = [
+      ...state.settings,
+      ...state.remoteSettings,
+      ...state.groupSettings
+    ];
+    Setting.sortList(elements);
     Widget lists = ListView.builder(
       itemBuilder: (context, index) {
         return _getItem(context, elements[index]);
@@ -51,6 +57,31 @@ class MineView extends StatelessWidget {
 
   Widget _getItem(BuildContext ctx, Setting element) {
     final textTheme = Theme.of(ctx).textTheme;
+    if (element.type == SettingType.currentGroup) {
+      return Card(
+        margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+        child: SizedBox(
+          child: ListTile(
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+            leading: element.leadingWidget ?? element.leadingWidget,
+            title: Text('${element.type.title}:',
+                style: textTheme.headlineSmall!.copyWith(fontSize: 16)),
+            subtitle: (element.detail?.isNotEmpty == true)
+                ? Text(element.detail ?? '',
+                    style: textTheme.bodyMedium!
+                        .copyWith(fontSize: 14, color: Colors.grey[500]))
+                : null,
+            trailing: (element.content?.isNotEmpty == true)
+                ? Text(
+                    element.content ?? '',
+                    style: textTheme.headlineSmall!.copyWith(fontSize: 16),
+                  )
+                : null,
+          ),
+        ),
+      );
+    }
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
       child: SizedBox(

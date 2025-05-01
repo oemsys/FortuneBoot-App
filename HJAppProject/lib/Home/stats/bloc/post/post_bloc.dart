@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
@@ -43,33 +42,24 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     );
   }
 
-  void sortList(List<Setting> settings) {
-    settings.sort((a, b) {
-      return a.type.sort - b.type.sort;
-    });
-  }
-
   static int curId = 0;
 
   Future<void> _onInitData(
     SettingInitDataLoaded event,
     Emitter<SettingState> emit,
   ) async {
+    print('lxjtodo _onInitData');
     final elements = await _fetchStaticSettings();
-    elements.add(const Setting(SettingType.apiVersion,
-        content: '99.99', leadingWidget: Icon(Icons.cloud_queue)));
-    elements.add(const Setting(SettingType.accountOverview,
-        detail: '资产：0.00，负债：0.00，净资产：0.00',
-        leadingWidget: Icon(Icons.paid))); // todo：接口
     emit(
       state.copyWith(status: SettingStatus.initial, settings: elements),
     );
     var settings = await _fetchStaticSettings();
     var remoteSetting = await _fetchSettings();
-    settings.addAll(remoteSetting);
-    sortList(settings);
     emit(
-      state.copyWith(status: SettingStatus.success, settings: settings),
+      state.copyWith(
+          status: SettingStatus.success,
+          settings: settings,
+          remoteSettings: remoteSetting),
     );
   }
 
@@ -101,15 +91,15 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     GroupSettingFetched event,
     Emitter<SettingState> emit,
   ) async {
+    print('lxjtodo _onFetchedGroup');
     var curSetting = state.settings;
     try {
       final groupSettings = await _fetchGroupSettings(event.groupId);
-      curSetting.removeWhere(
-          (setting) => setting.type == SettingType.currentGroup || setting.type == SettingType.currentBook);
-      curSetting.addAll(groupSettings);
-      sortList(curSetting);
       emit(
-        state.copyWith(status: SettingStatus.success, settings: curSetting),
+        state.copyWith(
+            status: SettingStatus.success,
+            settings: curSetting,
+            groupSettings: groupSettings),
       );
     } catch (_) {
       emit(
@@ -168,9 +158,11 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
           var data = accountInfo.data as Map? ?? {}; // todo：data存本地
           var groupName = data['groupName'] as String? ?? '';
           var defaultBookName = data['defaultBookName'] as String? ?? '默认账本';
-          settings.add(Setting(SettingType.currentGroup,
-              content: groupName,
-              leadingWidget: const Icon(Icons.group),));
+          settings.add(Setting(
+            SettingType.currentGroup,
+            content: groupName,
+            leadingWidget: const Icon(Icons.group),
+          ));
           settings.add(Setting(
             SettingType.currentBook,
             content: defaultBookName,

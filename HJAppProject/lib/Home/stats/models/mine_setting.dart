@@ -13,6 +13,7 @@ enum SettingType {
   api(6, 'API'),
   currentVersion(7, '当前版本'),
   apiVersion(8, 'API版本');
+
   final int sort;
   final String title;
   const SettingType(this.sort, this.title);
@@ -29,4 +30,10 @@ final class Setting extends Equatable {
   @override
   List<Object> get props =>
       [type, detail ?? '', content ?? '', leadingWidget.hashCode];
+
+  static void sortList(List<Setting> settings) {
+    settings.sort((a, b) {
+      return a.type.sort - b.type.sort;
+    });
+  }
 }
