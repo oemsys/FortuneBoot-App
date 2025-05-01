@@ -158,10 +158,16 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
           var data = accountInfo.data as Map? ?? {}; // todo：data存本地
           var groupName = data['groupName'] as String? ?? '';
           var defaultBookName = data['defaultBookName'] as String? ?? '默认账本';
+          var listResponse = await _groupService.getEnableList();
+          Map<String, dynamic>? settingData = {};
+          if (listResponse.code == 0) {
+            settingData['groupList'] = listResponse.data;
+          }
           settings.add(Setting(
             SettingType.currentGroup,
             content: groupName,
             leadingWidget: const Icon(Icons.group),
+            data: settingData,
           ));
           settings.add(Setting(
             SettingType.currentBook,

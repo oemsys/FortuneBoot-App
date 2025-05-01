@@ -20,16 +20,17 @@ enum SettingType {
 }
 
 final class Setting extends Equatable {
-  const Setting(this.type, {this.detail, this.content, this.leadingWidget});
+  const Setting(this.type, {this.detail, this.content, this.leadingWidget, this.data});
 
   final SettingType type;
   final String? detail;
   final String? content;
   final Widget? leadingWidget;
+  final Map<String, dynamic>? data;
 
   @override
   List<Object> get props =>
-      [type, detail ?? '', content ?? '', leadingWidget.hashCode];
+      [type, detail ?? '', content ?? '', leadingWidget.hashCode, data.toString()];
 
   static void sortList(List<Setting> settings) {
     settings.sort((a, b) {

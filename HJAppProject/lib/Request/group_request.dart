@@ -28,6 +28,10 @@ abstract class GroupService {
   /// {"code":0,"msg":"操作成功","data":{"groupId":1,"groupName":"演示分组","defaultCurrency":"CNY","roleTypeDesc":null,"enable":true,"defaultBookId":1,"defaultBookName":null,"remark":null}}
   @GET('/fortune/group/{groupId}/getByGroupId')
   Future<HJResponse> getByGroupId(@Path('groupId') int groupId);
+
+  // /fortune/group/getEnableList
+  @GET('/fortune/group/getEnableList')
+  Future<HJResponse> getEnableList();
 }
 
 class AccountErrorReport extends ParseErrorLogger {
