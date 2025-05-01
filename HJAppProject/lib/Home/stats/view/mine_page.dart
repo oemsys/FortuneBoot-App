@@ -31,17 +31,16 @@ class MineView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<SettingBloc>().state;
-    final textTheme = Theme.of(context).textTheme;
     print('lxjtodo: ${state.settings}');
-
     var elements = state.settings;
-
     Widget lists = ListView.builder(
       itemBuilder: (context, index) {
         return _getItem(context, elements[index]);
       },
       itemCount: elements.length,
     );
+    // 拉取账本信息
+    context.read<SettingBloc>().add(GroupSettingFetched());
     return Scaffold(
       appBar: AppBar(
         title: Text(S.current.mine),
@@ -53,17 +52,13 @@ class MineView extends StatelessWidget {
   Widget _getItem(BuildContext ctx, Setting element) {
     final textTheme = Theme.of(ctx).textTheme;
     return Card(
-      // shape: RoundedRectangleBorder(
-      //   borderRadius: BorderRadius.circular(6.0),
-      // ),
-      // elevation: 8.0,
       margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
       child: SizedBox(
         child: ListTile(
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
           leading: element.leadingWidget ?? element.leadingWidget,
-          title: Text('${element.title}:',
+          title: Text('${element.type.title}:',
               style: textTheme.headlineSmall!.copyWith(fontSize: 16)),
           subtitle: (element.detail?.isNotEmpty == true)
               ? Text(element.detail ?? '',

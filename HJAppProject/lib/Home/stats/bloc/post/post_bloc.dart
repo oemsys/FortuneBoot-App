@@ -1,12 +1,15 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:dropdown_flutter/custom_dropdown.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login_example/Home/stats/models/mine_setting.dart';
 import 'package:flutter_login_example/Login/model/login_model.dart';
 import 'package:flutter_login_example/Login/model/users.dart';
+import 'package:flutter_login_example/Request/group_request.dart';
 import 'package:flutter_login_example/Request/include_request.dart';
 import 'package:flutter_login_example/Request/login_request.dart';
 import 'package:flutter_login_example/util/dio_client.dart';
@@ -27,34 +30,22 @@ EventTransformer<E> throttleDroppable<E>(Duration duration) {
 class SettingBloc extends Bloc<SettingEvent, SettingState> {
   final LoginService _loginService = LoginService();
   final IncludeService _accountService = IncludeService();
+  final GroupService _groupService = GroupService();
 
   SettingBloc() : super(const SettingState()) {
-    on<SettingFetched>(
-      _onFetched,
-      transformer: throttleDroppable(throttleDuration),
-    );
     on<SettingInitDataLoaded>(
       _onInitData,
+      transformer: throttleDroppable(throttleDuration),
+    );
+    on<GroupSettingFetched>(
+      _onFetchedGroup,
       transformer: throttleDroppable(throttleDuration),
     );
   }
 
   void sortList(List<Setting> settings) {
-    final Map<String, int> curSortList = {
-      "用户名": 0,
-      "账户概览": 1,
-      "当前分组": 2,
-      "当前账本": 3,
-      "当前主题": 4,
-      "当前语言": 5,
-      "API": 6,
-      "当前版本": 7,
-      "API版本": 8,
-    };
     settings.sort((a, b) {
-      final int indexA = curSortList[a.title] ?? 0;
-      final int indexB = curSortList[b.title] ?? 0;
-      return indexA - indexB;
+      return a.type.sort - b.type.sort;
     });
   }
 
@@ -64,20 +55,10 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     SettingInitDataLoaded event,
     Emitter<SettingState> emit,
   ) async {
-    // nickname
-    // 用户名
-    // 账户概览
-    // 当前账本
-    // 当前主题
-    // 当前语言
-    // API：
-    // 当前版本
-    // API版本
-    // 退出登录
     final elements = await _fetchStaticSettings();
-    elements.add(const Setting('API版本',
-        content: '99.99', leadingWidget: Icon(Icons.cloud_queue))); // todo：调接口
-    elements.add(const Setting('账户概览',
+    elements.add(const Setting(SettingType.apiVersion,
+        content: '99.99', leadingWidget: Icon(Icons.cloud_queue)));
+    elements.add(const Setting(SettingType.accountOverview,
         detail: '资产：0.00，负债：0.00，净资产：0.00',
         leadingWidget: Icon(Icons.paid))); // todo：接口
     emit(
@@ -99,38 +80,40 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     final userInfo =
         Map<String, dynamic>.from(curUser['userInfo'] as Map? ?? {});
     final nickName = userInfo['nickname'] as String? ?? '';
-    elements.add(Setting('用户名',
+    elements.add(Setting(SettingType.username,
         content: nickName,
         leadingWidget: const Icon(Icons.face_retouching_natural)));
-    elements.add(const Setting('当前主题',
+    elements.add(const Setting(SettingType.currentTheme,
         content: '跟随系统', leadingWidget: Icon(Icons.dark_mode))); // todo：主题
     final String currentLocale =
         (Intl.defaultLocale ?? 'en') == 'en' ? '🇺🇸 English' : '🇨🇳 简体中文';
-    elements.add(Setting('当前语言',
+    elements.add(Setting(SettingType.currentLanguage,
         content: currentLocale, leadingWidget: Icon(Icons.translate)));
-    elements.add(Setting('API',
+    elements.add(Setting(SettingType.api,
         detail: DioClient().dio.options.baseUrl,
         leadingWidget: const Icon(Icons.edit_note)));
-    elements.add(const Setting('当前版本',
+    elements.add(const Setting(SettingType.currentVersion,
         content: '99.99', leadingWidget: Icon(Icons.abc))); // todo：当前版本号
     return elements;
   }
 
-  Future<void> _onFetched(
-    SettingFetched event,
+  Future<void> _onFetchedGroup(
+    GroupSettingFetched event,
     Emitter<SettingState> emit,
   ) async {
-    final settings = await _fetchStaticSettings();
-    final remoteSetting = await _fetchSettings();
-    settings.addAll(remoteSetting);
-    sortList(settings);
+    var curSetting = state.settings;
     try {
+      final groupSettings = await _fetchGroupSettings(event.groupId);
+      curSetting.removeWhere(
+          (setting) => setting.type == SettingType.currentGroup || setting.type == SettingType.currentBook);
+      curSetting.addAll(groupSettings);
+      sortList(curSetting);
       emit(
-        state.copyWith(status: SettingStatus.success, settings: settings),
+        state.copyWith(status: SettingStatus.success, settings: curSetting),
       );
     } catch (_) {
       emit(
-        state.copyWith(status: SettingStatus.failure, settings: settings),
+        state.copyWith(status: SettingStatus.failure, settings: curSetting),
       );
     }
   }
@@ -144,7 +127,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
       final String apiVersion = apiResponse.data as String? ?? '';
       settings.add(
         Setting(
-          'API版本',
+          SettingType.apiVersion,
           content: apiVersion,
           leadingWidget: const Icon(Icons.cloud_queue),
         ),
@@ -159,12 +142,43 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
       final double netAssets = accountData['netAssets'] as double? ?? 0.0;
       settings.add(
         Setting(
-          '账户概览',
+          SettingType.accountOverview,
           detail: '资产：$totalAssets，负债：$totalLiabilities，净资产：$netAssets',
           leadingWidget: const Icon(Icons.paid),
         ),
       );
     }
+    return settings;
+  }
+
+  // 查询分组 & 账本设置
+  Future<List<Setting>> _fetchGroupSettings(int? groupId) async {
+    // todo：groupId是空的话，本地有的话返回
+    // groupId不为空，查询分组 & 账本设置否则查询默认分组
+    var settings = <Setting>[];
+    if (groupId == null) {
+      // 查询默认分组 & 账本设置
+      final HJResponse defaultGroupIdResponse =
+          await _groupService.getDefaultGroupId();
+      if (defaultGroupIdResponse.code == 0) {
+        var defaultGroupId = defaultGroupIdResponse.data as int? ?? 0;
+        final HJResponse accountInfo =
+            await _groupService.getByGroupId(defaultGroupId);
+        if (accountInfo.code == 0) {
+          var data = accountInfo.data as Map? ?? {}; // todo：data存本地
+          var groupName = data['groupName'] as String? ?? '';
+          var defaultBookName = data['defaultBookName'] as String? ?? '默认账本';
+          settings.add(Setting(SettingType.currentGroup,
+              content: groupName,
+              leadingWidget: const Icon(Icons.group),));
+          settings.add(Setting(
+            SettingType.currentBook,
+            content: defaultBookName,
+            leadingWidget: const Icon(Icons.book_online_outlined),
+          ));
+        }
+      }
+    } else {}
     return settings;
   }
 }
