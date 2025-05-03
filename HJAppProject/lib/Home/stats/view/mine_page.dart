@@ -129,6 +129,12 @@ class _MineViewState extends State<MineView> {
               height: 6,
             ),
             MultiDropdown<SettingSelectItem>.future(
+              onSelectionChange: (selectedItems) {
+                if (element.type == SettingType.currentGroup) {
+                  context.read<SettingBloc>().add(
+                      GroupSettingFetched(groupId: selectedItems.first.id));
+                }
+              },
               future: () async {
                 List<DropdownItem<SettingSelectItem>> items = [];
                 if (element.type == SettingType.currentGroup) {
@@ -178,7 +184,7 @@ class _MineViewState extends State<MineView> {
               key: GlobalKey(),
               fieldDecoration: FieldDecoration(
                 hintText: curItem,
-                hintStyle: const TextStyle(color: Colors.black87, fontSize: 14),
+                hintStyle: const TextStyle(fontSize: 14),
                 prefixIcon: element.leadingWidget,
                 showClearIcon: false,
                 border: OutlineInputBorder(
@@ -187,9 +193,9 @@ class _MineViewState extends State<MineView> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: Colors.black87,
-                  ),
+                  // borderSide: const BorderSide(
+                  //   color: Colors.black87,
+                  // ),
                 ),
               ),
               focusNode:

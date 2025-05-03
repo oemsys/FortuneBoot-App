@@ -18,9 +18,13 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider<TodosRepository>(
-      create: (_) => createTodosRepository(),
-      dispose: (repository) => repository.dispose(),
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<TodosRepository>(
+          create: (_) => createTodosRepository(),
+          dispose: (repository) => repository.dispose(),
+        )
+      ],
       child: const AppView(),
     );
   }
@@ -29,7 +33,7 @@ class App extends StatelessWidget {
 class AppView extends StatelessWidget {
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
-  
+
   const AppView({super.key});
   @override
   Widget build(BuildContext context) {
@@ -41,9 +45,10 @@ class AppView extends StatelessWidget {
       locale: const Locale('zh', 'CN'),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate, // 提供 Material 组件本地化资源
-        GlobalWidgetsLocalizations.delegate,  // 支持文本方向（如阿拉伯语右对齐）
+        GlobalWidgetsLocalizations.delegate, // 支持文本方向（如阿拉伯语右对齐）
         GlobalCupertinoLocalizations.delegate,
-        S.delegate],
+        S.delegate
+      ],
       supportedLocales: S.delegate.supportedLocales,
       // home: const HomePage(),
       initialRoute: BaseUrlConfigPage.routeName,

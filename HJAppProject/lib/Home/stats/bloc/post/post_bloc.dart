@@ -152,36 +152,34 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     // todo：groupId是空的话，本地有的话返回
     // groupId不为空，查询分组 & 账本设置否则查询默认分组
     var settings = <Setting>[];
-    if (groupId == null) {
+    int? findGroupId = groupId;
+    if (findGroupId == null) {
       // 查询默认分组 & 账本设置，本地如果有groupId的话，用本地的去查
       final HJResponse defaultGroupIdResponse =
           await _groupService.getDefaultGroupId();
       if (defaultGroupIdResponse.code == 0) {
-        var defaultGroupId = defaultGroupIdResponse.data as int? ?? 0;
-        final HJResponse accountInfo =
-            await _groupService.getByGroupId(defaultGroupId);
-        if (accountInfo.code == 0) {
-          var data = accountInfo.data as Map? ?? {}; // todo：data存本地
-          var groupName = data['groupName'] as String? ?? '';
-          var defaultBookName = data['defaultBookName'] as String? ?? '默认账本';
-          // var bookListResponse = await _bookService.getByGroupId();
-          settings.add(Setting(SettingType.currentGroup,
-              content: groupName,
-              leadingWidget: const Icon(Icons.group),
-              data: {
-                "groupId": data['groupId'],
-                "bookId": data['defaultBookId']
-              }));
-          settings.add(Setting(SettingType.currentBook,
-              content: defaultBookName,
-              leadingWidget: const Icon(Icons.book_online_outlined),
-              data: {
-                "groupId": data['groupId'],
-                "bookId": data['defaultBookId']
-              }));
-        }
+        findGroupId = defaultGroupIdResponse.data as int? ?? 0;
       }
-    } else {}
+    }
+    if (findGroupId == null) {
+      return settings;
+    }
+    final HJResponse accountInfo =
+        await _groupService.getByGroupId(findGroupId);
+    if (accountInfo.code == 0) {
+      var data = accountInfo.data as Map? ?? {}; // todo：data存本地
+      var groupName = data['groupName'] as String? ?? '';
+      var defaultBookName = data['defaultBookName'] as String? ?? '默认账本';
+      // var bookListResponse = await _bookService.getByGroupId();
+      settings.add(Setting(SettingType.currentGroup,
+          content: groupName,
+          leadingWidget: const Icon(Icons.group),
+          data: {"groupId": data['groupId'], "bookId": data['defaultBookId']}));
+      settings.add(Setting(SettingType.currentBook,
+          content: defaultBookName,
+          leadingWidget: const Icon(Icons.book_online_outlined),
+          data: {"groupId": data['groupId'], "bookId": data['defaultBookId']}));
+    }
     return settings;
   }
 
