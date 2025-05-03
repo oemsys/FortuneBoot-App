@@ -19,9 +19,9 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
   final _formKey = GlobalKey<FormState>();
   String _protocol = 'https';
   final TextEditingController _domainController =
-      TextEditingController(text: 'localhost');
+      TextEditingController(text: 'fortuneboot.com');
   final TextEditingController _portController =
-      TextEditingController(text: '8080');
+      TextEditingController(text: '443');
 
   @override
   void initState() {
