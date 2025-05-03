@@ -13,3 +13,10 @@ final class GroupSettingFetched extends SettingEvent {
   @override
   List<Object> get props => [groupId ?? 0];
 }
+
+final class GroupSettingChanged extends SettingEvent {
+  GroupSettingChanged(this.groupId);
+  final int groupId;
+  @override
+  List<Object> get props => [groupId];
+}

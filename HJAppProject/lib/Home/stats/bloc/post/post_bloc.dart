@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_login_example/Home/stats/models/mine_setting.dart';
 import 'package:flutter_login_example/Login/model/login_model.dart';
 import 'package:flutter_login_example/Login/model/users.dart';
+import 'package:flutter_login_example/Request/book_request.dart';
 import 'package:flutter_login_example/Request/group_request.dart';
 import 'package:flutter_login_example/Request/include_request.dart';
 import 'package:flutter_login_example/Request/login_request.dart';
@@ -30,6 +31,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
   final LoginService _loginService = LoginService();
   final IncludeService _accountService = IncludeService();
   final GroupService _groupService = GroupService();
+  final BookService _bookService = BookService();
 
   SettingBloc() : super(const SettingState()) {
     on<SettingInitDataLoaded>(
@@ -38,6 +40,10 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     );
     on<GroupSettingFetched>(
       _onFetchedGroup,
+      transformer: throttleDroppable(throttleDuration),
+    );
+    on<GroupSettingChanged>(
+      _onChangedGroup,
       transformer: throttleDroppable(throttleDuration),
     );
   }
@@ -147,7 +153,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     // groupId不为空，查询分组 & 账本设置否则查询默认分组
     var settings = <Setting>[];
     if (groupId == null) {
-      // 查询默认分组 & 账本设置
+      // 查询默认分组 & 账本设置，本地如果有groupId的话，用本地的去查
       final HJResponse defaultGroupIdResponse =
           await _groupService.getDefaultGroupId();
       if (defaultGroupIdResponse.code == 0) {
@@ -158,25 +164,30 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
           var data = accountInfo.data as Map? ?? {}; // todo：data存本地
           var groupName = data['groupName'] as String? ?? '';
           var defaultBookName = data['defaultBookName'] as String? ?? '默认账本';
-          var listResponse = await _groupService.getEnableList();
-          Map<String, dynamic>? settingData = {};
-          if (listResponse.code == 0) {
-            settingData['groupList'] = listResponse.data;
-          }
-          settings.add(Setting(
-            SettingType.currentGroup,
-            content: groupName,
-            leadingWidget: const Icon(Icons.group),
-            data: settingData,
-          ));
-          settings.add(Setting(
-            SettingType.currentBook,
-            content: defaultBookName,
-            leadingWidget: const Icon(Icons.book_online_outlined),
-          ));
+          // var bookListResponse = await _bookService.getByGroupId();
+          settings.add(Setting(SettingType.currentGroup,
+              content: groupName,
+              leadingWidget: const Icon(Icons.group),
+              data: {
+                "groupId": data['groupId'],
+                "bookId": data['defaultBookId']
+              }));
+          settings.add(Setting(SettingType.currentBook,
+              content: defaultBookName,
+              leadingWidget: const Icon(Icons.book_online_outlined),
+              data: {
+                "groupId": data['groupId'],
+                "bookId": data['defaultBookId']
+              }));
         }
       }
     } else {}
     return settings;
+  }
+
+  FutureOr<void> _onChangedGroup(
+      GroupSettingChanged event, Emitter<SettingState> emit) async {
+    var response = await _bookService.getByGroupId(event.groupId);
+    if (response.code == 0) {}
   }
 }

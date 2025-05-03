@@ -1,13 +1,18 @@
 import 'dart:math';
 
 import 'package:dropdown_flutter/custom_dropdown.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_example/Home/stats/bloc/post/post_bloc.dart';
 import 'package:flutter_login_example/Home/stats/bloc/stats_bloc.dart';
 import 'package:flutter_login_example/Home/stats/models/mine_setting.dart';
+import 'package:flutter_login_example/Home/stats/models/setting_select_item.dart';
 import 'package:flutter_login_example/Home/stats/view/drop_down_animate.dart';
 import 'package:flutter_login_example/Login/model/users.dart';
+import 'package:flutter_login_example/Request/book_request.dart';
+import 'package:flutter_login_example/Request/group_request.dart';
+import 'package:multi_dropdown/multi_dropdown.dart';
 import 'package:todos_repository/todos_repository.dart';
 import '../../../generated/l10n.dart';
 import 'package:sticky_grouped_list/sticky_grouped_list.dart';
@@ -60,15 +65,23 @@ class CustomOverlayController extends OverlayPortalController {
 class _MineViewState extends State<MineView> {
   void getApiVersion() {}
 
+  final Map<String, int> itemsMap = {};
+
   // final CustomOverlayController _controller = CustomOverlayController();
 
-  // @override
-  // void initState() {
-  //   _controller.addListener(() {
-  //     print('浮层状态变化：${_controller.isShowing}');
-  //   });
-  //   super.initState();
-  // }
+  FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) {
+        print('lxjtodo:焦点已获取'); // 触发获取焦点的逻辑
+      } else {
+        print('lxjtodo:焦点已失去'); // 触发失去焦点的逻辑
+      }
+      super.initState();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,44 +113,113 @@ class _MineViewState extends State<MineView> {
     final textTheme = Theme.of(ctx).textTheme;
     if (element.type == SettingType.currentGroup ||
         element.type == SettingType.currentBook) {
-      var items = <String>[];
       var curItem = element.content;
-      if (element.type == SettingType.currentGroup) {
-        var groupList = element.data?['groupList'] as List? ?? [];
-        for (var item in groupList) {
-          items.add(item['groupName'] as String? ?? '');
-        }
-      }
-      print('lxjtodo: $items, $curItem');
-      if (!items.contains(curItem)) {
-        items.add(curItem ?? '');
-      }
+      // 1.下拉的时候搜索
+      // 2.改选项的时候更新bloc
+      // print('lxjtodo:items $items, $curItem');
       return Card(
         margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-        child: SizedBox(
-          child: ListTile(
-            leading: element.leadingWidget ?? element.leadingWidget,
-            title: Text('${element.type.title}:',
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('${element.type.title}:',
                 style: textTheme.headlineSmall!.copyWith(fontSize: 16)),
-            subtitle: Container(
-              margin: const EdgeInsets.only(top: 6),
-              width: 100,
-              height: 60,
-              child: DropdownFlutter.search(
-                decoration: CustomDropdownDecoration(
-                    closedFillColor: Theme.of(context).cardColor,
-                    expandedFillColor: Theme.of(context).cardColor,
-                    searchFieldDecoration: SearchFieldDecoration(
-                        fillColor: Theme.of(context).cardColor)),
-                // overlayController: _controller,
-                items: items,
-                onChanged: (o) {
-                  print('lxjtodo');
-                },
-                initialItem: curItem,
-              ),
+            SizedBox(
+              height: 6,
             ),
-          ),
+            MultiDropdown<SettingSelectItem>.future(
+              future: () async {
+                List<DropdownItem<SettingSelectItem>> items = [];
+                if (element.type == SettingType.currentGroup) {
+                  GroupService groupService = GroupService();
+                  var res = await groupService.getEnableList();
+                  if (res.code == 0) {
+                    var remoteList = res.data as List? ?? [];
+                    for (final remoteItem in remoteList) {
+                      var remoteGroupName =
+                          remoteItem['groupName'] as String? ?? '';
+                      bool selected = false;
+                      if (remoteGroupName == element.content) {
+                        selected = true;
+                      }
+                      var groupId = remoteItem['groupId'] as int? ?? 0;
+                      items.add(DropdownItem(
+                          label: remoteGroupName,
+                          value: SettingSelectItem(remoteGroupName, groupId),
+                          selected: selected));
+                    }
+                  }
+                } else {
+                  BookService bookService = BookService();
+                  var remoteBookResponse = await bookService
+                      .getByGroupId(element.data!['groupId'] as int? ?? 0);
+                  if (remoteBookResponse.code == 0) {
+                    var remoteBookList = remoteBookResponse.data as List? ?? [];
+                    for (final remoteBookItem in remoteBookList) {
+                      var remoteBookName =
+                          remoteBookItem['bookName'] as String? ?? '';
+                      bool selected = false;
+                      if (remoteBookName == element.content) {
+                        selected = true;
+                      }
+                      items.add(
+                        DropdownItem(
+                            label: remoteBookName,
+                            value: SettingSelectItem(remoteBookName,
+                                remoteBookItem['bookId'] as int? ?? 0),
+                            selected: selected),
+                      );
+                    }
+                  }
+                }
+                return items;
+              },
+              key: GlobalKey(),
+              fieldDecoration: FieldDecoration(
+                hintText: curItem,
+                hintStyle: const TextStyle(color: Colors.black87, fontSize: 14),
+                prefixIcon: element.leadingWidget,
+                showClearIcon: false,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+              focusNode:
+                  element.type == SettingType.currentGroup ? _focusNode : null,
+              dropdownDecoration: DropdownDecoration(
+                marginTop: 2,
+                maxHeight: 500,
+                header: Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Text(
+                    element.type.title,
+                    textAlign: TextAlign.start,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please select a country';
+                }
+                return null;
+              },
+              searchEnabled: true,
+              singleSelect: true,
+              // items: items,
+            ),
+          ]),
         ),
       );
     }
