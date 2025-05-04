@@ -1,3 +1,4 @@
+import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'login_model.g.dart';
@@ -69,7 +70,7 @@ class Login {
 class HJResponse {
   final int code;
   final String msg;
-  final dynamic? data;
+  final dynamic data;
   HJResponse(this.code, this.msg, this.data);
   factory HJResponse.fromJson(Map<String, dynamic> json) =>
       _$HJResponseFromJson(json);
@@ -79,3 +80,4 @@ class HJResponse {
     return 'LoginResponse{code: $code, msg: $msg, data: $data}';
   }
 }
+

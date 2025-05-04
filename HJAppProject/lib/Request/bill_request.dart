@@ -42,19 +42,19 @@ abstract class BillService {
     @Query('accountId') String? accountId,
     @Query('payeeId') String? payeeId,
 
-    // 分类/标签过滤（数组参数特殊处理）
+    // 分类/标签过滤（数组参数特殊处理） Uri.encodeComponent(jsonEncode(categoryIds))
     @Query('categoryIds') List<int>? categoryIds,
     @Query('tagIds') List<int>? tagIds,
 
     // 布尔型参数
-    @Query('confirm') bool confirm = true,
-    @Query('include') bool include = true,
-    @Query('fileInclude') bool fileInclude = true,
+    @Query('confirm') bool? confirm,
+    @Query('include') bool? include,
+    @Query('fileInclude') bool? fileInclude,
 
     // 字符串类型参数
-    @Query('orderDirection') String orderDirection = "string",
-    @Query('title') String title = "string",
-    @Query('remark') String remark = "string",
+    @Query('orderDirection') String? orderDirection,
+    @Query('title') String? title,
+    @Query('remark') String? remark,
 
     // 交易时间范围（自定义格式）
     @Query('tradeTimeStartTime') String? tradeTimeStartTime,

@@ -8,12 +8,14 @@ final class TodosOverviewState extends Equatable {
     this.todos = const [],
     this.filter = TodosViewFilter.all,
     this.lastDeletedTodo,
+    this.bills = const [],
   });
 
   final TodosOverviewStatus status;
   final List<Todo> todos;
   final TodosViewFilter filter;
   final Todo? lastDeletedTodo;
+  final List<BillItem>? bills;
 
   Iterable<Todo> get filteredTodos => filter.applyAll(todos);
 
@@ -22,6 +24,7 @@ final class TodosOverviewState extends Equatable {
     List<Todo> Function()? todos,
     TodosViewFilter Function()? filter,
     Todo? Function()? lastDeletedTodo,
+    List<BillItem>? bills,
   }) {
     return TodosOverviewState(
       status: status != null ? status() : this.status,
@@ -29,6 +32,7 @@ final class TodosOverviewState extends Equatable {
       filter: filter != null ? filter() : this.filter,
       lastDeletedTodo:
           lastDeletedTodo != null ? lastDeletedTodo() : this.lastDeletedTodo,
+      bills: bills != null ? bills : this.bills,
     );
   }
 
@@ -38,5 +42,6 @@ final class TodosOverviewState extends Equatable {
         todos,
         filter,
         lastDeletedTodo,
+        bills,
       ];
 }

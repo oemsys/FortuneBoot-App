@@ -1,6 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/todos_view_filter.dart';
+import 'package:flutter_login_example/Request/bill_request.dart';
 import 'package:todos_repository/todos_repository.dart';
 
 part 'todos_overview_event.dart';
@@ -19,6 +21,7 @@ class TodosOverviewBloc extends Bloc<TodosOverviewEvent, TodosOverviewState> {
     on<TodosOverviewToggleAllRequested>(_onToggleAllRequested);
     on<TodosOverviewClearCompletedRequested>(_onClearCompletedRequested);
   }
+  final BillService _billService = BillService();
 
   final TodosRepository _todosRepository;
 
@@ -27,6 +30,18 @@ class TodosOverviewBloc extends Bloc<TodosOverviewEvent, TodosOverviewState> {
     Emitter<TodosOverviewState> emit,
   ) async {
     emit(state.copyWith(status: () => TodosOverviewStatus.loading));
+
+    var billResponse =
+        await _billService.getPage(pageNum: 1, pageSize: 20, bookId: '1');
+    if (billResponse.code == 0) {
+      var billList = billResponse.data['rows'] as List? ?? [];
+      List<BillItem> items = billList.map((ele) {
+        return BillItem.fromJson(Map<String, dynamic>.from(ele as Map? ?? {}));
+      }).toList();
+      print('lxjtodo $items');
+      emit(state.copyWith(
+        status: () => TodosOverviewStatus.success, bills: items));
+    }
 
     await emit.forEach<List<Todo>>(
       _todosRepository.getTodos(),

@@ -3,10 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_example/Home/edit_todo/view/edit_todo_page.dart';
 import 'package:flutter_login_example/Home/todos_overview/bloc/todos_overview_bloc.dart';
+import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
+import 'package:flutter_login_example/Home/todos_overview/widgets/bill_list_tile.dart';
 import 'package:flutter_login_example/Home/todos_overview/widgets/todo_list_tile.dart';
 import 'package:flutter_login_example/Home/todos_overview/widgets/todos_overview_filter_button.dart';
 import 'package:flutter_login_example/Home/todos_overview/widgets/todos_overview_options_button.dart';
+import 'package:sticky_grouped_list/sticky_grouped_list.dart';
 import 'package:todos_repository/todos_repository.dart';
+import 'package:intl/intl.dart';
 
 import '../../../generated/l10n.dart';
 
@@ -29,7 +33,6 @@ class TodosOverviewView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text(S.current.todosOverviewAppBarTitle),
@@ -101,37 +104,82 @@ class TodosOverviewView extends StatelessWidget {
                 );
               }
             }
+            return StickyGroupedListView<BillItem, DateTime>(
+                elements: state.bills ?? [],
+                groupBy: (BillItem element) => DateTime(
+                      element.tradeTime!.year,
+                      element.tradeTime!.month,
+                      element.tradeTime!.day,
+                    ),
+                groupComparator: (DateTime value1, DateTime value2) =>
+                    value2.compareTo(value1),
+                itemComparator: (BillItem element1, BillItem element2) =>
+                    element1.tradeTime!.compareTo(element2.tradeTime!),
+                floatingHeader: true,
+                itemBuilder: (context, element) => BillListTile(
+                      bill: element,
+                    ),
+                groupSeparatorBuilder: _getGroupSeparator);
 
             return CupertinoScrollbar(
               child: ListView.builder(
-                itemCount: state.filteredTodos.length,
+                itemCount: state.bills?.length,
                 itemBuilder: (_, index) {
-                  final todo = state.filteredTodos.elementAt(index);
-                  return TodoListTile(
-                    todo: todo,
+                  final bill = state.bills?.elementAt(index);
+                  return BillListTile(
+                    bill: bill!,
                     onToggleCompleted: (isCompleted) {
-                      context.read<TodosOverviewBloc>().add(
-                            TodosOverviewTodoCompletionToggled(
-                              todo: todo,
-                              isCompleted: isCompleted,
-                            ),
-                          );
+                      // context.read<TodosOverviewBloc>().add(
+                      //       TodosOverviewTodoCompletionToggled(
+                      //         todo: todo,
+                      //         isCompleted: isCompleted,
+                      //       ),
+                      //     );
                     },
                     onDismissed: (_) {
-                      context
-                          .read<TodosOverviewBloc>()
-                          .add(TodosOverviewTodoDeleted(todo));
+                      // context
+                      //     .read<TodosOverviewBloc>()
+                      //     .add(TodosOverviewTodoDeleted(todo));
                     },
                     onTap: () {
-                      Navigator.of(context).push(
-                        EditTodoPage.route(initialTodo: todo),
-                      );
+                      // Navigator.of(context).push(
+                      //   EditTodoPage.route(initialTodo: todo),
+                      // );
                     },
                   );
                 },
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _getGroupSeparator(BillItem element) {
+    DateFormat formatter = DateFormat('yyyy-MM-dd');
+    String formattedDate =
+        formatter.format(element.tradeTime ?? DateTime.now());
+    return SizedBox(
+      height: 50,
+      child: Align(
+        alignment: Alignment.center,
+        child: Container(
+          width: 120,
+          decoration: BoxDecoration(
+            color: Colors.blue[300],
+            border: Border.all(
+              color: Colors.blue[300]!,
+            ),
+            borderRadius: const BorderRadius.all(Radius.circular(20.0)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              formattedDate,
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
       ),
     );
