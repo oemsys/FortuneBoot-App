@@ -104,8 +104,11 @@ class BillListTile extends StatelessWidget {
                       TextStyle(color: billColor, fontWeight: FontWeight.bold),
                 ),
                 TextSpan(
-                  text: ' $formattedDate', // 剩余字符
-                ),
+                    text: ' $formattedDate', // 剩余字符
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontWeight: FontWeight.bold)),
               ],
             ),
           ),
