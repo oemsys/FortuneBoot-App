@@ -41,7 +41,7 @@ class TodosOverviewBloc extends Bloc<TodosOverviewEvent, TodosOverviewState> {
       }).toList();
       print('lxjtodo $items');
       emit(state.copyWith(
-        status: () => TodosOverviewStatus.success, bills: items));
+          status: () => TodosOverviewStatus.success, bills: items));
     }
 
     await emit.forEach<List<Todo>>(
@@ -117,7 +117,8 @@ class TodosOverviewBloc extends Bloc<TodosOverviewEvent, TodosOverviewState> {
     emit(state.copyWith(isLoadingMore: true));
 
     final nextPage = state.pageNum + 1;
-    var billResponse = await _billService.getPage(pageNum: nextPage, pageSize: 20, bookId: '1');
+    var billResponse = await _billService.getPage(
+        pageNum: nextPage, pageSize: 20, bookId: '1');
     if (billResponse.code == 0) {
       var billList = billResponse.data['rows'] as List? ?? [];
       List<BillItem> items = billList.map((ele) {
@@ -125,7 +126,8 @@ class TodosOverviewBloc extends Bloc<TodosOverviewEvent, TodosOverviewState> {
       }).toList();
 
       final allBills = List<BillItem>.from(state.bills ?? [])..addAll(items);
-      final hasMore = items.length >= 20; // 如果返回数量小于pageSize，说明没有更多
+      final allBillsCount = billResponse.data['total'] as int? ?? 20;
+      final hasMore = allBills.length < allBillsCount; // 如果返回数量小于pageSize，说明没有更多
 
       emit(state.copyWith(
         bills: allBills,

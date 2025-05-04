@@ -46,7 +46,8 @@ class _TodosOverviewViewState extends State<TodosOverviewView> {
         centerTitle: true,
         title: Row(
           children: [
-            Text(S.current.todosOverviewAppBarTitle, style: Theme.of(context).appBarTheme.titleTextStyle),
+            Text(S.current.todosOverviewAppBarTitle,
+                style: Theme.of(context).appBarTheme.titleTextStyle),
             Expanded(
               child: Center(
                 child: _buildDateTitle(context),
@@ -144,16 +145,23 @@ class _TodosOverviewViewState extends State<TodosOverviewView> {
               _currentGroupDate = _groupDates.first;
             }
 
-            final groupKeys = _groupDates.map((d) => _groupKeys.putIfAbsent(_dateKey(d), () => GlobalKey())).toList();
+            final groupKeys = _groupDates
+                .map((d) =>
+                    _groupKeys.putIfAbsent(_dateKey(d), () => GlobalKey()))
+                .toList();
 
             return NotificationListener<ScrollNotification>(
               onNotification: (notification) {
-                WidgetsBinding.instance.addPostFrameCallback((_) => _updateCurrentGroupDate(context));
+                WidgetsBinding.instance.addPostFrameCallback(
+                    (_) => _updateCurrentGroupDate(context));
                 // 上拉触底加载更多
                 if (notification is ScrollEndNotification &&
-                    notification.metrics.pixels >= notification.metrics.maxScrollExtent - 50) {
+                    notification.metrics.pixels >=
+                        notification.metrics.maxScrollExtent - 50) {
                   if (!state.isLoadingMore && state.hasMore) {
-                    context.read<TodosOverviewBloc>().add(const TodosOverviewLoadMoreRequested());
+                    context
+                        .read<TodosOverviewBloc>()
+                        .add(const TodosOverviewLoadMoreRequested());
                   }
                 }
                 return false;
@@ -172,7 +180,9 @@ class _TodosOverviewViewState extends State<TodosOverviewView> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _getGroupSeparator(context, date, key),
-                      ...billsInGroup.map((bill) => BillListTile(bill: bill)).toList(),
+                      ...billsInGroup
+                          .map((bill) => BillListTile(bill: bill))
+                          .toList(),
                     ],
                   );
                 },
@@ -215,24 +225,20 @@ class _TodosOverviewViewState extends State<TodosOverviewView> {
   String _dateKey(DateTime date) => DateFormat('yyyy-MM-dd').format(date);
 
   Widget _buildFooterWidget(TodosOverviewState state) {
-    if (state.isLoadingMore) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: CupertinoActivityIndicator()),
-      );
-    } else if (!state.hasMore) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child: Center(
-          child: Text(
-            '我是有底线的',
-            style: TextStyle(color: Colors.grey),
-          ),
-        ),
-      );
-    } else {
-      return const SizedBox.shrink();
-    }
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.only(bottom: 32),
+        height: 56,
+        child: state.isLoadingMore
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 1.5))
+            : !state.hasMore
+                ? const Text('我是有底线的')
+                : const SizedBox.shrink(),
+      ),
+    );
   }
 
   Widget _buildDateTitle(BuildContext context) {
