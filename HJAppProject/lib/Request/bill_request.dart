@@ -26,8 +26,8 @@ abstract class BillService {
   @GET('/fortune/bill/getPage')
   Future<HJResponse> getPage({
     // 基础分页参数
-    @Query('pageNum') int pageNum = 2147483647,
-    @Query('pageSize') int pageSize = 500,
+    @Query('pageNum') int pageNum = 1,
+    @Query('pageSize') int pageSize = 20,
 
     // 时间范围参数（ISO 8601格式）
     @Query('beginTime') String? beginTime,
