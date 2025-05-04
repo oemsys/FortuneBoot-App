@@ -18,17 +18,20 @@ class S {
   static S? _current;
 
   static S get current {
-    assert(_current != null,
-        'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.');
+    assert(
+      _current != null,
+      'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.',
+    );
     return _current!;
   }
 
   static const AppLocalizationDelegate delegate = AppLocalizationDelegate();
 
   static Future<S> load(Locale locale) {
-    final name = (locale.countryCode?.isEmpty ?? false)
-        ? locale.languageCode
-        : locale.toString();
+    final name =
+        (locale.countryCode?.isEmpty ?? false)
+            ? locale.languageCode
+            : locale.toString();
     final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
@@ -41,8 +44,10 @@ class S {
 
   static S of(BuildContext context) {
     final instance = S.maybeOf(context);
-    assert(instance != null,
-        'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?');
+    assert(
+      instance != null,
+      'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?',
+    );
     return instance!;
   }
 
@@ -62,22 +67,12 @@ class S {
 
   /// `Protocol`
   String get protocol {
-    return Intl.message(
-      'Protocol',
-      name: 'protocol',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Protocol', name: 'protocol', desc: '', args: []);
   }
 
   /// `Domain`
   String get domain {
-    return Intl.message(
-      'Domain',
-      name: 'domain',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Domain', name: 'domain', desc: '', args: []);
   }
 
   /// `Please enter a domain`
@@ -102,12 +97,7 @@ class S {
 
   /// `Port`
   String get port {
-    return Intl.message(
-      'Port',
-      name: 'port',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Port', name: 'port', desc: '', args: []);
   }
 
   /// `Please enter a port`
@@ -132,12 +122,7 @@ class S {
 
   /// `Confirm`
   String get confirm {
-    return Intl.message(
-      'Confirm',
-      name: 'confirm',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Confirm', name: 'confirm', desc: '', args: []);
   }
 
   /// `Server connection failed`
@@ -152,22 +137,12 @@ class S {
 
   /// `Error`
   String get error {
-    return Intl.message(
-      'Error',
-      name: 'error',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Error', name: 'error', desc: '', args: []);
   }
 
   /// `OK`
   String get ok {
-    return Intl.message(
-      'OK',
-      name: 'ok',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('OK', name: 'ok', desc: '', args: []);
   }
 
   /// `Nickname cannot be empty`
@@ -212,12 +187,7 @@ class S {
 
   /// `Easy Money`
   String get main_logo {
-    return Intl.message(
-      'Easy Money',
-      name: 'main_logo',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Easy Money', name: 'main_logo', desc: '', args: []);
   }
 
   /// `You are trying to login/sign up on server hosted on`
@@ -242,22 +212,12 @@ class S {
 
   /// `LOGIN`
   String get login_button_text {
-    return Intl.message(
-      'LOGIN',
-      name: 'login_button_text',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('LOGIN', name: 'login_button_text', desc: '', args: []);
   }
 
   /// `REGISTER`
   String get register {
-    return Intl.message(
-      'REGISTER',
-      name: 'register',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('REGISTER', name: 'register', desc: '', args: []);
   }
 
   /// `or login with`
@@ -282,42 +242,22 @@ class S {
 
   /// `Forgot huh?`
   String get forgot_huh {
-    return Intl.message(
-      'Forgot huh?',
-      name: 'forgot_huh',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Forgot huh?', name: 'forgot_huh', desc: '', args: []);
   }
 
   /// `User`
   String get login_account {
-    return Intl.message(
-      'User',
-      name: 'login_account',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('User', name: 'login_account', desc: '', args: []);
   }
 
   /// `Pass`
   String get login_pass {
-    return Intl.message(
-      'Pass',
-      name: 'login_pass',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Pass', name: 'login_pass', desc: '', args: []);
   }
 
   /// `Confirm`
   String get login_confirm {
-    return Intl.message(
-      'Confirm',
-      name: 'login_confirm',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Confirm', name: 'login_confirm', desc: '', args: []);
   }
 
   /// `Term of services`
@@ -362,32 +302,17 @@ class S {
 
   /// `HELP ME`
   String get help_me {
-    return Intl.message(
-      'HELP ME',
-      name: 'help_me',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('HELP ME', name: 'help_me', desc: '', args: []);
   }
 
   /// `GO BACK`
   String get go_back {
-    return Intl.message(
-      'GO BACK',
-      name: 'go_back',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('GO BACK', name: 'go_back', desc: '', args: []);
   }
 
   /// `Not match!`
   String get not_match {
-    return Intl.message(
-      'Not match!',
-      name: 'not_match',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Not match!', name: 'not_match', desc: '', args: []);
   }
 
   /// `Don't feel bad. Happens all the time.`
@@ -422,32 +347,17 @@ class S {
 
   /// `Oh no!`
   String get oh_no {
-    return Intl.message(
-      'Oh no!',
-      name: 'oh_no',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Oh no!', name: 'oh_no', desc: '', args: []);
   }
 
   /// `Succes!`
   String get succes {
-    return Intl.message(
-      'Succes!',
-      name: 'succes',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Succes!', name: 'succes', desc: '', args: []);
   }
 
   /// `Username`
   String get username {
-    return Intl.message(
-      'Username',
-      name: 'username',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Username', name: 'username', desc: '', args: []);
   }
 
   /// `Please fill in this form to complete the signup`
@@ -472,12 +382,7 @@ class S {
 
   /// `SUBMIT`
   String get sign_up_submit {
-    return Intl.message(
-      'SUBMIT',
-      name: 'sign_up_submit',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('SUBMIT', name: 'sign_up_submit', desc: '', args: []);
   }
 
   /// `This isn't a valid phone number`
@@ -522,52 +427,27 @@ class S {
 
   /// `Nickname`
   String get login_nickname {
-    return Intl.message(
-      'Nickname',
-      name: 'login_nickname',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Nickname', name: 'login_nickname', desc: '', args: []);
   }
 
   /// `Email`
   String get login_email {
-    return Intl.message(
-      'Email',
-      name: 'login_email',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Email', name: 'login_email', desc: '', args: []);
   }
 
   /// `sex`
   String get sex {
-    return Intl.message(
-      'sex',
-      name: 'sex',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('sex', name: 'sex', desc: '', args: []);
   }
 
   /// `female`
   String get female {
-    return Intl.message(
-      'female',
-      name: 'female',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('female', name: 'female', desc: '', args: []);
   }
 
   /// `male`
   String get male {
-    return Intl.message(
-      'male',
-      name: 'male',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('male', name: 'male', desc: '', args: []);
   }
 
   /// `Currently, only two genders are supported. Please fill in 'Male' or 'Female'.`
@@ -870,12 +750,7 @@ class S {
 
   /// `My`
   String get mine {
-    return Intl.message(
-      'My',
-      name: 'mine',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('My', name: 'mine', desc: '', args: []);
   }
 }
 
