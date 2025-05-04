@@ -28,9 +28,9 @@ class BillItem {
   DateTime? tradeTime;
   int? accountId;
   String? accountName;
-  int? amount;
+  double? amount;
   String? currencyCode;
-  int? convertedAmount;
+  double? convertedAmount;
   int? payeeId;
   String? payeeName;
   BillType? billType;
