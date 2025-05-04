@@ -9,6 +9,9 @@ final class TodosOverviewState extends Equatable {
     this.filter = TodosViewFilter.all,
     this.lastDeletedTodo,
     this.bills = const [],
+    this.pageNum = 1,
+    this.hasMore = true,
+    this.isLoadingMore = false,
   });
 
   final TodosOverviewStatus status;
@@ -16,6 +19,11 @@ final class TodosOverviewState extends Equatable {
   final TodosViewFilter filter;
   final Todo? lastDeletedTodo;
   final List<BillItem>? bills;
+
+  // 分页相关
+  final int pageNum; // 当前页码
+  final bool hasMore; // 是否还有更多数据
+  final bool isLoadingMore; // 是否正在加载更多
 
   Iterable<Todo> get filteredTodos => filter.applyAll(todos);
 
@@ -25,6 +33,9 @@ final class TodosOverviewState extends Equatable {
     TodosViewFilter Function()? filter,
     Todo? Function()? lastDeletedTodo,
     List<BillItem>? bills,
+    int? pageNum,
+    bool? hasMore,
+    bool? isLoadingMore,
   }) {
     return TodosOverviewState(
       status: status != null ? status() : this.status,
@@ -33,6 +44,9 @@ final class TodosOverviewState extends Equatable {
       lastDeletedTodo:
           lastDeletedTodo != null ? lastDeletedTodo() : this.lastDeletedTodo,
       bills: bills != null ? bills : this.bills,
+      pageNum: pageNum ?? this.pageNum,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
     );
   }
 
@@ -43,5 +57,8 @@ final class TodosOverviewState extends Equatable {
         filter,
         lastDeletedTodo,
         bills,
+        pageNum,
+        hasMore,
+        isLoadingMore,
       ];
 }

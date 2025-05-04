@@ -53,3 +53,8 @@ class TodosOverviewToggleAllRequested extends TodosOverviewEvent {
 class TodosOverviewClearCompletedRequested extends TodosOverviewEvent {
   const TodosOverviewClearCompletedRequested();
 }
+
+/// 上拉加载更多事件
+class TodosOverviewLoadMoreRequested extends TodosOverviewEvent {
+  const TodosOverviewLoadMoreRequested();
+}

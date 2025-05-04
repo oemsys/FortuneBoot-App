@@ -149,11 +149,22 @@ class _TodosOverviewViewState extends State<TodosOverviewView> {
             return NotificationListener<ScrollNotification>(
               onNotification: (notification) {
                 WidgetsBinding.instance.addPostFrameCallback((_) => _updateCurrentGroupDate(context));
+                // 上拉触底加载更多
+                if (notification is ScrollEndNotification &&
+                    notification.metrics.pixels >= notification.metrics.maxScrollExtent - 50) {
+                  if (!state.isLoadingMore && state.hasMore) {
+                    context.read<TodosOverviewBloc>().add(const TodosOverviewLoadMoreRequested());
+                  }
+                }
                 return false;
               },
               child: ListView.builder(
-                itemCount: _groupDates.length,
+                itemCount: _groupDates.length + 1, // +1 for footer
                 itemBuilder: (context, groupIdx) {
+                  if (groupIdx == _groupDates.length) {
+                    // footer
+                    return _buildFooterWidget(state);
+                  }
                   final date = _groupDates[groupIdx];
                   final key = _groupKeys[_dateKey(date)]!;
                   final billsInGroup = grouped[_dateKey(date)] ?? [];
@@ -202,6 +213,27 @@ class _TodosOverviewViewState extends State<TodosOverviewView> {
   }
 
   String _dateKey(DateTime date) => DateFormat('yyyy-MM-dd').format(date);
+
+  Widget _buildFooterWidget(TodosOverviewState state) {
+    if (state.isLoadingMore) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16),
+        child: Center(child: CupertinoActivityIndicator()),
+      );
+    } else if (!state.hasMore) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16),
+        child: Center(
+          child: Text(
+            '我是有底线的',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+      );
+    } else {
+      return const SizedBox.shrink();
+    }
+  }
 
   Widget _buildDateTitle(BuildContext context) {
     if (_currentGroupDate == null) {

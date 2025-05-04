@@ -20,6 +20,7 @@ class TodosOverviewBloc extends Bloc<TodosOverviewEvent, TodosOverviewState> {
     on<TodosOverviewFilterChanged>(_onFilterChanged);
     on<TodosOverviewToggleAllRequested>(_onToggleAllRequested);
     on<TodosOverviewClearCompletedRequested>(_onClearCompletedRequested);
+    on<TodosOverviewLoadMoreRequested>(_onLoadMoreRequested);
   }
   final BillService _billService = BillService();
 
@@ -105,5 +106,35 @@ class TodosOverviewBloc extends Bloc<TodosOverviewEvent, TodosOverviewState> {
     Emitter<TodosOverviewState> emit,
   ) async {
     await _todosRepository.clearCompleted();
+  }
+
+  /// 上拉加载更多处理
+  Future<void> _onLoadMoreRequested(
+    TodosOverviewLoadMoreRequested event,
+    Emitter<TodosOverviewState> emit,
+  ) async {
+    if (state.isLoadingMore || !state.hasMore) return;
+    emit(state.copyWith(isLoadingMore: true));
+
+    final nextPage = state.pageNum + 1;
+    var billResponse = await _billService.getPage(pageNum: nextPage, pageSize: 20, bookId: '1');
+    if (billResponse.code == 0) {
+      var billList = billResponse.data['rows'] as List? ?? [];
+      List<BillItem> items = billList.map((ele) {
+        return BillItem.fromJson(Map<String, dynamic>.from(ele as Map? ?? {}));
+      }).toList();
+
+      final allBills = List<BillItem>.from(state.bills ?? [])..addAll(items);
+      final hasMore = items.length >= 20; // 如果返回数量小于pageSize，说明没有更多
+
+      emit(state.copyWith(
+        bills: allBills,
+        pageNum: nextPage,
+        hasMore: hasMore,
+        isLoadingMore: false,
+      ));
+    } else {
+      emit(state.copyWith(isLoadingMore: false, hasMore: false));
+    }
   }
 }
