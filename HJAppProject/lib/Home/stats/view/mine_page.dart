@@ -120,111 +120,115 @@ class _MineViewState extends State<MineView> {
         margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('${element.type.title}:',
-                style: textTheme.headlineSmall!.copyWith(fontSize: 16)),
-            SizedBox(
-              height: 6,
-            ),
-            MultiDropdown<SettingSelectItem>.future(
-              onSelectionChange: (selectedItems) {
-                if (element.type == SettingType.currentGroup) {
-                  context.read<SettingBloc>().add(
-                      GroupSettingFetched(groupId: selectedItems.first.id));
-                }
-              },
-              future: () async {
-                List<DropdownItem<SettingSelectItem>> items = [];
-                if (element.type == SettingType.currentGroup) {
-                  GroupService groupService = GroupService();
-                  var res = await groupService.getEnableList();
-                  if (res.code == 0) {
-                    var remoteList = res.data as List? ?? [];
-                    for (final remoteItem in remoteList) {
-                      var remoteGroupName =
-                          remoteItem['groupName'] as String? ?? '';
-                      bool selected = false;
-                      if (remoteGroupName == element.content) {
-                        selected = true;
-                      }
-                      var groupId = remoteItem['groupId'] as int? ?? 0;
-                      items.add(DropdownItem(
-                          label: remoteGroupName,
-                          value: SettingSelectItem(remoteGroupName, groupId),
-                          selected: selected));
-                    }
-                  }
-                } else {
-                  BookService bookService = BookService();
-                  var remoteBookResponse = await bookService
-                      .getByGroupId(element.data!['groupId'] as int? ?? 0);
-                  if (remoteBookResponse.code == 0) {
-                    var remoteBookList = remoteBookResponse.data as List? ?? [];
-                    for (final remoteBookItem in remoteBookList) {
-                      var remoteBookName =
-                          remoteBookItem['bookName'] as String? ?? '';
-                      bool selected = false;
-                      if (remoteBookName == element.content) {
-                        selected = true;
-                      }
-                      items.add(
-                        DropdownItem(
-                            label: remoteBookName,
-                            value: SettingSelectItem(remoteBookName,
-                                remoteBookItem['bookId'] as int? ?? 0),
-                            selected: selected),
-                      );
-                    }
-                  }
-                }
-                return items;
-              },
-              key: GlobalKey(),
-              fieldDecoration: FieldDecoration(
-                hintText: curItem,
-                hintStyle: const TextStyle(fontSize: 14),
-                prefixIcon: element.leadingWidget,
-                showClearIcon: false,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  // borderSide: const BorderSide(
-                  //   color: Colors.black87,
-                  // ),
-                ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                '${element.type.title}:',
+                style: textTheme.headlineSmall!.copyWith(fontSize: 16),
               ),
-              focusNode:
-                  element.type == SettingType.currentGroup ? _focusNode : null,
-              dropdownDecoration: DropdownDecoration(
-                marginTop: 2,
-                maxHeight: 500,
-                header: Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Text(
-                    element.type.title,
-                    textAlign: TextAlign.start,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+              const SizedBox(width: 12),
+              Expanded(
+                child: MultiDropdown<SettingSelectItem>.future(
+                  onSelectionChange: (selectedItems) {
+                    if (element.type == SettingType.currentGroup) {
+                      context.read<SettingBloc>().add(
+                          GroupSettingFetched(groupId: selectedItems.first.id));
+                    }
+                  },
+                  future: () async {
+                    List<DropdownItem<SettingSelectItem>> items = [];
+                    if (element.type == SettingType.currentGroup) {
+                      GroupService groupService = GroupService();
+                      var res = await groupService.getEnableList();
+                      if (res.code == 0) {
+                        var remoteList = res.data as List? ?? [];
+                        for (final remoteItem in remoteList) {
+                          var remoteGroupName =
+                              remoteItem['groupName'] as String? ?? '';
+                          bool selected = false;
+                          if (remoteGroupName == element.content) {
+                            selected = true;
+                          }
+                          var groupId = remoteItem['groupId'] as int? ?? 0;
+                          items.add(DropdownItem(
+                              label: remoteGroupName,
+                              value: SettingSelectItem(remoteGroupName, groupId),
+                              selected: selected));
+                        }
+                      }
+                    } else {
+                      BookService bookService = BookService();
+                      var remoteBookResponse = await bookService
+                          .getByGroupId(element.data!['groupId'] as int? ?? 0);
+                      if (remoteBookResponse.code == 0) {
+                        var remoteBookList = remoteBookResponse.data as List? ?? [];
+                        for (final remoteBookItem in remoteBookList) {
+                          var remoteBookName =
+                              remoteBookItem['bookName'] as String? ?? '';
+                          bool selected = false;
+                          if (remoteBookName == element.content) {
+                            selected = true;
+                          }
+                          items.add(
+                            DropdownItem(
+                                label: remoteBookName,
+                                value: SettingSelectItem(remoteBookName,
+                                    remoteBookItem['bookId'] as int? ?? 0),
+                                selected: selected),
+                          );
+                        }
+                      }
+                    }
+                    return items;
+                  },
+                  key: GlobalKey(),
+                  fieldDecoration: FieldDecoration(
+                    hintText: curItem,
+                    hintStyle: const TextStyle(fontSize: 14),
+                    prefixIcon: element.leadingWidget,
+                    showClearIcon: false,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      // borderSide: const BorderSide(
+                      //   color: Colors.black87,
+                      // ),
                     ),
                   ),
+                  focusNode:
+                      element.type == SettingType.currentGroup ? _focusNode : null,
+                  dropdownDecoration: DropdownDecoration(
+                    marginTop: 2,
+                    maxHeight: 500,
+                    header: Padding(
+                      padding: EdgeInsets.all(8),
+                      child: Text(
+                        element.type.title,
+                        textAlign: TextAlign.start,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please select a country';
+                    }
+                    return null;
+                  },
+                  searchEnabled: true,
+                  singleSelect: true,
+                  // items: items,
                 ),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please select a country';
-                }
-                return null;
-              },
-              searchEnabled: true,
-              singleSelect: true,
-              // items: items,
-            ),
-          ]),
+            ],
+          ),
         ),
       );
     }
