@@ -13,8 +13,8 @@ class FlutterTodosTheme {
       extensions: const <ThemeExtension<dynamic>>[
         CustomColors(
           transferTextColor: Colors.black,
-          incomeTextColor: Colors.lightGreen,
-          expenseTextColor: Colors.red,
+          incomeTextColor: Colors.red,
+          expenseTextColor: Colors.lightGreen,
           adjustTextColor: Colors.black,
           floatingDateColor: Colors.black,
         ), // 亮色主题色
@@ -37,8 +37,8 @@ class FlutterTodosTheme {
         extensions: const <ThemeExtension<dynamic>>[
           CustomColors(
             transferTextColor: Colors.white,
-            incomeTextColor: Colors.lightGreen,
-            expenseTextColor: Colors.red,
+            incomeTextColor: Colors.red,
+            expenseTextColor: Colors.lightGreen,
             adjustTextColor: Colors.white,
             floatingDateColor: Colors.white,
           ), // 暗色主题色
