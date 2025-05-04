@@ -20,7 +20,7 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
-  static String m0(todoTitle) => "Todo \"${todoTitle}\" deleted.";
+  static String m0(todoTitle) => "Bill item \"${todoTitle}\" deleted.";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -36,11 +36,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "dont_worry_be_happy": MessageLookupByLibrary.simpleMessage(
             "Don\'t feel bad. Happens all the time."),
         "editTodoAddAppBarTitle":
-            MessageLookupByLibrary.simpleMessage("Add Todo"),
+            MessageLookupByLibrary.simpleMessage("Add bill item"),
         "editTodoDescriptionLabel":
             MessageLookupByLibrary.simpleMessage("Description"),
         "editTodoEditAppBarTitle":
-            MessageLookupByLibrary.simpleMessage("Edit Todo"),
+            MessageLookupByLibrary.simpleMessage("Edit bill item"),
         "editTodoSaveButtonTooltip":
             MessageLookupByLibrary.simpleMessage("Save changes"),
         "editTodoTitleLabel": MessageLookupByLibrary.simpleMessage("Title"),
@@ -117,13 +117,13 @@ class MessageLookup extends MessageLookupByLibrary {
         "todoDetailsEditButtonTooltip":
             MessageLookupByLibrary.simpleMessage("Edit"),
         "todosOverviewAppBarTitle":
-            MessageLookupByLibrary.simpleMessage("Flutter Todos"),
+            MessageLookupByLibrary.simpleMessage("Bill items"),
         "todosOverviewClearCompletedButtonText":
             MessageLookupByLibrary.simpleMessage("Clear completed"),
         "todosOverviewEmptyText": MessageLookupByLibrary.simpleMessage(
-            "No todos found with the selected filters."),
+            "No bill items found"),
         "todosOverviewErrorSnackbarText": MessageLookupByLibrary.simpleMessage(
-            "An error occurred while loading todos."),
+            "An error occurred while loading bill items"),
         "todosOverviewFilterActiveOnly":
             MessageLookupByLibrary.simpleMessage("Active only"),
         "todosOverviewFilterAll": MessageLookupByLibrary.simpleMessage("All"),

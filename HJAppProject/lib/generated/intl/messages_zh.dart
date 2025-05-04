@@ -20,7 +20,7 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'zh';
 
-  static String m0(todoTitle) => "待办事项「${todoTitle}」已删除。";
+  static String m0(todoTitle) => "账单「${todoTitle}」已删除。";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -33,9 +33,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "domain": MessageLookupByLibrary.simpleMessage("域名"),
         "dont_worry_be_happy":
             MessageLookupByLibrary.simpleMessage("别难过，这种事经常发生。"),
-        "editTodoAddAppBarTitle": MessageLookupByLibrary.simpleMessage("新建事项"),
+        "editTodoAddAppBarTitle": MessageLookupByLibrary.simpleMessage("新建账单"),
         "editTodoDescriptionLabel": MessageLookupByLibrary.simpleMessage("描述"),
-        "editTodoEditAppBarTitle": MessageLookupByLibrary.simpleMessage("编辑事项"),
+        "editTodoEditAppBarTitle": MessageLookupByLibrary.simpleMessage("编辑账单"),
         "editTodoSaveButtonTooltip":
             MessageLookupByLibrary.simpleMessage("保存修改"),
         "editTodoTitleLabel": MessageLookupByLibrary.simpleMessage("标题"),
@@ -55,7 +55,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "login_button_text": MessageLookupByLibrary.simpleMessage("登录"),
         "login_confirm": MessageLookupByLibrary.simpleMessage("确认"),
         "login_email": MessageLookupByLibrary.simpleMessage("邮箱"),
-        "login_host": MessageLookupByLibrary.simpleMessage("haoji.com"),
+        "login_host": MessageLookupByLibrary.simpleMessage("fortuneboot.com"),
         "login_message": MessageLookupByLibrary.simpleMessage("你可以通过此界面注册/登录"),
         "login_nickname": MessageLookupByLibrary.simpleMessage("昵称"),
         "login_pass": MessageLookupByLibrary.simpleMessage("密码"),
@@ -98,13 +98,13 @@ class MessageLookup extends MessageLookupByLibrary {
         "todoDetailsEditButtonTooltip":
             MessageLookupByLibrary.simpleMessage("编辑"),
         "todosOverviewAppBarTitle":
-            MessageLookupByLibrary.simpleMessage("待办事项总览"),
+            MessageLookupByLibrary.simpleMessage("账单明细"),
         "todosOverviewClearCompletedButtonText":
             MessageLookupByLibrary.simpleMessage("清除已完成"),
         "todosOverviewEmptyText":
-            MessageLookupByLibrary.simpleMessage("未找到符合筛选条件的待办事项。"),
+            MessageLookupByLibrary.simpleMessage("未找账单"),
         "todosOverviewErrorSnackbarText":
-            MessageLookupByLibrary.simpleMessage("加载待办事项时发生错误。"),
+            MessageLookupByLibrary.simpleMessage("加载账单时发生错误"),
         "todosOverviewFilterActiveOnly":
             MessageLookupByLibrary.simpleMessage("仅未完成"),
         "todosOverviewFilterAll": MessageLookupByLibrary.simpleMessage("全部"),
