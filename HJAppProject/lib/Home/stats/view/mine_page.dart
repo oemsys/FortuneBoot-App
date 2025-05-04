@@ -200,7 +200,7 @@ class _MineViewState extends State<MineView> {
                     ),
                   ),
                   focusNode:
-                      element.type == SettingType.currentGroup ? _focusNode : null,
+                  element.type == SettingType.currentGroup ? _focusNode : null,
                   dropdownDecoration: DropdownDecoration(
                     marginTop: 2,
                     maxHeight: 500,
@@ -234,24 +234,38 @@ class _MineViewState extends State<MineView> {
     }
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-      child: SizedBox(
-        child: ListTile(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-          leading: element.leadingWidget ?? element.leadingWidget,
-          title: Text('${element.type.title}:',
-              style: textTheme.headlineSmall!.copyWith(fontSize: 16)),
-          subtitle: (element.detail?.isNotEmpty == true)
-              ? Text(element.detail ?? '',
-                  style: textTheme.bodyMedium!
-                      .copyWith(fontSize: 14, color: Colors.grey[500]))
-              : null,
-          trailing: (element.content?.isNotEmpty == true)
-              ? Text(
-                  element.content ?? '',
-                  style: textTheme.headlineSmall!.copyWith(fontSize: 16),
-                )
-              : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+        child: Row(
+          children: [
+            if (element.leadingWidget != null) ...[
+              element.leadingWidget!,
+              const SizedBox(width: 16),
+            ],
+            Text(
+              '${element.type.title}:',
+              style: textTheme.headlineSmall!.copyWith(fontSize: 16),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (element.content?.isNotEmpty == true)
+                    Text(
+                      element.content ?? '',
+                      style: textTheme.headlineSmall!.copyWith(fontSize: 16),
+                    ),
+                  if (element.detail?.isNotEmpty == true)
+                    Text(
+                      element.detail ?? '',
+                      style: textTheme.bodyMedium!
+                          .copyWith(fontSize: 14, color: Colors.grey[500]),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

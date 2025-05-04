@@ -138,7 +138,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
       settings.add(
         Setting(
           SettingType.accountOverview,
-          detail: '资产：$totalAssets，负债：$totalLiabilities，净资产：$netAssets',
+          detail: '资产：$totalAssets\r\n负债：$totalLiabilities\r\n净资产：$netAssets',
           leadingWidget: const Icon(Icons.paid),
         ),
       );
