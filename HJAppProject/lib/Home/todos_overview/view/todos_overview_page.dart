@@ -8,7 +8,6 @@ import 'package:flutter_login_example/Home/todos_overview/widgets/bill_list_tile
 import 'package:flutter_login_example/Home/todos_overview/widgets/todo_list_tile.dart';
 import 'package:flutter_login_example/Home/todos_overview/widgets/todos_overview_filter_button.dart';
 import 'package:flutter_login_example/Home/todos_overview/widgets/todos_overview_options_button.dart';
-import 'package:sticky_grouped_list/sticky_grouped_list.dart';
 import 'package:todos_repository/todos_repository.dart';
 import 'package:intl/intl.dart';
 
@@ -28,14 +27,33 @@ class TodosOverviewPage extends StatelessWidget {
   }
 }
 
-class TodosOverviewView extends StatelessWidget {
+class TodosOverviewView extends StatefulWidget {
   const TodosOverviewView({super.key});
+
+  @override
+  State<TodosOverviewView> createState() => _TodosOverviewViewState();
+}
+
+class _TodosOverviewViewState extends State<TodosOverviewView> {
+  DateTime? _currentGroupDate;
+  final Map<String, GlobalKey> _groupKeys = {};
+  List<DateTime> _groupDates = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(S.current.todosOverviewAppBarTitle),
+        centerTitle: true,
+        title: Row(
+          children: [
+            Text(S.current.todosOverviewAppBarTitle, style: Theme.of(context).appBarTheme.titleTextStyle),
+            Expanded(
+              child: Center(
+                child: _buildDateTitle(context),
+              ),
+            ),
+          ],
+        ),
         actions: const [
           TodosOverviewFilterButton(),
           TodosOverviewOptionsButton(),
@@ -104,49 +122,47 @@ class TodosOverviewView extends StatelessWidget {
                 );
               }
             }
-            return StickyGroupedListView<BillItem, DateTime>(
-                elements: state.bills ?? [],
-                groupBy: (BillItem element) => DateTime(
-                      element.tradeTime!.year,
-                      element.tradeTime!.month,
-                      element.tradeTime!.day,
-                    ),
-                groupComparator: (DateTime value1, DateTime value2) =>
-                    value2.compareTo(value1),
-                itemComparator: (BillItem element1, BillItem element2) =>
-                    element1.tradeTime!.compareTo(element2.tradeTime!),
-                floatingHeader: true,
-                itemBuilder: (context, element) => BillListTile(
-                      bill: element,
-                    ),
-                groupSeparatorBuilder: (element) =>
-                    _getGroupSeparator(context, element));
 
-            return CupertinoScrollbar(
+            final bills = state.bills ?? [];
+            // 按日期分组
+            final Map<String, List<BillItem>> grouped = {};
+            final Map<String, DateTime> groupDateMap = {};
+            for (var bill in bills) {
+              final date = DateTime(
+                bill.tradeTime!.year,
+                bill.tradeTime!.month,
+                bill.tradeTime!.day,
+              );
+              final key = _dateKey(date);
+              groupDateMap[key] = date;
+              grouped.putIfAbsent(key, () => []).add(bill);
+            }
+            _groupDates = groupDateMap.values.toList()
+              ..sort((a, b) => b.compareTo(a));
+            // 初始化当前分组日期
+            if (_currentGroupDate == null && _groupDates.isNotEmpty) {
+              _currentGroupDate = _groupDates.first;
+            }
+
+            final groupKeys = _groupDates.map((d) => _groupKeys.putIfAbsent(_dateKey(d), () => GlobalKey())).toList();
+
+            return NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+                WidgetsBinding.instance.addPostFrameCallback((_) => _updateCurrentGroupDate(context));
+                return false;
+              },
               child: ListView.builder(
-                itemCount: state.bills?.length,
-                itemBuilder: (_, index) {
-                  final bill = state.bills?.elementAt(index);
-                  return BillListTile(
-                    bill: bill!,
-                    onToggleCompleted: (isCompleted) {
-                      // context.read<TodosOverviewBloc>().add(
-                      //       TodosOverviewTodoCompletionToggled(
-                      //         todo: todo,
-                      //         isCompleted: isCompleted,
-                      //       ),
-                      //     );
-                    },
-                    onDismissed: (_) {
-                      // context
-                      //     .read<TodosOverviewBloc>()
-                      //     .add(TodosOverviewTodoDeleted(todo));
-                    },
-                    onTap: () {
-                      // Navigator.of(context).push(
-                      //   EditTodoPage.route(initialTodo: todo),
-                      // );
-                    },
+                itemCount: _groupDates.length,
+                itemBuilder: (context, groupIdx) {
+                  final date = _groupDates[groupIdx];
+                  final key = _groupKeys[_dateKey(date)]!;
+                  final billsInGroup = grouped[_dateKey(date)] ?? [];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _getGroupSeparator(context, date, key),
+                      ...billsInGroup.map((bill) => BillListTile(bill: bill)).toList(),
+                    ],
                   );
                 },
               ),
@@ -157,29 +173,72 @@ class TodosOverviewView extends StatelessWidget {
     );
   }
 
-  Widget _getGroupSeparator(BuildContext context, BillItem element) {
+  void _updateCurrentGroupDate(BuildContext context) {
+    if (_groupDates.isEmpty) return;
+    RenderBox? listBox = context.findRenderObject() as RenderBox?;
+    if (listBox == null) return;
+    double listTop = listBox.localToGlobal(Offset.zero).dy;
+
+    DateTime? newGroup;
+    for (var date in _groupDates) {
+      final key = _groupKeys[_dateKey(date)];
+      if (key == null) continue;
+      final ctx = key.currentContext;
+      if (ctx == null) continue;
+      final box = ctx.findRenderObject() as RenderBox?;
+      if (box == null) continue;
+      final offset = box.localToGlobal(Offset.zero).dy - listTop;
+      if (offset <= 0) {
+        newGroup = date;
+      } else {
+        break;
+      }
+    }
+    if (newGroup != null && newGroup != _currentGroupDate) {
+      setState(() {
+        _currentGroupDate = newGroup;
+      });
+    }
+  }
+
+  String _dateKey(DateTime date) => DateFormat('yyyy-MM-dd').format(date);
+
+  Widget _buildDateTitle(BuildContext context) {
+    if (_currentGroupDate == null) {
+      return const SizedBox.shrink();
+    }
+    final formatter = DateFormat('yyyy-MM-dd');
+    return Text(
+      formatter.format(_currentGroupDate!),
+      style: Theme.of(context).appBarTheme.titleTextStyle,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget _getGroupSeparator(BuildContext context, DateTime date, Key key) {
     DateFormat formatter = DateFormat('yyyy-MM-dd');
-    String formattedDate =
-        formatter.format(element.tradeTime ?? DateTime.now());
+    String formattedDate = formatter.format(date);
     Color bkColor = Theme.of(context).appBarTheme.backgroundColor!;
     return SizedBox(
+      key: key,
       height: 50,
       child: Align(
         alignment: Alignment.center,
         child: Container(
           width: 120,
           decoration: BoxDecoration(
-            color: bkColor.withValues(alpha: 0.5), // lxjtodo
+            color: bkColor.withOpacity(0.5),
             border: Border.all(
-              color: bkColor.withValues(alpha: 0.5),
+              color: bkColor.withOpacity(0.5),
             ),
             borderRadius: const BorderRadius.all(Radius.circular(20.0)),
             boxShadow: [
               BoxShadow(
-                color: bkColor.withValues(alpha: 0.3), // 阴影颜色（带透明度）
-                offset: Offset(4, 4), // 阴影偏移量（右下方向）
-                blurRadius: 8.0, // 阴影模糊程度
-                spreadRadius: 1.0, // 阴影扩散范围
+                color: bkColor.withOpacity(0.3),
+                offset: Offset(4, 4),
+                blurRadius: 8.0,
+                spreadRadius: 1.0,
               ),
             ],
           ),
