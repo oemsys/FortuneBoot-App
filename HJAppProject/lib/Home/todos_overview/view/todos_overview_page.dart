@@ -119,7 +119,8 @@ class TodosOverviewView extends StatelessWidget {
                 itemBuilder: (context, element) => BillListTile(
                       bill: element,
                     ),
-                groupSeparatorBuilder: _getGroupSeparator);
+                groupSeparatorBuilder: (element) =>
+                    _getGroupSeparator(context, element));
 
             return CupertinoScrollbar(
               child: ListView.builder(
@@ -156,10 +157,11 @@ class TodosOverviewView extends StatelessWidget {
     );
   }
 
-  Widget _getGroupSeparator(BillItem element) {
+  Widget _getGroupSeparator(BuildContext context, BillItem element) {
     DateFormat formatter = DateFormat('yyyy-MM-dd');
     String formattedDate =
         formatter.format(element.tradeTime ?? DateTime.now());
+    Color bkColor = Theme.of(context).appBarTheme.backgroundColor!;
     return SizedBox(
       height: 50,
       child: Align(
@@ -167,11 +169,19 @@ class TodosOverviewView extends StatelessWidget {
         child: Container(
           width: 120,
           decoration: BoxDecoration(
-            color: Colors.blue[300],
+            color: bkColor.withValues(alpha: 0.5), // lxjtodo
             border: Border.all(
-              color: Colors.blue[300]!,
+              color: bkColor.withValues(alpha: 0.5),
             ),
             borderRadius: const BorderRadius.all(Radius.circular(20.0)),
+            boxShadow: [
+              BoxShadow(
+                color: bkColor.withValues(alpha: 0.3), // 阴影颜色（带透明度）
+                offset: Offset(4, 4), // 阴影偏移量（右下方向）
+                blurRadius: 8.0, // 阴影模糊程度
+                spreadRadius: 1.0, // 阴影扩散范围
+              ),
+            ],
           ),
           child: Padding(
             padding: const EdgeInsets.all(8.0),

@@ -16,6 +16,7 @@ class FlutterTodosTheme {
           incomeTextColor: Colors.lightGreen,
           expenseTextColor: Colors.red,
           adjustTextColor: Colors.black,
+          floatingDateColor: Colors.black,
         ), // 亮色主题色
       ],
     );
@@ -39,6 +40,7 @@ class FlutterTodosTheme {
             incomeTextColor: Colors.lightGreen,
             expenseTextColor: Colors.red,
             adjustTextColor: Colors.white,
+            floatingDateColor: Colors.white,
           ), // 暗色主题色
         ]);
   }
@@ -51,12 +53,14 @@ class CustomColors extends ThemeExtension<CustomColors> {
   final Color expenseTextColor;
   final Color transferTextColor;
   final Color adjustTextColor;
+  final Color floatingDateColor;
 
   const CustomColors({
     required this.transferTextColor,
     required this.incomeTextColor,
     required this.expenseTextColor,
     required this.adjustTextColor,
+    required this.floatingDateColor,
   });
 
   @override
@@ -64,12 +68,14 @@ class CustomColors extends ThemeExtension<CustomColors> {
       {Color? transferTextColor,
       Color? incomeTextColor,
       Color? expenseTextColor,
-      Color? adjustTextColor}) {
+      Color? adjustTextColor,
+      Color? floatingDateColor}) {
     return CustomColors(
       transferTextColor: transferTextColor ?? this.transferTextColor,
       incomeTextColor: incomeTextColor ?? this.incomeTextColor,
       expenseTextColor: expenseTextColor ?? this.expenseTextColor,
       adjustTextColor: adjustTextColor ?? this.adjustTextColor,
+      floatingDateColor: floatingDateColor ?? this.floatingDateColor,
     );
   }
 
@@ -83,6 +89,7 @@ class CustomColors extends ThemeExtension<CustomColors> {
       expenseTextColor:
           Color.lerp(expenseTextColor, other.expenseTextColor, t)!,
       adjustTextColor: Color.lerp(adjustTextColor, other.adjustTextColor, t)!,
+      floatingDateColor: Color.lerp(floatingDateColor, other.floatingDateColor, t)!
     );
   }
 }
