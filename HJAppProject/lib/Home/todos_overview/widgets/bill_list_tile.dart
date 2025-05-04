@@ -34,7 +34,7 @@ class BillListTile extends StatelessWidget {
     String subtitle = '';
     subtitle += bill.billType?.title ?? '';
     subtitle = subtitle.isNotEmpty ? '$subtitle ' : '';
-    DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm');
+    DateFormat formatter = DateFormat('HH:mm:ss');
     String formattedDate = formatter.format(bill.tradeTime ?? DateTime.now());
     subtitle += formattedDate;
     Color? billColor;
