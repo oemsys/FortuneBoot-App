@@ -183,6 +183,9 @@ class _MineViewState extends State<MineView> {
                     return items;
                   },
                   key: GlobalKey(),
+                  dropdownItemDecoration: DropdownItemDecoration(
+                    selectedBackgroundColor: Theme.of(context).focusColor
+                  ),
                   fieldDecoration: FieldDecoration(
                     hintText: curItem,
                     hintStyle: const TextStyle(fontSize: 14),
@@ -202,6 +205,7 @@ class _MineViewState extends State<MineView> {
                   focusNode:
                   element.type == SettingType.currentGroup ? _focusNode : null,
                   dropdownDecoration: DropdownDecoration(
+                    backgroundColor: Theme.of(context).cardColor,
                     marginTop: 2,
                     maxHeight: 500,
                     header: Padding(
