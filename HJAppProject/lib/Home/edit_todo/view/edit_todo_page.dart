@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_example/Home/edit_todo/bloc/edit_todo_bloc.dart';
+import 'package:flutter_login_example/Home/edit_todo/view/accound_page.dart';
+import 'package:flutter_login_example/Home/edit_todo/view/edit_field_cell.dart';
 import 'package:todos_repository/todos_repository.dart';
 import '../../../generated/l10n.dart';
 
@@ -39,11 +41,12 @@ class EditTodoView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // return AccordionPage();
     final status = context.select((EditTodoBloc bloc) => bloc.state.status);
     final isNewTodo = context.select(
       (EditTodoBloc bloc) => bloc.state.isNewTodo,
     );
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -64,12 +67,24 @@ class EditTodoView extends StatelessWidget {
             ? const CupertinoActivityIndicator()
             : const Icon(Icons.check_rounded),
       ),
-      body: const CupertinoScrollbar(
+      body: CupertinoScrollbar(
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Column(
-              children: [_TitleField(), _DescriptionField()],
+              children: [
+                EditFieldCell(type: EditFieldType.billType),
+                EditFieldCell(type: EditFieldType.book),
+                EditFieldCell(type: EditFieldType.title),
+                EditFieldCell(type: EditFieldType.time),
+                EditFieldCell(type: EditFieldType.account),
+                EditFieldCell(type: EditFieldType.category),
+                EditFieldCell(type: EditFieldType.target),
+                EditFieldCell(type: EditFieldType.tag),
+                EditFieldCell(type: EditFieldType.confirm),
+                EditFieldCell(type: EditFieldType.statistics),
+                EditFieldCell(type: EditFieldType.remark),
+              ],
             ),
           ),
         ),
@@ -111,7 +126,6 @@ class _DescriptionField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     final state = context.watch<EditTodoBloc>().state;
     final hintText = state.initialTodo?.description ?? '';
 

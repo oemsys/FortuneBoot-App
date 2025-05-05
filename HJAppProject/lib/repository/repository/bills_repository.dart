@@ -8,6 +8,10 @@ class BillsRepository {
 
   final BillsApi _billsApi;
 
+  int? groupId() => _billsApi.groupId;
+  
+  int? bookId() => _billsApi.bookId;
+
   bool hasMore() => _billsApi.hasMore;
 
   bool isLoadingMore() => _billsApi.isLoadingMore;

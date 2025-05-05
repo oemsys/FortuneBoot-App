@@ -26,8 +26,6 @@ class LocalStorageBillsApi extends BillsApi {
   final BillService _billService = BillService();
   int pageNum = 1;
   int pageSize = 20;
-  int? groupId;
-  int? bookId;
   late final _billStreamController = BehaviorSubject<List<BillItem>>.seeded(
     const [],
   );

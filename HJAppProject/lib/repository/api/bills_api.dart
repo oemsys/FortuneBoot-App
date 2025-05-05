@@ -8,6 +8,10 @@ abstract class BillsApi {
   /// {@macro todos_api}
   BillsApi();
 
+  int? groupId;
+
+  int? bookId;
+
   /// Provides a [Stream] of all todos.
   Stream<List<BillItem>> getBills();
 
