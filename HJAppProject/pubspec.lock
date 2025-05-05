@@ -70,6 +70,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.12.0"
+  awesome_select_plus:
+    dependency: "direct main"
+    description:
+      name: awesome_select_plus
+      sha256: "2543a658c2e8df222adb8c10e2c607885ec035e039a19f7d98ee46a4fcef0619"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   bloc:
     dependency: "direct main"
     description:
@@ -601,6 +609,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  omni_datetime_picker:
+    dependency: "direct main"
+    description:
+      name: omni_datetime_picker
+      sha256: aff5d88385226ba36901e8e8a3ec70cb6bd5e71beb2eb20ed31ad1bf1a7c546b
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.1"
   package_config:
     dependency: transitive
     description:

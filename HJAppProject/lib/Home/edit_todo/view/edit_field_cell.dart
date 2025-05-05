@@ -4,15 +4,20 @@ import 'package:accordion/controllers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_login_example/Home/edit_todo/edit_select_item.dart';
 import 'package:flutter_login_example/Home/edit_todo/view/accound_page.dart';
 import 'package:flutter_login_example/Home/stats/models/mine_setting.dart';
 import 'package:flutter_login_example/Home/stats/models/setting_select_item.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
+import 'package:flutter_login_example/Request/account_request.dart';
 import 'package:flutter_login_example/Request/book_request.dart';
 import 'package:flutter_login_example/Request/group_request.dart';
+import 'package:flutter_login_example/Request/payee_request.dart';
 import 'package:flutter_login_example/generated/l10n.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
+import 'package:intl/intl.dart';
 
 // 所属账本
 // 标题
@@ -47,15 +52,21 @@ class EditFieldCell extends StatefulWidget {
 }
 
 class _EditFieldCellState extends State<EditFieldCell> {
+  BillType billType = BillType.income;
   @override
   Widget build(BuildContext context) {
+    int bookId = context.read<BillsRepository>().bookId() ?? 1;
     switch (widget.type) {
       case EditFieldType.billType:
         return EditBaseFieldCell<BillType>.future(
           future: () async {
             return BillType.values
-                .map((e) => DropdownItem(label: e.title, value: e))
+                .map((e) => DropdownItem(
+                    label: e.title, value: e, selected: e == billType))
                 .toList();
+          },
+          onSelectionChange: (selectedItems) {
+            billType = selectedItems.first.value as BillType;
           },
           type: EditFieldBaseType.dropdown,
           title: '类型',
@@ -64,31 +75,7 @@ class _EditFieldCellState extends State<EditFieldCell> {
       case EditFieldType.book:
         return EditBaseFieldCell<SettingSelectItem>.future(
           future: () async {
-            List<DropdownItem<SettingSelectItem>> items = [];
-            BookService bookService = BookService();
-            var remoteBookResponse = await bookService
-                .getByGroupId(context.read<BillsRepository>().groupId() ?? 0);
-            if (remoteBookResponse.code == 0) {
-              var remoteBookList = remoteBookResponse.data as List? ?? [];
-              for (final remoteBookItem in remoteBookList) {
-                var remoteBookId = remoteBookItem['bookId'] as String? ?? '';
-                var remoteBookName =
-                    remoteBookItem['bookName'] as String? ?? '';
-                bool selected = false;
-                if (remoteBookId == context.read<BillsRepository>().bookId()) {
-                  selected = true;
-                }
-                items.add(
-                  DropdownItem(
-                      label: remoteBookName,
-                      value: SettingSelectItem(remoteBookName,
-                          remoteBookItem['bookId'] as int? ?? 0),
-                      selected: selected),
-                );
-              }
-            }
-
-            return items;
+            return await bookItemItem(context);
           },
           type: EditFieldBaseType.dropdown,
           title: '账本',
@@ -100,9 +87,9 @@ class _EditFieldCellState extends State<EditFieldCell> {
         return EditBaseFieldCell(
             type: EditFieldBaseType.time, title: '时间', needed: true);
       case EditFieldType.account:
-        return EditBaseFieldCell<String>.future(
+        return EditBaseFieldCell<AccountSelectItem>.future(
             future: () async {
-              return [];
+              return await accountItems(context);
             },
             type: EditFieldBaseType.dropdown,
             title: '账户');
@@ -112,6 +99,9 @@ class _EditFieldCellState extends State<EditFieldCell> {
       case EditFieldType.target:
         return EditBaseFieldCell<String>.future(
             future: () async {
+              PayeeService service = PayeeService();
+              var response =
+                  await service.getEnableList(bookId, billType: billType.value);
               return [];
             },
             type: EditFieldBaseType.dropdown,
@@ -134,6 +124,54 @@ class _EditFieldCellState extends State<EditFieldCell> {
             type: EditFieldBaseType.text, title: '备注', needed: true);
     }
   }
+
+  Future<List<DropdownItem<AccountSelectItem>>> accountItems(
+      BuildContext context) async {
+    AccountService service = AccountService();
+    List<DropdownItem<AccountSelectItem>> items = [];
+    var response = await service
+        .getEnableList(context.read<BillsRepository>().groupId() ?? 1);
+    if (response.code == 0) {
+      for (final element in response.data as List? ?? []) {
+        var accountName = element['accountName'] as String? ?? '';
+        var accountId = element['accountId'] as int? ?? 0;
+        items.add(
+          DropdownItem(
+            label: accountName,
+            value: AccountSelectItem(accountName, accountId),
+          ),
+        );
+      }
+    }
+    return items;
+  }
+
+  Future<List<DropdownItem<SettingSelectItem>>> bookItemItem(
+      BuildContext context) async {
+    List<DropdownItem<SettingSelectItem>> items = [];
+    BookService bookService = BookService();
+    var remoteBookResponse = await bookService
+        .getByGroupId(context.read<BillsRepository>().groupId() ?? 0);
+    if (remoteBookResponse.code == 0) {
+      var remoteBookList = remoteBookResponse.data as List? ?? [];
+      for (final remoteBookItem in remoteBookList) {
+        var remoteBookId = remoteBookItem['bookId'] as int? ?? 0;
+        var remoteBookName = remoteBookItem['bookName'] as String? ?? '';
+        bool selected = false;
+        if (remoteBookId == context.read<BillsRepository>().bookId()) {
+          selected = true;
+        }
+        items.add(
+          DropdownItem(
+              label: remoteBookName,
+              value: SettingSelectItem(remoteBookName, remoteBookId),
+              selected: selected),
+        );
+      }
+    }
+
+    return items;
+  }
 }
 
 // 下拉选择框
@@ -149,19 +187,25 @@ enum EditFieldBaseType {
 
 class EditBaseFieldCell<T extends Object> extends StatefulWidget {
   EditBaseFieldCell(
-      {required this.type, required this.title, this.needed = false, super.key})
+      {required this.type,
+      required this.title,
+      this.needed = false,
+      this.onSelectionChange,
+      super.key})
       : future = null;
 
   EditBaseFieldCell.future(
       {required this.type,
       required this.title,
       required this.future,
+      this.onSelectionChange,
       this.needed = false,
       super.key});
   String title; //标题
   bool needed; // 是否必填
   EditFieldBaseType type;
   FutureRequest<T>? future;
+  OnSelectionChanged<T>? onSelectionChange;
 
   @override
   State<EditBaseFieldCell> createState() => _EditBaseFieldCellState<T>();
@@ -178,9 +222,9 @@ class _EditBaseFieldCellState<T extends Object>
       case EditFieldBaseType.text:
         child = textField();
       case EditFieldBaseType.time:
-        child = textField();
+        child = timeField();
       case EditFieldBaseType.selector:
-        child = textField();
+        child = selectorField();
       case EditFieldBaseType.category:
         child = categoryField();
     }
@@ -212,6 +256,7 @@ class _EditBaseFieldCellState<T extends Object>
       headerBorderColor: Colors.blueGrey,
       headerBorderColorOpened: Colors.transparent,
       // headerBorderWidth: 1,
+      disableScrolling: true,
       headerBackgroundColorOpened: Colors.green,
       contentBackgroundColor: Colors.white,
       contentBorderColor: Colors.green,
@@ -295,6 +340,30 @@ class _EditBaseFieldCellState<T extends Object>
         ),
       ],
     );
+  }
+
+  Widget timeField() {
+    // 当前时间
+    final DateTime now = DateTime.now();
+    DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm');
+    String formattedDate = formatter.format(now);
+    return Row(
+      children: [
+        ElevatedButton(
+          onPressed: () async {
+            final DateTime? dateTime =
+                await showOmniDateTimePicker(context: context);
+            // Use dateTime here
+            debugPrint('dateTime: $dateTime');
+          },
+          child: Text('时间: $formattedDate'),
+        )
+      ],
+    );
+  }
+
+  Widget selectorField() {
+    return Container();
   }
 }
 

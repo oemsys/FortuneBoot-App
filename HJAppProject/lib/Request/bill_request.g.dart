@@ -23,8 +23,8 @@ class _BillService implements BillService {
 
   @override
   Future<HJResponse> getPage({
-    int pageNum = 2147483647,
-    int pageSize = 500,
+    int pageNum = 1,
+    int pageSize = 20,
     String? beginTime,
     String? endTime,
     int? amountMin,
