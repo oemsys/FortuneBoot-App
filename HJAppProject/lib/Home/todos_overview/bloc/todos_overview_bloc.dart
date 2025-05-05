@@ -127,7 +127,7 @@ class TodosOverviewBloc extends Bloc<TodosOverviewEvent, TodosOverviewState> {
 
       final allBills = List<BillItem>.from(state.bills ?? [])..addAll(items);
       final allBillsCount = billResponse.data['total'] as int? ?? 20;
-      final hasMore = allBills.length < allBillsCount; // 如果返回数量小于pageSize，说明没有更多
+      final hasMore = allBills.length < allBillsCount; 
 
       emit(state.copyWith(
         bills: allBills,

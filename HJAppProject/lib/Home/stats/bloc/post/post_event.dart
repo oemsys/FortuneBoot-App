@@ -14,9 +14,9 @@ final class GroupSettingFetched extends SettingEvent {
   List<Object> get props => [groupId ?? 0];
 }
 
-final class GroupSettingChanged extends SettingEvent {
-  GroupSettingChanged(this.groupId);
-  final int groupId;
+final class BookIdChanged extends SettingEvent {
+  BookIdChanged(this.bookId);
+  final int bookId;
   @override
-  List<Object> get props => [groupId];
+  List<Object> get props => [bookId];
 }

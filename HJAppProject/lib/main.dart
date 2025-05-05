@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_login_example/repository/api/local_bills_storage_api.dart';
 import 'package:flutter_login_example/tempNeedToDelete/dashboard_screen.dart';
 import 'package:flutter_login_example/Login/view/login_screen.dart';
 import 'package:flutter_login_example/Login/view/base_url_config_page.dart';
@@ -17,7 +18,11 @@ void main() async {
     plugin: await SharedPreferences.getInstance(),
   );
 
-  bootstrap(todosApi: todosApi);
+  final billsApi = LocalStorageBillsApi(
+    plugin: await SharedPreferences.getInstance(),
+  );
+
+  bootstrap(todosApi: todosApi, billsApi: billsApi);
   // SystemChrome.setSystemUIOverlayStyle(
   //   SystemUiOverlayStyle(
   //     systemNavigationBarColor:

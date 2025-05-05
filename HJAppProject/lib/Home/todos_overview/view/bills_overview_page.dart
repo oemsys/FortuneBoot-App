@@ -1,40 +1,36 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_login_example/Home/edit_todo/view/edit_todo_page.dart';
-import 'package:flutter_login_example/Home/todos_overview/bloc/todos_overview_bloc.dart';
+import 'package:flutter_login_example/Home/todos_overview/bloc/bills_overview_bloc.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
 import 'package:flutter_login_example/Home/todos_overview/widgets/bill_list_tile.dart';
-import 'package:flutter_login_example/Home/todos_overview/widgets/todo_list_tile.dart';
-import 'package:flutter_login_example/Home/todos_overview/widgets/todos_overview_filter_button.dart';
-import 'package:flutter_login_example/Home/todos_overview/widgets/todos_overview_options_button.dart';
-import 'package:todos_repository/todos_repository.dart';
+import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:intl/intl.dart';
 
 import '../../../generated/l10n.dart';
 
-class TodosOverviewPage extends StatelessWidget {
-  const TodosOverviewPage({super.key});
+class BillsOverviewPage extends StatelessWidget {
+  const BillsOverviewPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => TodosOverviewBloc(
-        todosRepository: context.read<TodosRepository>(),
-      )..add(const TodosOverviewSubscriptionRequested()),
-      child: const TodosOverviewView(),
+      create: (context) => BillsOverviewBloc(
+        billsRepository: context.read<BillsRepository>(),
+      )..add(const BillsOverviewSubscriptionRequested()),
+      child: const BillsOverviewView(),
     );
   }
 }
 
-class TodosOverviewView extends StatefulWidget {
-  const TodosOverviewView({super.key});
+class BillsOverviewView extends StatefulWidget {
+  const BillsOverviewView({super.key});
 
   @override
-  State<TodosOverviewView> createState() => _TodosOverviewViewState();
+  State<BillsOverviewView> createState() => _BillsOverviewViewState();
 }
 
-class _TodosOverviewViewState extends State<TodosOverviewView> {
+class _BillsOverviewViewState extends State<BillsOverviewView> {
   DateTime? _currentGroupDate;
   final Map<String, GlobalKey> _groupKeys = {};
   List<DateTime> _groupDates = [];
@@ -56,17 +52,17 @@ class _TodosOverviewViewState extends State<TodosOverviewView> {
           ],
         ),
         actions: const [
-          TodosOverviewFilterButton(),
-          TodosOverviewOptionsButton(),
+          // TodosOverviewFilterButton(), // lxjtodo：右上角btn
+          // TodosOverviewOptionsButton(),
         ],
       ),
       body: MultiBlocListener(
         listeners: [
-          BlocListener<TodosOverviewBloc, TodosOverviewState>(
+          BlocListener<BillsOverviewBloc, BillsOverviewState>(
             listenWhen: (previous, current) =>
                 previous.status != current.status,
             listener: (context, state) {
-              if (state.status == TodosOverviewStatus.failure) {
+              if (state.status == BillsOverviewStatus.failure) {
                 ScaffoldMessenger.of(context)
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
@@ -77,12 +73,12 @@ class _TodosOverviewViewState extends State<TodosOverviewView> {
               }
             },
           ),
-          BlocListener<TodosOverviewBloc, TodosOverviewState>(
+          BlocListener<BillsOverviewBloc, BillsOverviewState>(
             listenWhen: (previous, current) =>
-                previous.lastDeletedTodo != current.lastDeletedTodo &&
-                current.lastDeletedTodo != null,
+                previous.lastDeletedBill != current.lastDeletedBill &&
+                current.lastDeletedBill != null,
             listener: (context, state) {
-              final deletedTodo = state.lastDeletedTodo!;
+              final deletedBill = state.lastDeletedBill!;
               final messenger = ScaffoldMessenger.of(context);
               messenger
                 ..hideCurrentSnackBar()
@@ -90,7 +86,7 @@ class _TodosOverviewViewState extends State<TodosOverviewView> {
                   SnackBar(
                     content: Text(
                       S.current.todosOverviewTodoDeletedSnackbarText(
-                        deletedTodo.title,
+                        deletedBill.title ?? '',
                       ),
                     ),
                     action: SnackBarAction(
@@ -98,8 +94,8 @@ class _TodosOverviewViewState extends State<TodosOverviewView> {
                       onPressed: () {
                         messenger.hideCurrentSnackBar();
                         context
-                            .read<TodosOverviewBloc>()
-                            .add(const TodosOverviewUndoDeletionRequested());
+                            .read<BillsOverviewBloc>()
+                            .add(const BillsOverviewUndoDeletionRequested());
                       },
                     ),
                   ),
@@ -107,12 +103,12 @@ class _TodosOverviewViewState extends State<TodosOverviewView> {
             },
           ),
         ],
-        child: BlocBuilder<TodosOverviewBloc, TodosOverviewState>(
+        child: BlocBuilder<BillsOverviewBloc, BillsOverviewState>(
           builder: (context, state) {
             if (!(state.bills?.isNotEmpty == true)) {
-              if (state.status == TodosOverviewStatus.loading) {
+              if (state.status == BillsOverviewStatus.loading) {
                 return const Center(child: CupertinoActivityIndicator());
-              } else if (state.status != TodosOverviewStatus.success) {
+              } else if (state.status != BillsOverviewStatus.success) {
                 return const SizedBox();
               } else {
                 return Center(
@@ -160,8 +156,8 @@ class _TodosOverviewViewState extends State<TodosOverviewView> {
                         notification.metrics.maxScrollExtent - 50) {
                   if (!state.isLoadingMore && state.hasMore) {
                     context
-                        .read<TodosOverviewBloc>()
-                        .add(const TodosOverviewLoadMoreRequested());
+                        .read<BillsOverviewBloc>()
+                        .add(const BillsOverviewLoadMoreRequested());
                   }
                 }
                 return false;
@@ -224,7 +220,7 @@ class _TodosOverviewViewState extends State<TodosOverviewView> {
 
   String _dateKey(DateTime date) => DateFormat('yyyy-MM-dd').format(date);
 
-  Widget _buildFooterWidget(TodosOverviewState state) {
+  Widget _buildFooterWidget(BillsOverviewState state) {
     return Center(
       child: Container(
         padding: const EdgeInsets.only(bottom: 32),
@@ -266,14 +262,14 @@ class _TodosOverviewViewState extends State<TodosOverviewView> {
         child: Container(
           width: 120,
           decoration: BoxDecoration(
-            color: bkColor.withOpacity(0.5),
+            color: bkColor.withValues(alpha: 0.5),
             border: Border.all(
-              color: bkColor.withOpacity(0.5),
+              color: bkColor.withValues(alpha: 0.5),
             ),
             borderRadius: const BorderRadius.all(Radius.circular(20.0)),
             boxShadow: [
               BoxShadow(
-                color: bkColor.withOpacity(0.3),
+                color: bkColor.withValues(alpha: 0.3),
                 offset: Offset(4, 4),
                 blurRadius: 8.0,
                 spreadRadius: 1.0,

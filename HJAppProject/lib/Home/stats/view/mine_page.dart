@@ -11,6 +11,7 @@ import 'package:flutter_login_example/Home/stats/view/drop_down_animate.dart';
 import 'package:flutter_login_example/Login/model/users.dart';
 import 'package:flutter_login_example/Request/book_request.dart';
 import 'package:flutter_login_example/Request/group_request.dart';
+import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
 import 'package:todos_repository/todos_repository.dart';
 import '../../../generated/l10n.dart';
@@ -23,7 +24,9 @@ class MinePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => SettingBloc()..add(SettingInitDataLoaded()),
+      create: (context) => SettingBloc(
+        billsRepository: context.read<BillsRepository>(),
+      )..add(SettingInitDataLoaded()),
       child: MineView(),
     );
   }
@@ -134,6 +137,9 @@ class _MineViewState extends State<MineView> {
                     if (element.type == SettingType.currentGroup) {
                       context.read<SettingBloc>().add(
                           GroupSettingFetched(groupId: selectedItems.first.id));
+                    } else if (element.type == SettingType.currentBook) {
+                      context.read<SettingBloc>().add(
+                          BookIdChanged(selectedItems.first.id));
                     }
                   },
                   future: () async {
@@ -153,7 +159,8 @@ class _MineViewState extends State<MineView> {
                           var groupId = remoteItem['groupId'] as int? ?? 0;
                           items.add(DropdownItem(
                               label: remoteGroupName,
-                              value: SettingSelectItem(remoteGroupName, groupId),
+                              value:
+                                  SettingSelectItem(remoteGroupName, groupId),
                               selected: selected));
                         }
                       }
@@ -162,7 +169,8 @@ class _MineViewState extends State<MineView> {
                       var remoteBookResponse = await bookService
                           .getByGroupId(element.data!['groupId'] as int? ?? 0);
                       if (remoteBookResponse.code == 0) {
-                        var remoteBookList = remoteBookResponse.data as List? ?? [];
+                        var remoteBookList =
+                            remoteBookResponse.data as List? ?? [];
                         for (final remoteBookItem in remoteBookList) {
                           var remoteBookName =
                               remoteBookItem['bookName'] as String? ?? '';
@@ -184,8 +192,7 @@ class _MineViewState extends State<MineView> {
                   },
                   key: GlobalKey(),
                   dropdownItemDecoration: DropdownItemDecoration(
-                    selectedBackgroundColor: Theme.of(context).focusColor
-                  ),
+                      selectedBackgroundColor: Theme.of(context).focusColor),
                   fieldDecoration: FieldDecoration(
                     hintText: curItem,
                     hintStyle: const TextStyle(fontSize: 14),
@@ -202,8 +209,9 @@ class _MineViewState extends State<MineView> {
                       // ),
                     ),
                   ),
-                  focusNode:
-                  element.type == SettingType.currentGroup ? _focusNode : null,
+                  focusNode: element.type == SettingType.currentGroup
+                      ? _focusNode
+                      : null,
                   dropdownDecoration: DropdownDecoration(
                     backgroundColor: Theme.of(context).cardColor,
                     marginTop: 2,

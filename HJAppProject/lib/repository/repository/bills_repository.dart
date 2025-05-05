@@ -1,0 +1,27 @@
+import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
+import 'package:flutter_login_example/repository/api/bills_api.dart';
+
+class BillsRepository {
+  BillsRepository({
+    required BillsApi billsApi,
+  }) : _billsApi = billsApi;
+
+  final BillsApi _billsApi;
+
+  bool hasMore() => _billsApi.hasMore;
+
+  bool isLoadingMore() => _billsApi.isLoadingMore;
+
+  /// Provides a [Stream] of all todos.
+  Stream<List<BillItem>> getBills() => _billsApi.getBills();
+
+  Future<void> saveBills(BillItem billItem) => _billsApi.saveBills(billItem);
+
+  Future<void> updateRemoteBill({int? groupId, int? bookId}) =>
+      _billsApi.updateRemoteBill(groupId: groupId, bookId: bookId);
+
+  Future<void> nextBillPage() => _billsApi.nextBillPage();
+
+  /// Disposes any resources managed by the repository.
+  void dispose() => _billsApi.close();
+}

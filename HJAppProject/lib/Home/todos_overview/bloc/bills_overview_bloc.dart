@@ -1,0 +1,65 @@
+import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
+import 'package:flutter_login_example/Request/bill_request.dart';
+import 'package:flutter_login_example/repository/repository/bills_repository.dart';
+
+part 'bills_overview_event.dart';
+part 'bills_overview_state.dart';
+
+class BillsOverviewBloc extends Bloc<BillsOverviewEvent, BillsOverviewState> {
+  BillsOverviewBloc({
+    required BillsRepository billsRepository,
+  })  : _billsRepository = billsRepository,
+        super(const BillsOverviewState()) {
+    on<BillsOverviewSubscriptionRequested>(_onSubscriptionRequested);
+    on<BillsOverviewUndoDeletionRequested>(_onUndoDeletionRequested);
+    on<BillsOverviewLoadMoreRequested>(_onLoadMoreRequested);
+  }
+  final BillService _billService = BillService();
+
+  final BillsRepository _billsRepository;
+
+  Future<void> _onSubscriptionRequested(
+    BillsOverviewSubscriptionRequested event,
+    Emitter<BillsOverviewState> emit,
+  ) async {
+    emit(state.copyWith(status: () => BillsOverviewStatus.loading));
+    await emit.forEach<List<BillItem>>(
+      _billsRepository.getBills(),
+      onData: (bills) => state.copyWith(
+        status: () => BillsOverviewStatus.success,
+        bills: bills,
+        hasMore: _billsRepository.hasMore(),
+        isLoadingMore: _billsRepository.isLoadingMore(),
+      ),
+      onError: (_, __) => state.copyWith(
+        status: () => BillsOverviewStatus.failure,
+      ),
+    );
+  }
+
+  Future<void> _onUndoDeletionRequested(
+    BillsOverviewUndoDeletionRequested event,
+    Emitter<BillsOverviewState> emit,
+  ) async {
+    assert(
+      state.lastDeletedBill != null,
+      'Last deleted bill can not be null.',
+    );
+
+    final bill = state.lastDeletedBill!;
+    emit(state.copyWith(lastDeletedBill: () => null));
+    await _billsRepository.saveBills(bill);
+  }
+
+  /// 上拉加载更多处理
+  Future<void> _onLoadMoreRequested(
+    BillsOverviewLoadMoreRequested event,
+    Emitter<BillsOverviewState> emit,
+  ) async {
+    if (state.isLoadingMore || !state.hasMore) return;
+    emit(state.copyWith(isLoadingMore: true));
+    _billsRepository.nextBillPage();
+  }
+}

@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:equatable/equatable.dart';
 
 part 'bill_item.g.dart';
 
@@ -19,8 +21,9 @@ enum BillType {
 
 // 使用下面命令自动生成代码
 // flutter pub run build_runner build
+@immutable
 @JsonSerializable()
-class BillItem {
+class BillItem extends Equatable {
   int? billId;
   int? bookId;
   String? bookName;
@@ -72,6 +75,31 @@ class BillItem {
   String toString() {
     return 'BillItem{billId: $billId, bookId: $bookId, bookName: $bookName, title: $title, tradeTime: $tradeTime, accountId: $accountId, accountName: $accountName, amount: $amount, currencyCode: $currencyCode, convertedAmount: $convertedAmount, payeeId: $payeeId, payeeName: $payeeName, billType: $billType, toAccountId: $toAccountId, toAccountName: $toAccountName, confirm: $confirm, include: $include, remark: $remark, categoryAmountPair: $categoryAmountPair, tagList: $tagList}';
   }
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [
+        billId,
+        bookId,
+        bookName,
+        title,
+        tradeTime,
+        accountId,
+        accountName,
+        amount,
+        currencyCode,
+        convertedAmount,
+        payeeId,
+        payeeName,
+        billType,
+        toAccountId,
+        toAccountName,
+        confirm,
+        include,
+        remark,
+        categoryAmountPair,
+        tagList
+      ];
 }
 
 @JsonSerializable()

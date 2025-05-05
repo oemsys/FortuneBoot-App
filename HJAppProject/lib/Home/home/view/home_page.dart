@@ -4,7 +4,7 @@ import 'package:flutter_login_example/Home/edit_todo/view/edit_todo_page.dart';
 import 'package:flutter_login_example/Home/home/cubit/home_cubit.dart';
 import 'package:flutter_login_example/Home/stats/view/mine_page.dart';
 import 'package:flutter_login_example/Home/stats/view/stats_page.dart';
-import 'package:flutter_login_example/Home/todos_overview/view/todos_overview_page.dart';
+import 'package:flutter_login_example/Home/todos_overview/view/bills_overview_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -28,7 +28,7 @@ class HomeView extends StatelessWidget {
     return Scaffold(
       body: IndexedStack(
         index: selectedTab.index,
-        children: const [TodosOverviewPage(), StatsPage(), MinePage()],
+        children: const [BillsOverviewPage(), StatsPage(), MinePage()],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
@@ -51,7 +51,9 @@ class HomeView extends StatelessWidget {
                     value: HomeTab.todos,
                     icon: const Icon(Icons.list_rounded),
                   ),
-                  const SizedBox(width: 16,),
+                  const SizedBox(
+                    width: 16,
+                  ),
                   _HomeTabButton(
                     groupValue: selectedTab,
                     value: HomeTab.stats,

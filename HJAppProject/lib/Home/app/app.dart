@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_login_example/Login/view/base_url_config_page.dart';
+import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:flutter_login_example/tempNeedToDelete/dashboard_screen.dart';
 import 'package:flutter_login_example/generated/l10n.dart';
 import 'package:flutter_login_example/Login/view/login_screen.dart';
@@ -12,9 +13,13 @@ import 'package:flutter_login_example/Home/theme/theme.dart';
 import 'package:todos_repository/todos_repository.dart';
 
 class App extends StatelessWidget {
-  const App({required this.createTodosRepository, super.key});
+  const App(
+      {required this.createTodosRepository,
+      required this.createBillsRepository,
+      super.key});
 
   final TodosRepository Function() createTodosRepository;
+  final BillsRepository Function() createBillsRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +27,10 @@ class App extends StatelessWidget {
       providers: [
         RepositoryProvider<TodosRepository>(
           create: (_) => createTodosRepository(),
+          dispose: (repository) => repository.dispose(),
+        ),
+        RepositoryProvider<BillsRepository>(
+          create: (_) => createBillsRepository(),
           dispose: (repository) => repository.dispose(),
         )
       ],

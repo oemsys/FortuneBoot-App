@@ -11,6 +11,7 @@ import 'package:flutter_login_example/Request/book_request.dart';
 import 'package:flutter_login_example/Request/group_request.dart';
 import 'package:flutter_login_example/Request/include_request.dart';
 import 'package:flutter_login_example/Request/login_request.dart';
+import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:intl/intl.dart';
 import 'package:stream_transform/stream_transform.dart';
@@ -32,7 +33,10 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
   final GroupService _groupService = GroupService();
   final BookService _bookService = BookService();
 
-  SettingBloc() : super(const SettingState()) {
+  SettingBloc({
+    required BillsRepository billsRepository,
+  })  : _billsRepository = billsRepository,
+        super(const SettingState()) {
     on<SettingInitDataLoaded>(
       _onInitData,
       transformer: throttleDroppable(throttleDuration),
@@ -41,11 +45,13 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
       _onFetchedGroup,
       transformer: throttleDroppable(throttleDuration),
     );
-    on<GroupSettingChanged>(
-      _onChangedGroup,
+    on<BookIdChanged>(
+      _onChangedBookId,
       transformer: throttleDroppable(throttleDuration),
     );
   }
+
+  final BillsRepository _billsRepository;
 
   static int curId = 0;
 
@@ -96,6 +102,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     GroupSettingFetched event,
     Emitter<SettingState> emit,
   ) async {
+    // 这里更新分组ID，
     print('lxjtodo _onFetchedGroup');
     var curSetting = state.settings;
     try {
@@ -178,13 +185,15 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
           content: defaultBookName,
           leadingWidget: const Icon(Icons.book_online_outlined),
           data: {"groupId": data['groupId'], "bookId": data['defaultBookId']}));
+      // 查询bills,更新repository
+      _billsRepository.updateRemoteBill(
+          groupId: findGroupId, bookId: data['defaultBookId'] as int? ?? 1);
     }
     return settings;
   }
 
-  FutureOr<void> _onChangedGroup(
-      GroupSettingChanged event, Emitter<SettingState> emit) async {
-    var response = await _bookService.getByGroupId(event.groupId);
-    if (response.code == 0) {}
+  FutureOr<void> _onChangedBookId(
+      BookIdChanged event, Emitter<SettingState> emit) async {
+    _billsRepository.updateRemoteBill(bookId: event.bookId);
   }
 }
