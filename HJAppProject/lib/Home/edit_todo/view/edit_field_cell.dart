@@ -12,6 +12,7 @@ import 'package:flutter_login_example/Home/stats/models/setting_select_item.dart
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
 import 'package:flutter_login_example/Request/account_request.dart';
 import 'package:flutter_login_example/Request/book_request.dart';
+import 'package:flutter_login_example/Request/category_request.dart';
 import 'package:flutter_login_example/Request/group_request.dart';
 import 'package:flutter_login_example/Request/payee_request.dart';
 import 'package:flutter_login_example/Request/tag_request.dart';
@@ -121,10 +122,11 @@ class _EditFieldCellState extends State<EditFieldCell> {
             },
             title: '交易对象');
       case EditFieldType.tag:
-        return EditBaseFieldCell<String>.futureDropDown(
+        return EditBaseFieldCell<TagSelectItem>.futureDropDown(
             billType: widget.billType,
             future: () async {
-              return [];
+              return tagItems(TagService(),
+                  id: bookId, type: widget.billType.value);
             },
             title: '标签');
       case EditFieldType.confirm:
@@ -254,34 +256,7 @@ class _EditBaseFieldCellState<T extends Object>
   }
 
   Widget categoryField() {
-    return Accordion(
-      headerBorderColor: Colors.blueGrey,
-      headerBorderColorOpened: Colors.transparent,
-      // headerBorderWidth: 1,
-      disableScrolling: true,
-      headerBackgroundColorOpened: Colors.green,
-      contentBackgroundColor: Colors.white,
-      contentBorderColor: Colors.green,
-      contentBorderWidth: 3,
-      contentHorizontalPadding: 20,
-      scaleWhenAnimating: true,
-      openAndCloseAnimation: true,
-      headerPadding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
-      sectionOpeningHapticFeedback: SectionHapticFeedback.heavy,
-      sectionClosingHapticFeedback: SectionHapticFeedback.light,
-      children: [
-        AccordionSection(
-          isOpen: true,
-          leftIcon: const Icon(Icons.child_care_rounded, color: Colors.white),
-          header: const Text('Nested Accordion',
-              style: TextStyle(
-                  color: Color(0xffffffff),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold)),
-          content: const MyNestedAccordion(),
-        ),
-      ],
-    );
+    return CategorySelectField(billType: widget.billType);
   }
 
   Widget dropdownField(BuildContext context) {
@@ -375,51 +350,152 @@ class _EditBaseFieldCellState<T extends Object>
   }
 }
 
+class CategorySelectField extends StatefulWidget {
+  CategorySelectField({super.key, required this.billType});
+  BillType billType;
+
+  @override
+  State<CategorySelectField> createState() => _CategorySelectFieldState();
+}
+
+class _CategorySelectFieldState extends State<CategorySelectField> {
+  @override
+  Widget build(BuildContext context) {
+    Future<List<DropdownItem<CategorySelectItem>>> futureCategoryItems =
+        categroyFutureIiems(context, widget.billType);
+    return FutureBuilder<List<DropdownItem<CategorySelectItem>>>(
+      future: futureCategoryItems,
+      builder: (context, snapshot) {
+        // 处理不同状态
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Text('No data found');
+        }
+
+        // 数据加载成功，构建UI
+        final items = snapshot.data!;
+        var categoryItems = <AccordionSection>[];
+        for (final item in items) {
+          categoryItems.add(
+            AccordionSection(
+              isOpen: true,
+              leftIcon: const Icon(Icons.insights_rounded, color: Colors.white),
+              headerBackgroundColor: Colors.black38,
+              headerBackgroundColorOpened: Colors.black54,
+              header: Text(item.label, style: AccordionPage.headerStyle),
+              content: TextField(
+                textAlignVertical: TextAlignVertical.center,
+                keyboardType: TextInputType.numberWithOptions(
+                    decimal: true), // 允许小数点的数字键盘
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d*\.?\d{0,5}')), // 允许数字和最多两位小数
+                ],
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: '请输入金额',
+                  filled: true,
+                  contentPadding: EdgeInsets.fromLTRB(12, 11, 32, 8),
+                ),
+              ),
+              contentHorizontalPadding: 20,
+              contentBorderColor: Colors.black54,
+            ),
+          );
+        }
+        return Accordion(
+          headerBorderColor: Colors.blueGrey,
+          headerBorderColorOpened: Colors.transparent,
+          headerBorderWidth: 1,
+          disableScrolling: true,
+          headerBackgroundColorOpened: Colors.green,
+          contentBackgroundColor: Colors.white,
+          contentBorderColor: Colors.green,
+          contentBorderWidth: 3,
+          contentHorizontalPadding: 20,
+          scaleWhenAnimating: true,
+          openAndCloseAnimation: true,
+          headerPadding:
+              const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
+          sectionOpeningHapticFeedback: SectionHapticFeedback.heavy,
+          sectionClosingHapticFeedback: SectionHapticFeedback.light,
+          children: [
+            AccordionSection(
+              // isOpen: true,
+              leftIcon:
+                  const Icon(Icons.child_care_rounded, color: Colors.white),
+              header: const Text('分类',
+                  style: TextStyle(
+                      color: Color(0xffffffff),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold)),
+              content: MyNestedAccordion(sections: categoryItems),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+Future<List<DropdownItem<CategorySelectItem>>> categroyFutureIiems(
+    BuildContext context, BillType billType) {
+  return categroyItems(CategoryService(),
+      id: context.read<BillsRepository>().bookId(), type: billType.value);
+}
+
 class MyNestedAccordion extends StatelessWidget {
-  const MyNestedAccordion({super.key});
+  MyNestedAccordion({super.key, required this.sections});
+  List<AccordionSection> sections;
 
   @override
   Widget build(context) //
   {
     return Accordion(
-      paddingListTop: 0,
-      paddingListBottom: 0,
-      maxOpenSections: 1,
-      headerBackgroundColorOpened: Colors.black54,
-      headerPadding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
-      children: [
-        AccordionSection(
-          isOpen: true,
-          leftIcon: const Icon(Icons.insights_rounded, color: Colors.white),
-          headerBackgroundColor: Colors.black38,
-          headerBackgroundColorOpened: Colors.black54,
-          header:
-              const Text('Nested Section #1', style: AccordionPage.headerStyle),
-          content: const Text(AccordionPage.loremIpsum,
-              style: AccordionPage.contentStyle),
-          contentHorizontalPadding: 20,
-          contentBorderColor: Colors.black54,
-        ),
-        AccordionSection(
-          isOpen: true,
-          leftIcon: const Icon(Icons.compare_rounded, color: Colors.white),
-          header:
-              const Text('Nested Section #2', style: AccordionPage.headerStyle),
-          headerBackgroundColor: Colors.black38,
-          headerBackgroundColorOpened: Colors.black54,
-          contentBorderColor: Colors.black54,
-          content: const Row(
-            children: [
-              Icon(Icons.compare_rounded,
-                  size: 120, color: Colors.orangeAccent),
-              Flexible(
-                  flex: 1,
-                  child: Text(AccordionPage.loremIpsum,
-                      style: AccordionPage.contentStyle)),
-            ],
-          ),
-        ),
-      ],
-    );
+        paddingListTop: 0,
+        paddingListBottom: 0,
+        maxOpenSections: 1,
+        headerBackgroundColorOpened: Colors.black54,
+        headerPadding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
+        children: sections
+        // [
+        //   AccordionSection(
+        //     isOpen: true,
+        //     leftIcon: const Icon(Icons.insights_rounded, color: Colors.white),
+        //     headerBackgroundColor: Colors.black38,
+        //     headerBackgroundColorOpened: Colors.black54,
+        //     header:
+        //         const Text('Nested Section #1', style: AccordionPage.headerStyle),
+        //     content: const Text(AccordionPage.loremIpsum,
+        //         style: AccordionPage.contentStyle),
+        //     contentHorizontalPadding: 20,
+        //     contentBorderColor: Colors.black54,
+        //   ),
+        //   AccordionSection(
+        //     isOpen: true,
+        //     leftIcon: const Icon(Icons.compare_rounded, color: Colors.white),
+        //     header:
+        //         const Text('Nested Section #2', style: AccordionPage.headerStyle),
+        //     headerBackgroundColor: Colors.black38,
+        //     headerBackgroundColorOpened: Colors.black54,
+        //     contentBorderColor: Colors.black54,
+        //     content: const Row(
+        //       children: [
+        //         Icon(Icons.compare_rounded,
+        //             size: 120, color: Colors.orangeAccent),
+        //         Flexible(
+        //             flex: 1,
+        //             child: Text(AccordionPage.loremIpsum,
+        //                 style: AccordionPage.contentStyle)),
+        //       ],
+        //     ),
+        //   ),
+        // ],
+        );
   }
 }

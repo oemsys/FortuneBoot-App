@@ -23,7 +23,7 @@ class _TagService implements TagService {
 
   @override
   Future<HJResponse> getEnableList(
-    int groupId, {
+    int bookId, {
     int? type,
   }) async {
     final _extra = <String, dynamic>{};
@@ -38,7 +38,7 @@ class _TagService implements TagService {
     )
         .compose(
           _dio.options,
-          '/fortune/tag/${groupId}/getEnableList',
+          '/fortune/tag/${bookId}/getEnableList',
           queryParameters: queryParameters,
           data: _data,
         )

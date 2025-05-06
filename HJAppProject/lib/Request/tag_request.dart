@@ -26,7 +26,7 @@ abstract class TagService extends BaseService {
   /// 查询启动的战虎
   @GET('/fortune/tag/{bookId}/getEnableList')
   Future<HJResponse> getEnableList(
-    @Path('bookId') int groupId, {
+    @Path('bookId') int bookId, {
     @Query('billType') int? type,
   });
 }

@@ -19,3 +19,6 @@ class TagSelectItem extends BaseSelectItem {
 class PayeeSelectItem extends BaseSelectItem {
   PayeeSelectItem(super.title, super.id);
 }
+class CategorySelectItem extends BaseSelectItem {
+  CategorySelectItem(super.title, super.id);
+}
