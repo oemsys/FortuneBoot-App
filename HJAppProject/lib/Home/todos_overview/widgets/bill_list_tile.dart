@@ -21,121 +21,183 @@ class BillListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final captionColor = theme.textTheme.bodySmall?.color;
-    String title = '';
-    bill.categoryAmountPair?.forEach((value) {
-      title += value.categoryName ?? ',';
-    });
-    if (title.length > 0) {
-      title.substring(0, title.length - 1);
-      title += ' - ';
+    
+    // 获取分类名称
+    String categoryName = '';
+    if (bill.categoryAmountPair != null && bill.categoryAmountPair!.isNotEmpty) {
+      categoryName = bill.categoryAmountPair!
+          .map((cat) => cat.categoryName ?? '')
+          .where((name) => name.isNotEmpty)
+          .join(', ');
     }
-    title += bill.title ?? '';
-    String subtitle = '';
-    subtitle += bill.billType?.title ?? '';
-    subtitle = subtitle.isNotEmpty ? '$subtitle ' : '';
-    DateFormat formatter = DateFormat('HH:mm:ss');
-    String formattedDate = formatter.format(bill.tradeTime ?? DateTime.now());
-    subtitle += formattedDate;
+    
+    // 构建标题
+    String title = bill.title ?? '';
+    if (categoryName.isNotEmpty) {
+      title = '$categoryName - $title';
+    }
+    
+    // 格式化时间（只显示小时和分钟，更符合中国用户习惯）
+    DateFormat formatter = DateFormat('HH:mm');
+    String formattedTime = formatter.format(bill.tradeTime ?? DateTime.now());
+    
+    // 根据账单类型设置颜色
     Color? billColor;
+    IconData? billIcon;
     switch (bill.billType) {
       case BillType.expenditure:
-        billColor =
-            Theme.of(context).extension<CustomColors>()!.expenseTextColor;
+        billColor = Theme.of(context).extension<CustomColors>()!.expenseTextColor;
+        billIcon = Icons.arrow_upward;
         break;
       case BillType.income:
-        billColor =
-            Theme.of(context).extension<CustomColors>()!.incomeTextColor;
+        billColor = Theme.of(context).extension<CustomColors>()!.incomeTextColor;
+        billIcon = Icons.arrow_downward;
         break;
       case BillType.transfer:
-        billColor =
-            Theme.of(context).extension<CustomColors>()!.transferTextColor;
+        billColor = Theme.of(context).extension<CustomColors>()!.transferTextColor;
+        billIcon = Icons.swap_horiz;
         break;
       case BillType.adjust:
-        billColor =
-            Theme.of(context).extension<CustomColors>()!.adjustTextColor;
+        billColor = Theme.of(context).extension<CustomColors>()!.adjustTextColor;
+        billIcon = Icons.settings;
         break;
       case null:
-        // TODO: Handle this case.
+        billColor = Colors.grey;
+        billIcon = Icons.help_outline;
         break;
     }
+    
+    // 格式化金额，确保显示两位小数
+    String amountText = '¥${(bill.convertedAmount ?? 0).toStringAsFixed(2)}';
+    if (bill.billType == BillType.expenditure) {
+      amountText = '-$amountText';
+    } else if (bill.billType == BillType.income) {
+      amountText = '+$amountText';
+    }
+    
+    // 构建卡片
     var card = Card(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(6.0),
+        borderRadius: BorderRadius.circular(12.0),
       ),
-      elevation: 3.0,
-      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-      child: ListTile(
+      elevation: 1.0,
+      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      child: InkWell(
         onTap: onTap,
-        title: Text(
-          title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(fontWeight: FontWeight.bold),
-          // style: TextStyle(
-          //   color: captionColor,
-          //   decoration: TextDecoration.lineThrough,
-          // ),
-        ),
-        subtitle: RichText(
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          text: TextSpan(
+        borderRadius: BorderRadius.circular(12.0),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
             children: [
-              TextSpan(
-                text: bill.billType?.title, // 前3个字符
-                style: TextStyle(color: billColor, fontWeight: FontWeight.bold),
+              // 左侧图标
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: billColor?.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Icon(
+                  billIcon,
+                  color: billColor,
+                  size: 20,
+                ),
               ),
-              TextSpan(
-                  text: ' $formattedDate', // 剩余字符
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(width: 12),
+              // 中间内容
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text(
+                          bill.billType?.title ?? '',
+                          style: TextStyle(
+                            color: billColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          formattedTime,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                        if (bill.remark != null && bill.remark!.isNotEmpty) ...[
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.comment,
+                            size: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // 右侧金额
+              Text(
+                amountText,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: billColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ),
-// Text(
-//             subtitle,
-//             maxLines: 1,
-//             overflow: TextOverflow.ellipsis,
-//           ),
-        // leading: Checkbox(
-        //   shape: const ContinuousRectangleBorder(
-        //     borderRadius: BorderRadius.all(Radius.circular(8)),
-        //   ),
-        //   value: todo.isCompleted,
-        //   onChanged: onToggleCompleted == null
-        //       ? null
-        //       : (value) => onToggleCompleted!(value!),
-        // ),
-        trailing: Text(
-          bill.convertedAmount.toString(),
-          style: Theme.of(context)
-              .textTheme
-              .bodyLarge
-              ?.copyWith(color: billColor, fontSize: 20),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
       ),
     );
-    return card;
-    // lxjtodo:左滑删除
+    
+    // 启用左滑删除功能
     return Dismissible(
-      key: Key('todoListTile_dismissible_${bill.billId}'),
+      key: Key('billListTile_dismissible_${bill.billId}'),
       onDismissed: onDismissed,
       direction: DismissDirection.endToStart,
+      confirmDismiss: (direction) async {
+        // 添加确认对话框，防止误删
+        if (onDismissed != null) {
+          return await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('确认删除'),
+              content: const Text('确定要删除这条账单记录吗？'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('取消'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('删除', style: TextStyle(color: Colors.red)),
+                ),
+              ],
+            ),
+          ) ?? false;
+        }
+        return false;
+      },
       background: Container(
         alignment: Alignment.centerRight,
         color: theme.colorScheme.error,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: const Icon(
           Icons.delete,
-          color: Color(0xAAFFFFFF),
+          color: Colors.white,
         ),
       ),
       child: card,
