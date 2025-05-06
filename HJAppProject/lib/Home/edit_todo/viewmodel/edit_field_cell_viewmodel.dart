@@ -70,14 +70,3 @@ Future<List<DropdownItem<BookSelectItem>>> bookItems(BaseService service,
       service,
       (name, id) => BookSelectItem(name, id),
     );
-
-Future<List<DropdownItem<CategorySelectItem>>> categroyItems(BaseService service,
-        {int? id, int? type}) =>
-    _fetchDropdownItems(
-      id,
-      type,
-      'categoryName',
-      'categoryId',
-      service,
-      (name, id) => CategorySelectItem(name, id),
-    );

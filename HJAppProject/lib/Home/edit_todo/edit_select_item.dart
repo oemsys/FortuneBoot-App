@@ -1,3 +1,7 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'edit_select_item.g.dart';
+
 abstract class BaseSelectItem {
   String title;
   int id;
@@ -19,6 +23,23 @@ class TagSelectItem extends BaseSelectItem {
 class PayeeSelectItem extends BaseSelectItem {
   PayeeSelectItem(super.title, super.id);
 }
-class CategorySelectItem extends BaseSelectItem {
-  CategorySelectItem(super.title, super.id);
+
+@JsonSerializable()
+class CategorySelectItem {
+  List<CategorySelectItem>? children;
+
+  @JsonKey(name: 'categoryName')
+  String title;
+  @JsonKey(name: 'categoryId')
+  int id;
+  CategorySelectItem(this.title, this.id, {this.children});
+
+  factory CategorySelectItem.fromJson(Map<String, dynamic> json) =>
+      _$CategorySelectItemFromJson(json);
+  Map<String, dynamic> toJson() => _$CategorySelectItemToJson(this);
+
+  @override
+  String toString() {
+    return '$title $id $children';
+  }
 }

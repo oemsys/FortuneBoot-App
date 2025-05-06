@@ -59,6 +59,72 @@ class BillListTile extends StatelessWidget {
         // TODO: Handle this case.
         break;
     }
+    var card = Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(6.0),
+      ),
+      elevation: 3.0,
+      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+      child: ListTile(
+        onTap: onTap,
+        title: Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(fontWeight: FontWeight.bold),
+          // style: TextStyle(
+          //   color: captionColor,
+          //   decoration: TextDecoration.lineThrough,
+          // ),
+        ),
+        subtitle: RichText(
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: bill.billType?.title, // 前3个字符
+                style: TextStyle(color: billColor, fontWeight: FontWeight.bold),
+              ),
+              TextSpan(
+                  text: ' $formattedDate', // 剩余字符
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ),
+// Text(
+//             subtitle,
+//             maxLines: 1,
+//             overflow: TextOverflow.ellipsis,
+//           ),
+        // leading: Checkbox(
+        //   shape: const ContinuousRectangleBorder(
+        //     borderRadius: BorderRadius.all(Radius.circular(8)),
+        //   ),
+        //   value: todo.isCompleted,
+        //   onChanged: onToggleCompleted == null
+        //       ? null
+        //       : (value) => onToggleCompleted!(value!),
+        // ),
+        trailing: Text(
+          bill.convertedAmount.toString(),
+          style: Theme.of(context)
+              .textTheme
+              .bodyLarge
+              ?.copyWith(color: billColor, fontSize: 20),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+    return card;
+    // lxjtodo:左滑删除
     return Dismissible(
       key: Key('todoListTile_dismissible_${bill.billId}'),
       onDismissed: onDismissed,
@@ -72,71 +138,7 @@ class BillListTile extends StatelessWidget {
           color: Color(0xAAFFFFFF),
         ),
       ),
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(6.0),
-        ),
-        elevation: 3.0,
-        margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-        child: ListTile(
-          onTap: onTap,
-          title: Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
-            // style: TextStyle(
-            //   color: captionColor,
-            //   decoration: TextDecoration.lineThrough,
-            // ),
-          ),
-          subtitle: RichText(
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: bill.billType?.title, // 前3个字符
-                  style:
-                      TextStyle(color: billColor, fontWeight: FontWeight.bold),
-                ),
-                TextSpan(
-                    text: ' $formattedDate', // 剩余字符
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ),
-// Text(
-//             subtitle,
-//             maxLines: 1,
-//             overflow: TextOverflow.ellipsis,
-//           ),
-          // leading: Checkbox(
-          //   shape: const ContinuousRectangleBorder(
-          //     borderRadius: BorderRadius.all(Radius.circular(8)),
-          //   ),
-          //   value: todo.isCompleted,
-          //   onChanged: onToggleCompleted == null
-          //       ? null
-          //       : (value) => onToggleCompleted!(value!),
-          // ),
-          trailing: Text(
-            bill.convertedAmount.toString(),
-            style: Theme.of(context)
-                .textTheme
-                .bodyLarge
-                ?.copyWith(color: billColor, fontSize: 20),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ),
+      child: card,
     );
   }
 }

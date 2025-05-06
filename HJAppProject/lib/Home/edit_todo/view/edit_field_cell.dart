@@ -144,7 +144,7 @@ class _EditFieldCellState extends State<EditFieldCell> {
       case EditFieldType.remark:
         return EditBaseFieldCell(
             billType: widget.billType,
-            type: EditFieldBaseType.text,
+            type: EditFieldBaseType.tag,
             title: '备注',
             needed: true);
       case EditFieldType.transferOutAccount:
@@ -184,6 +184,7 @@ enum EditFieldBaseType {
   time,
   selector,
   category,
+  tag,
 }
 
 class EditBaseFieldCell<T extends Object> extends StatefulWidget {
@@ -194,7 +195,8 @@ class EditBaseFieldCell<T extends Object> extends StatefulWidget {
       this.needed = false,
       this.onSelectionChange,
       super.key})
-      : future = null;
+      : future = null,
+        switcherValue = false;
 
   EditBaseFieldCell.futureDropDown(
       {required this.billType,
@@ -203,12 +205,14 @@ class EditBaseFieldCell<T extends Object> extends StatefulWidget {
       this.onSelectionChange,
       this.needed = false,
       super.key})
-      : type = EditFieldBaseType.dropdown;
+      : type = EditFieldBaseType.dropdown,
+        switcherValue = false;
   String title; //标题
   bool needed; // 是否必填
   EditFieldBaseType type;
   FutureRequest<T>? future;
   BillType billType;
+  bool switcherValue;
   OnSelectionChanged<T>? onSelectionChange;
 
   @override
@@ -231,8 +235,14 @@ class _EditBaseFieldCellState<T extends Object>
         child = selectorField();
       case EditFieldBaseType.category:
         child = categoryField();
+      case EditFieldBaseType.tag:
+        child = tagField();
     }
-    return child;
+    return Stack(alignment: Alignment.centerLeft, children: [
+      if (widget.needed) Icon(Icons.star, color: Colors.red),
+      Container(
+          padding: EdgeInsets.only(left: widget.needed ? 16 : 0), child: child),
+    ]);
   }
 
   Widget textField() {
@@ -316,7 +326,7 @@ class _EditBaseFieldCellState<T extends Object>
               }
               return null;
             },
-            // searchEnabled: true,
+            searchEnabled: true,
             singleSelect: true,
             // items: items,
           ),
@@ -346,6 +356,22 @@ class _EditBaseFieldCellState<T extends Object>
   }
 
   Widget selectorField() {
+    return Row(
+      children: [
+        Text(widget.title),
+        Switch(
+          value: widget.switcherValue,
+          onChanged: (bool value) {
+            setState(() => widget.switcherValue = value);
+          },
+          activeColor: Colors.blue, // 开启状态颜色
+          activeTrackColor: Colors.blue.withOpacity(0.3), // 开启轨道颜色
+        ),
+      ],
+    );
+  }
+
+  Widget tagField() {
     return Container();
   }
 }
@@ -361,9 +387,9 @@ class CategorySelectField extends StatefulWidget {
 class _CategorySelectFieldState extends State<CategorySelectField> {
   @override
   Widget build(BuildContext context) {
-    Future<List<DropdownItem<CategorySelectItem>>> futureCategoryItems =
+    Future<List<CategorySelectItem>> futureCategoryItems =
         categroyFutureIiems(context, widget.billType);
-    return FutureBuilder<List<DropdownItem<CategorySelectItem>>>(
+    return FutureBuilder<List<CategorySelectItem>>(
       future: futureCategoryItems,
       builder: (context, snapshot) {
         // 处理不同状态
@@ -379,35 +405,6 @@ class _CategorySelectFieldState extends State<CategorySelectField> {
 
         // 数据加载成功，构建UI
         final items = snapshot.data!;
-        var categoryItems = <AccordionSection>[];
-        for (final item in items) {
-          categoryItems.add(
-            AccordionSection(
-              isOpen: true,
-              leftIcon: const Icon(Icons.insights_rounded, color: Colors.white),
-              headerBackgroundColor: Colors.black38,
-              headerBackgroundColorOpened: Colors.black54,
-              header: Text(item.label, style: AccordionPage.headerStyle),
-              content: TextField(
-                textAlignVertical: TextAlignVertical.center,
-                keyboardType: TextInputType.numberWithOptions(
-                    decimal: true), // 允许小数点的数字键盘
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(
-                      RegExp(r'^\d*\.?\d{0,5}')), // 允许数字和最多两位小数
-                ],
-                decoration: InputDecoration(
-                  isDense: true,
-                  hintText: '请输入金额',
-                  filled: true,
-                  contentPadding: EdgeInsets.fromLTRB(12, 11, 32, 8),
-                ),
-              ),
-              contentHorizontalPadding: 20,
-              contentBorderColor: Colors.black54,
-            ),
-          );
-        }
         return Accordion(
           headerBorderColor: Colors.blueGrey,
           headerBorderColorOpened: Colors.transparent,
@@ -428,13 +425,13 @@ class _CategorySelectFieldState extends State<CategorySelectField> {
             AccordionSection(
               // isOpen: true,
               leftIcon:
-                  const Icon(Icons.child_care_rounded, color: Colors.white),
+                  const Icon(Icons.category_outlined, color: Colors.white),
               header: const Text('分类',
                   style: TextStyle(
                       color: Color(0xffffffff),
                       fontSize: 18,
                       fontWeight: FontWeight.bold)),
-              content: MyNestedAccordion(sections: categoryItems),
+              content: TreeAccordion(children: items),
             ),
           ],
         );
@@ -443,10 +440,83 @@ class _CategorySelectFieldState extends State<CategorySelectField> {
   }
 }
 
-Future<List<DropdownItem<CategorySelectItem>>> categroyFutureIiems(
-    BuildContext context, BillType billType) {
-  return categroyItems(CategoryService(),
-      id: context.read<BillsRepository>().bookId(), type: billType.value);
+Future<List<CategorySelectItem>> categroyFutureIiems(
+    BuildContext context, BillType billType) async {
+  CategoryService categoryService = CategoryService();
+  var response = await categoryService.getEnableList(
+      context.read<BillsRepository>().bookId() ?? 1,
+      type: billType.value);
+  List<CategorySelectItem> categroyItems = [];
+  if (response.code == 0) {
+    var list = response.data as List? ?? [];
+    for (final item in list) {
+      categroyItems.add(CategorySelectItem.fromJson(
+          Map<String, dynamic>.from(item as Map? ?? {})));
+    }
+  }
+  return categroyItems;
+}
+
+class TreeAccordion extends StatefulWidget {
+  TreeAccordion({super.key, this.children});
+
+  List<CategorySelectItem>? children = [];
+
+  @override
+  State<TreeAccordion> createState() => _TreeAccordionState();
+}
+
+class _TreeAccordionState extends State<TreeAccordion> {
+  @override
+  Widget build(BuildContext context) {
+    return Accordion(
+        paddingListTop: 0,
+        paddingListBottom: 0,
+        maxOpenSections: 1,
+        headerBackgroundColorOpened: Colors.black54,
+        headerPadding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
+        children: widget.children != null
+            ? widget.children!.map((ele) {
+                return AccordionSection(
+                  // isOpen: true,
+                  leftIcon:
+                      const Icon(Icons.category_outlined, color: Colors.white),
+                  header: Text(ele.title,
+                      style: TextStyle(
+                          color: Color(0xffffffff),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                  content: Column(
+                    children: [
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        child: TextField(
+                          textInputAction: TextInputAction.done,
+                          textAlignVertical: TextAlignVertical.center,
+                          keyboardType: TextInputType.numberWithOptions(
+                              decimal: true, signed: true), // 允许小数点的数字键盘
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'^\d*\.?\d{0,5}')), // 允许数字和最多两位小数
+                          ],
+                          decoration: InputDecoration(
+                            isDense: true,
+                            hintText: '金额 - ${ele.title}',
+                            filled: true,
+                            contentPadding: EdgeInsets.fromLTRB(12, 11, 32, 8),
+                          ),
+                        ),
+                      ),
+                      TreeAccordion(
+                        children: ele.children,
+                      ),
+                    ],
+                  ),
+                );
+              }).toList()
+            : []);
+  }
 }
 
 class MyNestedAccordion extends StatelessWidget {
@@ -462,40 +532,6 @@ class MyNestedAccordion extends StatelessWidget {
         maxOpenSections: 1,
         headerBackgroundColorOpened: Colors.black54,
         headerPadding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
-        children: sections
-        // [
-        //   AccordionSection(
-        //     isOpen: true,
-        //     leftIcon: const Icon(Icons.insights_rounded, color: Colors.white),
-        //     headerBackgroundColor: Colors.black38,
-        //     headerBackgroundColorOpened: Colors.black54,
-        //     header:
-        //         const Text('Nested Section #1', style: AccordionPage.headerStyle),
-        //     content: const Text(AccordionPage.loremIpsum,
-        //         style: AccordionPage.contentStyle),
-        //     contentHorizontalPadding: 20,
-        //     contentBorderColor: Colors.black54,
-        //   ),
-        //   AccordionSection(
-        //     isOpen: true,
-        //     leftIcon: const Icon(Icons.compare_rounded, color: Colors.white),
-        //     header:
-        //         const Text('Nested Section #2', style: AccordionPage.headerStyle),
-        //     headerBackgroundColor: Colors.black38,
-        //     headerBackgroundColorOpened: Colors.black54,
-        //     contentBorderColor: Colors.black54,
-        //     content: const Row(
-        //       children: [
-        //         Icon(Icons.compare_rounded,
-        //             size: 120, color: Colors.orangeAccent),
-        //         Flexible(
-        //             flex: 1,
-        //             child: Text(AccordionPage.loremIpsum,
-        //                 style: AccordionPage.contentStyle)),
-        //       ],
-        //     ),
-        //   ),
-        // ],
-        );
+        children: sections);
   }
 }
