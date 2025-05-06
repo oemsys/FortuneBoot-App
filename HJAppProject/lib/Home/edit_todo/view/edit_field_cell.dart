@@ -6,6 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_example/Home/edit_todo/edit_select_item.dart';
 import 'package:flutter_login_example/Home/edit_todo/view/accound_page.dart';
+import 'package:flutter_login_example/Home/edit_todo/view/category_select_field.dart';
+import 'package:flutter_login_example/Home/edit_todo/view/tag_select_field.dart';
+import 'package:flutter_login_example/Home/edit_todo/view/tree_accordion.dart';
 import 'package:flutter_login_example/Home/edit_todo/viewmodel/edit_field_cell_viewmodel.dart';
 import 'package:flutter_login_example/Home/stats/models/mine_setting.dart';
 import 'package:flutter_login_example/Home/stats/models/setting_select_item.dart';
@@ -122,12 +125,9 @@ class _EditFieldCellState extends State<EditFieldCell> {
             },
             title: '交易对象');
       case EditFieldType.tag:
-        return EditBaseFieldCell<TagSelectItem>.futureDropDown(
+        return EditBaseFieldCell(
+            type: EditFieldBaseType.tag,
             billType: widget.billType,
-            future: () async {
-              return tagItems(TagService(),
-                  id: bookId, type: widget.billType.value);
-            },
             title: '标签');
       case EditFieldType.confirm:
         return EditBaseFieldCell(
@@ -144,7 +144,7 @@ class _EditFieldCellState extends State<EditFieldCell> {
       case EditFieldType.remark:
         return EditBaseFieldCell(
             billType: widget.billType,
-            type: EditFieldBaseType.tag,
+            type: EditFieldBaseType.text,
             title: '备注',
             needed: true);
       case EditFieldType.transferOutAccount:
@@ -365,174 +365,13 @@ class _EditBaseFieldCellState<T extends Object>
             setState(() => widget.switcherValue = value);
           },
           activeColor: Colors.blue, // 开启状态颜色
-          activeTrackColor: Colors.blue.withOpacity(0.3), // 开启轨道颜色
+          activeTrackColor: Colors.blue.withValues(alpha: 0.3), // 开启轨道颜色
         ),
       ],
     );
   }
 
   Widget tagField() {
-    return Container();
-  }
-}
-
-class CategorySelectField extends StatefulWidget {
-  CategorySelectField({super.key, required this.billType});
-  BillType billType;
-
-  @override
-  State<CategorySelectField> createState() => _CategorySelectFieldState();
-}
-
-class _CategorySelectFieldState extends State<CategorySelectField> {
-  @override
-  Widget build(BuildContext context) {
-    Future<List<CategorySelectItem>> futureCategoryItems =
-        categroyFutureIiems(context, widget.billType);
-    return FutureBuilder<List<CategorySelectItem>>(
-      future: futureCategoryItems,
-      builder: (context, snapshot) {
-        // 处理不同状态
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        }
-        if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        }
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Text('No data found');
-        }
-
-        // 数据加载成功，构建UI
-        final items = snapshot.data!;
-        return Accordion(
-          headerBorderColor: Colors.blueGrey,
-          headerBorderColorOpened: Colors.transparent,
-          headerBorderWidth: 1,
-          disableScrolling: true,
-          headerBackgroundColorOpened: Colors.green,
-          contentBackgroundColor: Colors.white,
-          contentBorderColor: Colors.green,
-          contentBorderWidth: 3,
-          contentHorizontalPadding: 20,
-          scaleWhenAnimating: true,
-          openAndCloseAnimation: true,
-          headerPadding:
-              const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
-          sectionOpeningHapticFeedback: SectionHapticFeedback.heavy,
-          sectionClosingHapticFeedback: SectionHapticFeedback.light,
-          children: [
-            AccordionSection(
-              // isOpen: true,
-              leftIcon:
-                  const Icon(Icons.category_outlined, color: Colors.white),
-              header: const Text('分类',
-                  style: TextStyle(
-                      color: Color(0xffffffff),
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold)),
-              content: TreeAccordion(children: items),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-Future<List<CategorySelectItem>> categroyFutureIiems(
-    BuildContext context, BillType billType) async {
-  CategoryService categoryService = CategoryService();
-  var response = await categoryService.getEnableList(
-      context.read<BillsRepository>().bookId() ?? 1,
-      type: billType.value);
-  List<CategorySelectItem> categroyItems = [];
-  if (response.code == 0) {
-    var list = response.data as List? ?? [];
-    for (final item in list) {
-      categroyItems.add(CategorySelectItem.fromJson(
-          Map<String, dynamic>.from(item as Map? ?? {})));
-    }
-  }
-  return categroyItems;
-}
-
-class TreeAccordion extends StatefulWidget {
-  TreeAccordion({super.key, this.children});
-
-  List<CategorySelectItem>? children = [];
-
-  @override
-  State<TreeAccordion> createState() => _TreeAccordionState();
-}
-
-class _TreeAccordionState extends State<TreeAccordion> {
-  @override
-  Widget build(BuildContext context) {
-    return Accordion(
-        disableScrolling: true,
-        paddingListTop: 0,
-        paddingListBottom: 0,
-        maxOpenSections: 1,
-        headerBackgroundColorOpened: Colors.black54,
-        headerPadding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
-        children: widget.children != null
-            ? widget.children!.map((ele) {
-                return AccordionSection(
-                  // isOpen: true,
-                  leftIcon:
-                      const Icon(Icons.category_outlined, color: Colors.white),
-                  header: Text(ele.title,
-                      style: TextStyle(
-                          color: Color(0xffffffff),
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold)),
-                  content: Column(
-                    children: [
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        child: TextField(
-                          textInputAction: TextInputAction.done,
-                          textAlignVertical: TextAlignVertical.center,
-                          keyboardType: TextInputType.numberWithOptions(
-                              decimal: true, signed: true), // 允许小数点的数字键盘
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d*\.?\d{0,5}')), // 允许数字和最多两位小数
-                          ],
-                          decoration: InputDecoration(
-                            isDense: true,
-                            hintText: '金额 - ${ele.title}',
-                            filled: true,
-                            contentPadding: EdgeInsets.fromLTRB(12, 11, 32, 8),
-                          ),
-                        ),
-                      ),
-                      TreeAccordion(
-                        children: ele.children,
-                      ),
-                    ],
-                  ),
-                );
-              }).toList()
-            : []);
-  }
-}
-
-class MyNestedAccordion extends StatelessWidget {
-  MyNestedAccordion({super.key, required this.sections});
-  List<AccordionSection> sections;
-
-  @override
-  Widget build(context) //
-  {
-    return Accordion(
-        paddingListTop: 0,
-        paddingListBottom: 0,
-        maxOpenSections: 1,
-        headerBackgroundColorOpened: Colors.black54,
-        headerPadding: const EdgeInsets.symmetric(vertical: 7, horizontal: 15),
-        children: sections);
+    return TagSelectField(billType: widget.billType);
   }
 }
