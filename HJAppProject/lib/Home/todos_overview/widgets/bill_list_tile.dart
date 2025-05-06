@@ -33,7 +33,9 @@ class BillListTile extends StatelessWidget {
     
     // 构建标题
     String title = bill.title ?? '';
-    if (categoryName.isNotEmpty) {
+    if (title.isEmpty && categoryName.isNotEmpty) {
+      title = categoryName;
+    } else if (categoryName.isNotEmpty) {
       title = '$categoryName - $title';
     }
     
@@ -41,30 +43,54 @@ class BillListTile extends StatelessWidget {
     DateFormat formatter = DateFormat('HH:mm');
     String formattedTime = formatter.format(bill.tradeTime ?? DateTime.now());
     
-    // 根据账单类型设置颜色
+    // 根据账单类型设置颜色和图标
     Color? billColor;
     IconData? billIcon;
+    Map<String, dynamic>? categoryIcon;
+    
+    // 设置账单类型颜色和图标
     switch (bill.billType) {
       case BillType.expenditure:
-        billColor = Theme.of(context).extension<CustomColors>()!.expenseTextColor;
+        billColor = Theme.of(context).extension<CustomColors>()!.expenseTextColor ?? Colors.red;
         billIcon = Icons.arrow_upward;
         break;
       case BillType.income:
-        billColor = Theme.of(context).extension<CustomColors>()!.incomeTextColor;
+        billColor = Theme.of(context).extension<CustomColors>()!.incomeTextColor ?? Colors.green;
         billIcon = Icons.arrow_downward;
         break;
       case BillType.transfer:
-        billColor = Theme.of(context).extension<CustomColors>()!.transferTextColor;
+        billColor = Theme.of(context).extension<CustomColors>()!.transferTextColor ?? Colors.blue;
         billIcon = Icons.swap_horiz;
         break;
       case BillType.adjust:
-        billColor = Theme.of(context).extension<CustomColors>()!.adjustTextColor;
+        billColor = Theme.of(context).extension<CustomColors>()!.adjustTextColor ?? Colors.orange;
         billIcon = Icons.settings;
         break;
       case null:
         billColor = Colors.grey;
         billIcon = Icons.help_outline;
         break;
+    }
+    
+    // 根据分类设置图标（这里使用一些常见的中国消费分类图标）
+    if (categoryName.isNotEmpty) {
+      if (categoryName.contains('餐饮') || categoryName.contains('吃') || categoryName.contains('食品')) {
+        categoryIcon = {'icon': Icons.restaurant, 'color': Colors.orange};
+      } else if (categoryName.contains('交通') || categoryName.contains('车')) {
+        categoryIcon = {'icon': Icons.directions_car, 'color': Colors.blue};
+      } else if (categoryName.contains('购物') || categoryName.contains('服装')) {
+        categoryIcon = {'icon': Icons.shopping_bag, 'color': Colors.purple};
+      } else if (categoryName.contains('娱乐') || categoryName.contains('电影')) {
+        categoryIcon = {'icon': Icons.movie, 'color': Colors.pink};
+      } else if (categoryName.contains('住房') || categoryName.contains('房租')) {
+        categoryIcon = {'icon': Icons.home, 'color': Colors.brown};
+      } else if (categoryName.contains('工资') || categoryName.contains('收入')) {
+        categoryIcon = {'icon': Icons.account_balance_wallet, 'color': Colors.green};
+      } else if (categoryName.contains('医疗') || categoryName.contains('药')) {
+        categoryIcon = {'icon': Icons.local_hospital, 'color': Colors.red};
+      } else if (categoryName.contains('教育') || categoryName.contains('学习')) {
+        categoryIcon = {'icon': Icons.school, 'color': Colors.indigo};
+      }
     }
     
     // 格式化金额，确保显示两位小数
@@ -94,12 +120,12 @@ class BillListTile extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: billColor?.withOpacity(0.1),
+                  color: (categoryIcon?['color'] ?? billColor)?.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: Icon(
-                  billIcon,
-                  color: billColor,
+                  categoryIcon?['icon'] ?? billIcon,
+                  color: categoryIcon?['color'] ?? billColor,
                   size: 20,
                 ),
               ),
@@ -120,6 +146,24 @@ class BillListTile extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
+                        // 账户名称
+                        if (bill.accountName != null && bill.accountName!.isNotEmpty) ...[
+                          Icon(
+                            Icons.account_balance,
+                            size: 12,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            bill.accountName!,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        // 账单类型
                         Text(
                           bill.billType?.title ?? '',
                           style: TextStyle(
@@ -129,6 +173,7 @@ class BillListTile extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
+                        // 时间
                         Text(
                           formattedTime,
                           style: TextStyle(
@@ -136,6 +181,7 @@ class BillListTile extends StatelessWidget {
                             fontSize: 12,
                           ),
                         ),
+                        // 备注图标
                         if (bill.remark != null && bill.remark!.isNotEmpty) ...[
                           const SizedBox(width: 8),
                           Icon(
