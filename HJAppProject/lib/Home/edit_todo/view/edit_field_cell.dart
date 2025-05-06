@@ -470,6 +470,7 @@ class _TreeAccordionState extends State<TreeAccordion> {
   @override
   Widget build(BuildContext context) {
     return Accordion(
+        disableScrolling: true,
         paddingListTop: 0,
         paddingListBottom: 0,
         maxOpenSections: 1,
