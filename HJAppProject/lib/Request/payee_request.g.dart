@@ -23,11 +23,11 @@ class _PayeeService implements PayeeService {
 
   @override
   Future<HJResponse> getEnableList(
-    int bookId, {
-    int? billType,
+    int id, {
+    int? type,
   }) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'billType': billType};
+    final queryParameters = <String, dynamic>{r'billType': type};
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
@@ -38,7 +38,7 @@ class _PayeeService implements PayeeService {
     )
         .compose(
           _dio.options,
-          '/fortune/payee/${bookId}/getEnableList',
+          '/fortune/payee/${id}/getEnableList',
           queryParameters: queryParameters,
           data: _data,
         )

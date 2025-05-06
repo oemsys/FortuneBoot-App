@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_login_example/Login/model/login_model.dart';
+import 'package:flutter_login_example/Request/base_request.dart';
 import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -63,11 +64,4 @@ abstract class BillService {
     // 账单类型过滤
     @Query('billType') String? billType,
   });
-}
-
-class AccountErrorReport extends ParseErrorLogger {
-  @override
-  void logError(Object error, StackTrace stackTrace, RequestOptions options) {
-    debugPrint('LoginErrorReport: $error $stackTrace $options');
-  }
 }

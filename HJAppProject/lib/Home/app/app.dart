@@ -51,7 +51,7 @@ class AppView extends StatelessWidget {
       navigatorKey: navigatorKey,
       theme: FlutterTodosTheme.light,
       darkTheme: FlutterTodosTheme.dark,
-      themeMode: ThemeMode.dark,
+      themeMode: ThemeMode.system,
       locale: const Locale('zh', 'CN'),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate, // 提供 Material 组件本地化资源

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_example/Home/edit_todo/edit_select_item.dart';
 import 'package:flutter_login_example/Home/edit_todo/view/accound_page.dart';
+import 'package:flutter_login_example/Home/edit_todo/viewmodel/edit_field_cell_viewmodel.dart';
 import 'package:flutter_login_example/Home/stats/models/mine_setting.dart';
 import 'package:flutter_login_example/Home/stats/models/setting_select_item.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
@@ -13,164 +14,162 @@ import 'package:flutter_login_example/Request/account_request.dart';
 import 'package:flutter_login_example/Request/book_request.dart';
 import 'package:flutter_login_example/Request/group_request.dart';
 import 'package:flutter_login_example/Request/payee_request.dart';
+import 'package:flutter_login_example/Request/tag_request.dart';
 import 'package:flutter_login_example/generated/l10n.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:intl/intl.dart';
 
-// 所属账本
-// 标题
-// 时间
-// 账户
-// 分类
-// 交易对象
-// 标签
-// 是否确认
-// 是否统计
-// 备注
 enum EditFieldType {
-  billType,
-  book,
-  title,
-  time,
-  account,
-  category,
-  target,
-  tag,
-  confirm,
-  statistics,
-  remark
+  billType, // 类型
+  book, // 所属账本
+  title, // 标题
+  time, // 时间
+  account, // 账户
+  category, // 分类
+  target, // 交易对象
+  tag, // 标签
+  confirm, // 是否确认
+  statistics, // 是否统计
+  remark, // 备注
+  transferOutAccount, // 转出账户
+  transferInAccount, // 转入账户
+  transferAmount // 金额
 }
 
 class EditFieldCell extends StatefulWidget {
-  EditFieldCell({required this.type, super.key});
+  EditFieldCell(
+      {required this.type,
+      required this.billType,
+      super.key,
+      this.onTypeChange});
   EditFieldType type;
+  BillType billType;
+  Function(BillType type)? onTypeChange;
 
   @override
   State<EditFieldCell> createState() => _EditFieldCellState();
 }
 
 class _EditFieldCellState extends State<EditFieldCell> {
-  BillType billType = BillType.income;
+  //
   @override
   Widget build(BuildContext context) {
     int bookId = context.read<BillsRepository>().bookId() ?? 1;
+    int groupId = context.read<BillsRepository>().groupId() ?? 1;
     switch (widget.type) {
       case EditFieldType.billType:
-        return EditBaseFieldCell<BillType>.future(
+        return EditBaseFieldCell<BillType>.futureDropDown(
+          billType: widget.billType,
           future: () async {
             return BillType.values
                 .map((e) => DropdownItem(
-                    label: e.title, value: e, selected: e == billType))
-                .toList();
+                    label: e.title, value: e, selected: e == widget.billType))
+                .toList()
+                .sublist(0, 3);
           },
           onSelectionChange: (selectedItems) {
-            billType = selectedItems.first.value as BillType;
+            widget.billType = BillType.fromValue(selectedItems.first.value) ??
+                widget.billType;
+            widget.onTypeChange?.call(widget.billType);
           },
-          type: EditFieldBaseType.dropdown,
           title: '类型',
           needed: true,
         );
       case EditFieldType.book:
-        return EditBaseFieldCell<SettingSelectItem>.future(
+        return EditBaseFieldCell<BookSelectItem>.futureDropDown(
+          billType: widget.billType,
           future: () async {
-            return await bookItemItem(context);
+            return bookItems(BookService(),
+                id: groupId, type: widget.billType.value);
           },
-          type: EditFieldBaseType.dropdown,
           title: '账本',
           needed: true,
         );
       case EditFieldType.title:
-        return EditBaseFieldCell(type: EditFieldBaseType.text, title: '标题');
+        return EditBaseFieldCell(
+            type: EditFieldBaseType.text,
+            billType: widget.billType,
+            title: '标题');
       case EditFieldType.time:
         return EditBaseFieldCell(
-            type: EditFieldBaseType.time, title: '时间', needed: true);
+            billType: widget.billType,
+            type: EditFieldBaseType.time,
+            title: '时间',
+            needed: true);
       case EditFieldType.account:
-        return EditBaseFieldCell<AccountSelectItem>.future(
+        return EditBaseFieldCell<AccountSelectItem>.futureDropDown(
+            billType: widget.billType,
             future: () async {
-              return await accountItems(context);
+              return accountItems(AccountService(),
+                  id: groupId, type: widget.billType.value);
             },
-            type: EditFieldBaseType.dropdown,
             title: '账户');
       case EditFieldType.category:
         return EditBaseFieldCell(
-            type: EditFieldBaseType.category, title: '分类', needed: true);
+            billType: widget.billType,
+            type: EditFieldBaseType.category,
+            title: '分类',
+            needed: true);
       case EditFieldType.target:
-        return EditBaseFieldCell<String>.future(
+        return EditBaseFieldCell<PayeeSelectItem>.futureDropDown(
+            billType: widget.billType,
             future: () async {
-              PayeeService service = PayeeService();
-              var response =
-                  await service.getEnableList(bookId, billType: billType.value);
-              return [];
+              return payeeItems(PayeeService(),
+                  id: bookId, type: widget.billType.value);
             },
-            type: EditFieldBaseType.dropdown,
             title: '交易对象');
       case EditFieldType.tag:
-        return EditBaseFieldCell<String>.future(
+        return EditBaseFieldCell<String>.futureDropDown(
+            billType: widget.billType,
             future: () async {
               return [];
             },
-            type: EditFieldBaseType.dropdown,
             title: '标签');
       case EditFieldType.confirm:
         return EditBaseFieldCell(
-            type: EditFieldBaseType.selector, title: '是否确认', needed: true);
+            billType: widget.billType,
+            type: EditFieldBaseType.selector,
+            title: '是否确认',
+            needed: true);
       case EditFieldType.statistics:
         return EditBaseFieldCell(
-            type: EditFieldBaseType.selector, title: '是否统计', needed: true);
+            billType: widget.billType,
+            type: EditFieldBaseType.selector,
+            title: '是否统计',
+            needed: true);
       case EditFieldType.remark:
         return EditBaseFieldCell(
-            type: EditFieldBaseType.text, title: '备注', needed: true);
+            billType: widget.billType,
+            type: EditFieldBaseType.text,
+            title: '备注',
+            needed: true);
+      case EditFieldType.transferOutAccount:
+        return EditBaseFieldCell<AccountSelectItem>.futureDropDown(
+            future: () {
+              return accountItems(AccountService(),
+                  id: groupId, type: widget.billType.value);
+            },
+            billType: widget.billType,
+            title: '转出账户',
+            needed: true);
+      case EditFieldType.transferInAccount:
+        return EditBaseFieldCell<AccountSelectItem>.futureDropDown(
+            future: () {
+              return accountItems(AccountService(),
+                  id: groupId, type: widget.billType.value);
+            },
+            billType: widget.billType,
+            title: '转入账户',
+            needed: true);
+      case EditFieldType.transferAmount:
+        return EditBaseFieldCell(
+            billType: widget.billType,
+            type: EditFieldBaseType.text,
+            title: '转入账户',
+            needed: true);
     }
-  }
-
-  Future<List<DropdownItem<AccountSelectItem>>> accountItems(
-      BuildContext context) async {
-    AccountService service = AccountService();
-    List<DropdownItem<AccountSelectItem>> items = [];
-    var response = await service
-        .getEnableList(context.read<BillsRepository>().groupId() ?? 1);
-    if (response.code == 0) {
-      for (final element in response.data as List? ?? []) {
-        var accountName = element['accountName'] as String? ?? '';
-        var accountId = element['accountId'] as int? ?? 0;
-        items.add(
-          DropdownItem(
-            label: accountName,
-            value: AccountSelectItem(accountName, accountId),
-          ),
-        );
-      }
-    }
-    return items;
-  }
-
-  Future<List<DropdownItem<SettingSelectItem>>> bookItemItem(
-      BuildContext context) async {
-    List<DropdownItem<SettingSelectItem>> items = [];
-    BookService bookService = BookService();
-    var remoteBookResponse = await bookService
-        .getByGroupId(context.read<BillsRepository>().groupId() ?? 0);
-    if (remoteBookResponse.code == 0) {
-      var remoteBookList = remoteBookResponse.data as List? ?? [];
-      for (final remoteBookItem in remoteBookList) {
-        var remoteBookId = remoteBookItem['bookId'] as int? ?? 0;
-        var remoteBookName = remoteBookItem['bookName'] as String? ?? '';
-        bool selected = false;
-        if (remoteBookId == context.read<BillsRepository>().bookId()) {
-          selected = true;
-        }
-        items.add(
-          DropdownItem(
-              label: remoteBookName,
-              value: SettingSelectItem(remoteBookName, remoteBookId),
-              selected: selected),
-        );
-      }
-    }
-
-    return items;
   }
 }
 
@@ -188,23 +187,26 @@ enum EditFieldBaseType {
 class EditBaseFieldCell<T extends Object> extends StatefulWidget {
   EditBaseFieldCell(
       {required this.type,
+      required this.billType,
       required this.title,
       this.needed = false,
       this.onSelectionChange,
       super.key})
       : future = null;
 
-  EditBaseFieldCell.future(
-      {required this.type,
+  EditBaseFieldCell.futureDropDown(
+      {required this.billType,
       required this.title,
       required this.future,
       this.onSelectionChange,
       this.needed = false,
-      super.key});
+      super.key})
+      : type = EditFieldBaseType.dropdown;
   String title; //标题
   bool needed; // 是否必填
   EditFieldBaseType type;
   FutureRequest<T>? future;
+  BillType billType;
   OnSelectionChanged<T>? onSelectionChange;
 
   @override
@@ -233,7 +235,7 @@ class _EditBaseFieldCellState<T extends Object>
 
   Widget textField() {
     return TextFormField(
-      key: const Key('editTodoView_title_textFormField'),
+      // key: const Key('editTodoView_title_textFormField'),
       // initialValue: '输入标题',
       decoration: InputDecoration(
         labelText: widget.title,
@@ -283,6 +285,8 @@ class _EditBaseFieldCellState<T extends Object>
   }
 
   Widget dropdownField(BuildContext context) {
+    String key = 'dropdown_${widget.title}_${widget.billType}';
+    print('lxjtodo: dropdownField rebuild key: $key');
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -292,7 +296,11 @@ class _EditBaseFieldCellState<T extends Object>
         ),
         Expanded(
           child: MultiDropdown<T>.future(
-            onSelectionChange: (selectedItems) {},
+            key: Key(key),
+            onSelectionChange: (selectedItems) {
+              print('lxjtodo: selectedItems $selectedItems');
+              widget.onSelectionChange?.call(selectedItems);
+            },
             future: widget.future,
             dropdownItemDecoration: DropdownItemDecoration(
                 selectedBackgroundColor: Theme.of(context).focusColor),
@@ -333,7 +341,7 @@ class _EditBaseFieldCellState<T extends Object>
               }
               return null;
             },
-            searchEnabled: true,
+            // searchEnabled: true,
             singleSelect: true,
             // items: items,
           ),

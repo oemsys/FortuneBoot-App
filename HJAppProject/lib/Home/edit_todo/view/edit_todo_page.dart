@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_example/Home/edit_todo/bloc/edit_todo_bloc.dart';
 import 'package:flutter_login_example/Home/edit_todo/view/accound_page.dart';
 import 'package:flutter_login_example/Home/edit_todo/view/edit_field_cell.dart';
+import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
 import 'package:todos_repository/todos_repository.dart';
 import '../../../generated/l10n.dart';
 
@@ -31,14 +32,20 @@ class EditTodoPage extends StatelessWidget {
           previous.status != current.status &&
           current.status == EditTodoStatus.success,
       listener: (context, state) => Navigator.of(context).pop(),
-      child: const EditTodoView(),
+      child: EditTodoView(),
     );
   }
 }
 
-class EditTodoView extends StatelessWidget {
-  const EditTodoView({super.key});
+class EditTodoView extends StatefulWidget {
+  EditTodoView({super.key, this.billType = BillType.expenditure});
+  BillType billType;
 
+  @override
+  State<EditTodoView> createState() => _EditTodoViewState();
+}
+
+class _EditTodoViewState extends State<EditTodoView> {
   @override
   Widget build(BuildContext context) {
     // return AccordionPage();
@@ -72,24 +79,52 @@ class EditTodoView extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Column(
-              children: [
-                EditFieldCell(type: EditFieldType.billType),
-                EditFieldCell(type: EditFieldType.book),
-                EditFieldCell(type: EditFieldType.title),
-                EditFieldCell(type: EditFieldType.time),
-                EditFieldCell(type: EditFieldType.account),
-                EditFieldCell(type: EditFieldType.category),
-                EditFieldCell(type: EditFieldType.target),
-                EditFieldCell(type: EditFieldType.tag),
-                EditFieldCell(type: EditFieldType.confirm),
-                EditFieldCell(type: EditFieldType.statistics),
-                EditFieldCell(type: EditFieldType.remark),
-              ],
+              children: _buildFieldCells(widget.billType),
             ),
           ),
         ),
       ),
     );
+  }
+
+  List<EditFieldCell> _buildFieldCells(BillType billType) {
+    var changeField = <EditFieldCell>[];
+    if (billType == BillType.expenditure || billType == BillType.income) {
+      changeField = [
+        EditFieldCell(type: EditFieldType.account, billType: widget.billType),
+        EditFieldCell(type: EditFieldType.category, billType: widget.billType),
+        EditFieldCell(type: EditFieldType.target, billType: widget.billType),
+      ];
+    } else if (billType == BillType.transfer) {
+      changeField = [
+        EditFieldCell(
+            type: EditFieldType.transferOutAccount, billType: widget.billType),
+        EditFieldCell(
+            type: EditFieldType.transferInAccount, billType: widget.billType),
+        EditFieldCell(
+            type: EditFieldType.transferAmount, billType: widget.billType),
+      ];
+    }
+    return [
+      EditFieldCell(
+        type: EditFieldType.billType,
+        billType: widget.billType,
+        onTypeChange: (type) {
+          print('lxjtodo: dropdownField type: $type');
+          setState(() {
+            widget.billType = type;
+          });
+        },
+      ),
+      EditFieldCell(type: EditFieldType.book, billType: widget.billType),
+      EditFieldCell(type: EditFieldType.title, billType: widget.billType),
+      EditFieldCell(type: EditFieldType.time, billType: widget.billType),
+      ...changeField,
+      EditFieldCell(type: EditFieldType.tag, billType: widget.billType),
+      EditFieldCell(type: EditFieldType.confirm, billType: widget.billType),
+      EditFieldCell(type: EditFieldType.statistics, billType: widget.billType),
+      EditFieldCell(type: EditFieldType.remark, billType: widget.billType),
+    ];
   }
 }
 

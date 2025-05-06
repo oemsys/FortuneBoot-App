@@ -17,6 +17,15 @@ enum BillType {
   final int value;
   final String title;
   const BillType(this.value, this.title);
+
+  // 将 int 转为 BillType
+  static BillType? fromValue(int value) {
+    try {
+      return values.firstWhere((e) => e.value == value);
+    } catch (e) {
+      return null; // 或抛出异常
+    }
+  }
 }
 
 // 使用下面命令自动生成代码

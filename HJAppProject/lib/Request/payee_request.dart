@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_login_example/Login/model/login_model.dart';
+import 'package:flutter_login_example/Request/base_request.dart';
 import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -11,7 +12,7 @@ part 'payee_request.g.dart'; // 代码生成文件
 
 // 账单API账单相关的增删查改
 @RestApi()
-abstract class PayeeService {
+abstract class PayeeService extends BaseService {
   factory PayeeService({
     String? baseUrl,
   }) {
@@ -25,15 +26,7 @@ abstract class PayeeService {
   /// 账单分页查询接口
   @GET('/fortune/payee/{bookId}/getEnableList')
   Future<HJResponse> getEnableList(
-    @Path('bookId') int bookId, {
-    // 基础分页参数
-    @Query('billType') int? billType,
+    @Path('bookId') int id, {
+    @Query('billType') int? type,
   });
-}
-
-class AccountErrorReport extends ParseErrorLogger {
-  @override
-  void logError(Object error, StackTrace stackTrace, RequestOptions options) {
-    debugPrint('LoginErrorReport: $error $stackTrace $options');
-  }
 }

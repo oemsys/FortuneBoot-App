@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_login_example/Login/model/login_model.dart';
+import 'package:flutter_login_example/Request/base_request.dart';
 import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -11,7 +12,7 @@ part 'account_request.g.dart'; // 代码生成文件
 
 // 账户API
 @RestApi()
-abstract class AccountService {
+abstract class AccountService extends BaseService {
   factory AccountService({
     String? baseUrl,
   }) {
@@ -21,14 +22,7 @@ abstract class AccountService {
         errorLogger: AccountErrorReport());
   }
 
-  /// 查询启动的战虎
+  /// 查询启动的账户列表
   @GET('/fortune/account/{groupId}/getEnableList')
-  Future<HJResponse> getEnableList(@Path('groupId') int groupId);
-}
-
-class AccountErrorReport extends ParseErrorLogger {
-  @override
-  void logError(Object error, StackTrace stackTrace, RequestOptions options) {
-    debugPrint('LoginErrorReport: $error $stackTrace $options');
-  }
+  Future<HJResponse> getEnableList(@Path('groupId') int id, {int? type});
 }

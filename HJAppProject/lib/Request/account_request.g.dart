@@ -22,9 +22,13 @@ class _AccountService implements AccountService {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<HJResponse> getEnableList(int groupId) async {
+  Future<HJResponse> getEnableList(
+    int id, {
+    int? type,
+  }) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<HJResponse>(Options(
@@ -34,7 +38,7 @@ class _AccountService implements AccountService {
     )
         .compose(
           _dio.options,
-          '/fortune/account/${groupId}/getEnableList',
+          '/fortune/account/${id}/getEnableList',
           queryParameters: queryParameters,
           data: _data,
         )
