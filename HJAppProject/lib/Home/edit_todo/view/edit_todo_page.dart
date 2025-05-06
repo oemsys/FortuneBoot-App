@@ -5,20 +5,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_example/Home/edit_todo/bloc/edit_todo_bloc.dart';
 import 'package:flutter_login_example/Home/edit_todo/edit_select_item.dart';
 import 'package:flutter_login_example/Home/edit_todo/view/category_select_field.dart';
-import 'package:flutter_login_example/Home/edit_todo/view/edit_field_cell.dart';
 import 'package:flutter_login_example/Home/edit_todo/view/tag_select_field.dart';
 import 'package:flutter_login_example/Home/edit_todo/viewmodel/edit_field_cell_viewmodel.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
 import 'package:flutter_login_example/Request/account_request.dart';
 import 'package:flutter_login_example/Request/book_request.dart';
-import 'package:flutter_login_example/Request/category_request.dart';
 import 'package:flutter_login_example/Request/payee_request.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 import 'package:todos_repository/todos_repository.dart';
-import '../../../generated/l10n.dart';
 
 class EditTodoPage extends StatelessWidget {
   const EditTodoPage({super.key});
@@ -50,6 +47,7 @@ class EditTodoPage extends StatelessWidget {
 
 class EditTodoView extends StatefulWidget {
   EditTodoView({super.key, this.billType = BillType.expenditure});
+
   BillType billType;
 
   @override
@@ -63,15 +61,15 @@ class _EditTodoViewState extends State<EditTodoView> {
   DateTime _selectedDate = DateTime.now();
   bool _isConfirmed = true;
   bool _isIncluded = true;
-  
+
   // 选中的账本、账户、分类等
   BookSelectItem? _selectedBook;
   AccountSelectItem? _selectedAccount;
   AccountSelectItem? _selectedToAccount;
   PayeeSelectItem? _selectedPayee;
-  List<int> _selectedTagIds = [];
-  Map<int, double> _categoryAmountPairs = {};
-  
+  final List<int> _selectedTagIds = [];
+  final Map<int, double> _categoryAmountPairs = {};
+
   @override
   void dispose() {
     _amountController.dispose();
@@ -86,26 +84,26 @@ class _EditTodoViewState extends State<EditTodoView> {
     final isNewTodo = context.select(
       (EditTodoBloc bloc) => bloc.state.isNewTodo,
     );
-    
+
     final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
           isNewTodo ? '新增账单' : '编辑账单',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
           if (status.isLoadingOrSuccess)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+            const Padding(
+              padding: EdgeInsets.all(16.0),
               child: CupertinoActivityIndicator(),
             )
           else
             TextButton.icon(
               onPressed: _submitBill,
-              icon: Icon(Icons.check_circle_outline),
-              label: Text('保存'),
+              icon: const Icon(Icons.check_circle_outline),
+              label: const Text('保存'),
               style: TextButton.styleFrom(
                 foregroundColor: theme.colorScheme.primary,
               ),
@@ -118,67 +116,67 @@ class _EditTodoViewState extends State<EditTodoView> {
             children: [
               // 账单类型选择器
               _buildBillTypeSelector(),
-              
+
               // 金额输入区域 - 突出显示
               _buildAmountSection(),
-              
+
               // 主要信息区域
               Card(
-                margin: EdgeInsets.all(8),
+                margin: const EdgeInsets.all(8),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(color: Colors.grey.shade300),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildBasicInfoSection(),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       _buildAccountSection(),
                     ],
                   ),
                 ),
               ),
-              
+
               // 分类选择区域
               _buildCategorySection(),
-              
+
               // 附加信息区域
               Card(
-                margin: EdgeInsets.all(8),
+                margin: const EdgeInsets.all(8),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(color: Colors.grey.shade300),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildTagSection(),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       _buildAdditionalOptionsSection(),
                     ],
                   ),
                 ),
               ),
-              
-              SizedBox(height: 24),
+
+              const SizedBox(height: 24),
             ],
           ),
         ),
       ),
     );
   }
-  
+
   // 账单类型选择器
   Widget _buildBillTypeSelector() {
     return Container(
-      margin: EdgeInsets.all(8),
+      margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -187,12 +185,12 @@ class _EditTodoViewState extends State<EditTodoView> {
             color: Colors.grey.withOpacity(0.1),
             spreadRadius: 1,
             blurRadius: 2,
-            offset: Offset(0, 1),
+            offset: const Offset(0, 1),
           ),
         ],
       ),
       child: SegmentedButton<BillType>(
-        segments: [
+        segments: const [
           ButtonSegment(
             value: BillType.expenditure,
             label: Text('支出'),
@@ -216,9 +214,9 @@ class _EditTodoViewState extends State<EditTodoView> {
           });
         },
         style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.resolveWith<Color>(
-            (Set<MaterialState> states) {
-              if (states.contains(MaterialState.selected)) {
+          backgroundColor: WidgetStateProperty.resolveWith<Color>(
+            (Set<WidgetState> states) {
+              if (states.contains(WidgetState.selected)) {
                 return Theme.of(context).colorScheme.primaryContainer;
               }
               return Colors.transparent;
@@ -228,33 +226,22 @@ class _EditTodoViewState extends State<EditTodoView> {
       ),
     );
   }
-  
+
   // 金额输入区域
   Widget _buildAmountSection() {
-    Color amountColor;
-    IconData amountIcon;
-    
-    switch (widget.billType) {
-      case BillType.expenditure:
-        amountColor = Colors.red.shade700;
-        amountIcon = Icons.remove_circle_outline;
-        break;
-      case BillType.income:
-        amountColor = Colors.green.shade700;
-        amountIcon = Icons.add_circle_outline;
-        break;
-      case BillType.transfer:
-        amountColor = Colors.blue.shade700;
-        amountIcon = Icons.swap_horiz;
-        break;
-      default:
-        amountColor = Colors.grey.shade700;
-        amountIcon = Icons.attach_money;
-    }
-    
+    final (amountColor, amountIcon) = switch (widget.billType) {
+      BillType.expenditure => (
+          Colors.red.shade700,
+          Icons.remove_circle_outline
+        ),
+      BillType.income => (Colors.green.shade700, Icons.add_circle_outline),
+      BillType.transfer => (Colors.blue.shade700, Icons.swap_horiz),
+      _ => (Colors.grey.shade700, Icons.attach_money),
+    };
+
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -267,14 +254,14 @@ class _EditTodoViewState extends State<EditTodoView> {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(amountIcon, size: 28, color: amountColor),
-          SizedBox(width: 16),
+          const SizedBox(width: 16),
           Expanded(
             child: TextField(
               controller: _amountController,
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               textAlign: TextAlign.end,
               style: TextStyle(
                 fontSize: 32,
@@ -295,7 +282,7 @@ class _EditTodoViewState extends State<EditTodoView> {
               ],
             ),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Text(
             '¥',
             style: TextStyle(
@@ -308,39 +295,39 @@ class _EditTodoViewState extends State<EditTodoView> {
       ),
     );
   }
-  
+
   // 基本信息区域
   Widget _buildBasicInfoSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           '基本信息',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 16),
-        
+        const SizedBox(height: 16),
+
         // 账本选择
         _buildBookSelector(),
-        SizedBox(height: 16),
-        
+        const SizedBox(height: 16),
+
         // 标题输入
         TextField(
           controller: _titleController,
           decoration: InputDecoration(
             labelText: '标题',
-            prefixIcon: Icon(Icons.title),
+            prefixIcon: const Icon(Icons.title),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
             ),
           ),
           maxLength: 50,
         ),
-        SizedBox(height: 8),
-        
+        const SizedBox(height: 8),
+
         // 日期时间选择
         InkWell(
           onTap: () async {
@@ -348,7 +335,7 @@ class _EditTodoViewState extends State<EditTodoView> {
               context: context,
               initialDate: _selectedDate,
               firstDate: DateTime(2000),
-              lastDate: DateTime.now().add(Duration(days: 3650)),
+              lastDate: DateTime.now().add(const Duration(days: 3650)),
               is24HourMode: true,
               isShowSeconds: false,
               minutesInterval: 1,
@@ -372,7 +359,7 @@ class _EditTodoViewState extends State<EditTodoView> {
               transitionDuration: const Duration(milliseconds: 200),
               barrierDismissible: true,
             );
-            
+
             if (dateTime != null) {
               setState(() {
                 _selectedDate = dateTime;
@@ -380,7 +367,7 @@ class _EditTodoViewState extends State<EditTodoView> {
             }
           },
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey.shade400),
               borderRadius: BorderRadius.circular(12),
@@ -388,22 +375,23 @@ class _EditTodoViewState extends State<EditTodoView> {
             child: Row(
               children: [
                 Icon(Icons.calendar_today, color: Colors.grey.shade700),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Text(
                   '日期时间',
                   style: TextStyle(
                     color: Colors.grey.shade700,
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Text(
                   DateFormat('yyyy-MM-dd HH:mm').format(_selectedDate),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                SizedBox(width: 8),
-                Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_forward_ios,
+                    size: 16, color: Colors.grey),
               ],
             ),
           ),
@@ -411,33 +399,34 @@ class _EditTodoViewState extends State<EditTodoView> {
       ],
     );
   }
-  
+
   // 账本选择器
   Widget _buildBookSelector() {
     return FutureBuilder<List<DropdownItem<BookSelectItem>>>(
       future: () async {
         int groupId = context.read<BillsRepository>().groupId() ?? 1;
-        return bookItems(BookService(), id: groupId, type: widget.billType.value);
+        return bookItems(BookService(),
+            id: groupId, type: widget.billType.value);
       }(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
-        
+
         if (snapshot.hasError || !snapshot.hasData) {
-          return Text('加载账本失败');
+          return const Text('加载账本失败');
         }
-        
+
         final items = snapshot.data!;
-        
+
         return Container(
-          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey.shade400),
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<BookSelectItem>(
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: '账本',
               prefixIcon: Icon(Icons.book),
               border: InputBorder.none,
@@ -459,7 +448,7 @@ class _EditTodoViewState extends State<EditTodoView> {
       },
     );
   }
-  
+
   // 账户区域
   Widget _buildAccountSection() {
     if (widget.billType == BillType.transfer) {
@@ -468,46 +457,47 @@ class _EditTodoViewState extends State<EditTodoView> {
       return _buildNormalAccountSection();
     }
   }
-  
+
   // 普通账户选择（支出/收入）
   Widget _buildNormalAccountSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           '账户信息',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 16),
-        
+        const SizedBox(height: 16),
+
         // 账户选择
         FutureBuilder<List<DropdownItem<AccountSelectItem>>>(
           future: () async {
             int groupId = context.read<BillsRepository>().groupId() ?? 1;
-            return accountItems(AccountService(), id: groupId, type: widget.billType.value);
+            return accountItems(AccountService(),
+                id: groupId, type: widget.billType.value);
           }(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             }
-            
+
             if (snapshot.hasError || !snapshot.hasData) {
               return Text('加载账户失败');
             }
-            
+
             final items = snapshot.data!;
-            
+
             return Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade400),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: DropdownButtonFormField<AccountSelectItem>(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: '账户',
                   prefixIcon: Icon(Icons.account_balance_wallet),
                   border: InputBorder.none,
@@ -528,33 +518,34 @@ class _EditTodoViewState extends State<EditTodoView> {
             );
           },
         ),
-        SizedBox(height: 16),
-        
+        const SizedBox(height: 16),
+
         // 交易对象选择
         FutureBuilder<List<DropdownItem<PayeeSelectItem>>>(
           future: () async {
-            int bookId = context.read<BillsRepository>().bookId() ?? 1;
-            return payeeItems(PayeeService(), id: bookId, type: widget.billType.value);
+            final int bookId = context.read<BillsRepository>().bookId() ?? 1;
+            return payeeItems(PayeeService(),
+                id: bookId, type: widget.billType.value);
           }(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             }
-            
+
             if (snapshot.hasError || !snapshot.hasData) {
-              return Text('加载交易对象失败');
+              return const Text('加载交易对象失败');
             }
-            
+
             final items = snapshot.data!;
-            
+
             return Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade400),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: DropdownButtonFormField<PayeeSelectItem>(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: '交易对象',
                   prefixIcon: Icon(Icons.person),
                   border: InputBorder.none,
@@ -578,46 +569,47 @@ class _EditTodoViewState extends State<EditTodoView> {
       ],
     );
   }
-  
+
   // 转账账户选择
   Widget _buildTransferAccountSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           '转账信息',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 16),
-        
+        const SizedBox(height: 16),
+
         // 转出账户
         FutureBuilder<List<DropdownItem<AccountSelectItem>>>(
           future: () async {
-            int groupId = context.read<BillsRepository>().groupId() ?? 1;
-            return accountItems(AccountService(), id: groupId, type: widget.billType.value);
+            final int groupId = context.read<BillsRepository>().groupId() ?? 1;
+            return accountItems(AccountService(),
+                id: groupId, type: widget.billType.value);
           }(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             }
-            
+
             if (snapshot.hasError || !snapshot.hasData) {
-              return Text('加载账户失败');
+              return const Text('加载账户失败');
             }
-            
+
             final items = snapshot.data!;
-            
+
             return Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade400),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: DropdownButtonFormField<AccountSelectItem>(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: '转出账户',
                   prefixIcon: Icon(Icons.arrow_upward),
                   border: InputBorder.none,
@@ -638,33 +630,34 @@ class _EditTodoViewState extends State<EditTodoView> {
             );
           },
         ),
-        SizedBox(height: 16),
-        
+        const SizedBox(height: 16),
+
         // 转入账户
         FutureBuilder<List<DropdownItem<AccountSelectItem>>>(
           future: () async {
-            int groupId = context.read<BillsRepository>().groupId() ?? 1;
-            return accountItems(AccountService(), id: groupId, type: widget.billType.value);
+            final int groupId = context.read<BillsRepository>().groupId() ?? 1;
+            return accountItems(AccountService(),
+                id: groupId, type: widget.billType.value);
           }(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             }
-            
+
             if (snapshot.hasError || !snapshot.hasData) {
-              return Text('加载账户失败');
+              return const Text('加载账户失败');
             }
-            
+
             final items = snapshot.data!;
-            
+
             return Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade400),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: DropdownButtonFormField<AccountSelectItem>(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: '转入账户',
                   prefixIcon: Icon(Icons.arrow_downward),
                   border: InputBorder.none,
@@ -688,39 +681,39 @@ class _EditTodoViewState extends State<EditTodoView> {
       ],
     );
   }
-  
+
   // 分类选择区域
   Widget _buildCategorySection() {
     // 转账类型不需要分类
     if (widget.billType == BillType.transfer) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
-    
+
     return Card(
-      margin: EdgeInsets.all(8),
+      margin: const EdgeInsets.all(8),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(color: Colors.grey.shade300),
       ),
       child: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               '分类',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 16),
-            
+            const SizedBox(height: 16),
+
             // 快速选择常用分类
             _buildQuickCategorySelector(),
-            SizedBox(height: 16),
-            
+            const SizedBox(height: 16),
+
             // 分类选择器
             Container(
               decoration: BoxDecoration(
@@ -737,12 +730,12 @@ class _EditTodoViewState extends State<EditTodoView> {
       ),
     );
   }
-  
+
   // 快速选择常用分类
   Widget _buildQuickCategorySelector() {
     // 这里可以根据用户的使用频率或者预设的常用分类来显示
     List<Map<String, dynamic>> quickCategories = [];
-    
+
     if (widget.billType == BillType.expenditure) {
       quickCategories = [
         {'name': '餐饮', 'icon': Icons.restaurant},
@@ -760,7 +753,7 @@ class _EditTodoViewState extends State<EditTodoView> {
         {'name': '其他', 'icon': Icons.more_horiz},
       ];
     }
-    
+
     return SizedBox(
       height: 90,
       child: ListView.builder(
@@ -769,7 +762,7 @@ class _EditTodoViewState extends State<EditTodoView> {
         itemBuilder: (context, index) {
           final category = quickCategories[index];
           return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Column(
               children: [
                 InkWell(
@@ -781,7 +774,10 @@ class _EditTodoViewState extends State<EditTodoView> {
                     width: 60,
                     height: 60,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primaryContainer
+                          .withOpacity(0.3),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -791,10 +787,10 @@ class _EditTodoViewState extends State<EditTodoView> {
                     ),
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   category['name'],
-                  style: TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 12),
                 ),
               ],
             ),
@@ -803,21 +799,20 @@ class _EditTodoViewState extends State<EditTodoView> {
       ),
     );
   }
-  
+
   // 标签选择区域
   Widget _buildTagSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           '标签',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 16),
-        
+        const SizedBox(height: 16),
         Container(
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey.shade300),
@@ -831,57 +826,57 @@ class _EditTodoViewState extends State<EditTodoView> {
       ],
     );
   }
-  
+
   // 附加选项区域
   Widget _buildAdditionalOptionsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           '附加信息',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 16),
-        
+        const SizedBox(height: 16),
+
         // 是否确认
         SwitchListTile(
-          title: Text('是否确认'),
-          subtitle: Text('确认后的账单表示已经核实'),
+          title: const Text('是否确认'),
+          subtitle: const Text('确认后将会扣除对应账户金额'),
           value: _isConfirmed,
           onChanged: (value) {
             setState(() {
               _isConfirmed = value;
             });
           },
-          secondary: Icon(Icons.verified),
-          contentPadding: EdgeInsets.symmetric(horizontal: 0),
+          secondary: const Icon(Icons.verified),
+          contentPadding: EdgeInsets.zero,
         ),
-        
+
         // 是否统计
         SwitchListTile(
-          title: Text('是否统计'),
-          subtitle: Text('纳入统计的账单会在报表中显示'),
+          title: const Text('是否统计'),
+          subtitle: const Text('纳入统计的账单会在报表中显示'),
           value: _isIncluded,
           onChanged: (value) {
             setState(() {
               _isIncluded = value;
             });
           },
-          secondary: Icon(Icons.bar_chart),
-          contentPadding: EdgeInsets.symmetric(horizontal: 0),
+          secondary: const Icon(Icons.bar_chart),
+          contentPadding: EdgeInsets.zero,
         ),
-        
-        SizedBox(height: 16),
-        
+
+        const SizedBox(height: 16),
+
         // 备注
         TextField(
           controller: _remarkController,
           decoration: InputDecoration(
             labelText: '备注',
-            prefixIcon: Icon(Icons.note),
+            prefixIcon: const Icon(Icons.note),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -892,48 +887,50 @@ class _EditTodoViewState extends State<EditTodoView> {
       ],
     );
   }
-  
+
   // 提交账单
   void _submitBill() {
     // 验证必填字段
     if (_amountController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('请输入金额')),
+        const SnackBar(content: Text('请输入金额')),
       );
       return;
     }
-    
+
     if (_selectedBook == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('请选择账本')),
+        const SnackBar(content: Text('请选择账本')),
       );
       return;
     }
-    
+
     if (widget.billType != BillType.transfer && _selectedAccount == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('请选择账户')),
+        const SnackBar(content: Text('请选择账户')),
       );
       return;
     }
-    
-    if (widget.billType == BillType.transfer && 
+
+    if (widget.billType == BillType.transfer &&
         (_selectedAccount == null || _selectedToAccount == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('请选择转出和转入账户')),
+        const SnackBar(content: Text('请选择转出和转入账户')),
       );
       return;
     }
-    
+
     // 构建请求参数
     final amount = double.tryParse(_amountController.text) ?? 0.0;
-    
+
     try {
       // 构建符合接口格式的请求数据
-      Map<String, dynamic> requestData = {
+      final Map<String, dynamic> requestData = {
         "data": {
           "bookId": _selectedBook?.id,
-          "title": _titleController.text.isNotEmpty ? _titleController.text : "未命名账单",
+          "title": _titleController.text.isNotEmpty
+              ? _titleController.text
+              : "未命名账单",
           "tradeTime": _selectedDate.toIso8601String(),
           "amount": amount,
           "billType": widget.billType.value,
@@ -942,7 +939,7 @@ class _EditTodoViewState extends State<EditTodoView> {
           "remark": _remarkController.text,
         }
       };
-      
+
       // 根据账单类型添加不同的字段
       if (widget.billType == BillType.transfer) {
         // 转账类型
@@ -952,31 +949,29 @@ class _EditTodoViewState extends State<EditTodoView> {
         // 支出或收入类型
         requestData["data"]["accountId"] = _selectedAccount?.id;
         requestData["data"]["payeeId"] = _selectedPayee?.id;
-        
+
         // 获取分类金额对
         if (_categoryAmountPairs.isNotEmpty) {
           List<Map<String, dynamic>> categoryAmountPairList = [];
           _categoryAmountPairs.forEach((categoryId, categoryAmount) {
-            categoryAmountPairList.add({
-              "first": categoryId,
-              "second": categoryAmount
-            });
+            categoryAmountPairList
+                .add({"first": categoryId, "second": categoryAmount});
           });
           requestData["data"]["categoryAmountPair"] = categoryAmountPairList;
         }
       }
-      
+
       // 添加标签ID列表
       if (_selectedTagIds.isNotEmpty) {
         requestData["data"]["tagIdList"] = _selectedTagIds;
       }
-      
+
       // 打印请求数据，方便调试
       print('账单提交数据: $requestData');
-      
+
       // 显示提交中的加载状态
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Row(
             children: [
               CircularProgressIndicator(strokeWidth: 2),
@@ -987,11 +982,10 @@ class _EditTodoViewState extends State<EditTodoView> {
           duration: Duration(seconds: 1),
         ),
       );
-      
+
       // 调用API提交账单
       // 这里应该调用实际的API，目前使用Bloc模拟提交
       context.read<EditTodoBloc>().add(const EditTodoSubmitted());
-      
     } catch (e) {
       // 处理错误
       ScaffoldMessenger.of(context).showSnackBar(
