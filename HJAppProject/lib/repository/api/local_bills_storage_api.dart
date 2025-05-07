@@ -52,7 +52,7 @@ class LocalStorageBillsApi extends BillsApi {
     //       .toList();
     //   _billStreamController.add(bills);
     // } else {
-      // _billStreamController.add(const []);
+    // _billStreamController.add(const []);
     // }
   }
 
@@ -102,7 +102,10 @@ class LocalStorageBillsApi extends BillsApi {
     isLoadingMore = true;
     List<BillItem> items = [..._billStreamController.value];
     var billResponse = await _billService.getPage(
-        pageNum: pageNum, pageSize: pageSize, bookId: '$bookId',);
+      pageNum: pageNum,
+      pageSize: pageSize,
+      bookId: '$bookId',
+    );
     if (billResponse.code == 0) {
       var billList = billResponse.data['rows'] as List? ?? [];
       List<BillItem> remoteItems = billList.map((ele) {
@@ -121,6 +124,7 @@ class LocalStorageBillsApi extends BillsApi {
 
   @override
   Future<void> updateRemoteBill({int? groupId, int? bookId}) async {
+    print('lxjtodo change bookId $bookId $groupId ');
     if ((groupId != null && groupId != this.groupId) ||
         (bookId != null && bookId != this.bookId)) {
       this.groupId = groupId;

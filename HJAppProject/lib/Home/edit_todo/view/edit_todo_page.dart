@@ -781,7 +781,7 @@ class _EditTodoViewState extends State<EditTodoView> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      category['icon'],
+                      category['icon'] as IconData?,
                       size: 28,
                       color: Theme.of(context).colorScheme.primary,
                     ),
@@ -789,7 +789,7 @@ class _EditTodoViewState extends State<EditTodoView> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  category['name'],
+                  category['name'] as String? ?? '',
                   style: const TextStyle(fontSize: 12),
                 ),
               ],

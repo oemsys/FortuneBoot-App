@@ -6,10 +6,12 @@ class BillsRepository {
     required BillsApi billsApi,
   }) : _billsApi = billsApi;
 
+  String version = '1.0.0';
+
   final BillsApi _billsApi;
 
   int? groupId() => _billsApi.groupId;
-  
+
   int? bookId() => _billsApi.bookId;
 
   bool hasMore() => _billsApi.hasMore;
