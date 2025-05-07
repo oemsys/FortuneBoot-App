@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_example/Home/edit_todo/edit_select_item.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
@@ -456,8 +457,14 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
                       Expanded(
                         child: TextField(
                           controller: _amountController,
-                          keyboardType:
-                              TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: TextInputType.numberWithOptions(
+                            decimal: true,
+                            signed: true,
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'^\d*\.?\d{0,5}')), // 允许数字和最多两位小数
+                          ],
                           decoration: InputDecoration(
                             labelText: '分类金额',
                             hintText: '请输入金额',
