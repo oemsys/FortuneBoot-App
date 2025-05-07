@@ -92,7 +92,6 @@ class _MineViewState extends State<MineView> {
       ...state.groupSettings
     ];
     Setting.sortList(elements);
-
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -650,10 +649,6 @@ class _MineViewState extends State<MineView> {
   }
 
   void _showApiSettingDialog(BuildContext context, Setting element) {
-    // final TextEditingController controller = TextEditingController(
-    //   text: element.detail,
-    // );
-
     showDialog(
       context: context,
       builder: (context) {
