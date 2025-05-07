@@ -27,6 +27,35 @@ abstract class BaseTreeSelectItem<T extends BaseTreeSelectItem<T>> {
 
   BaseTreeSelectItem(this.title, this.id, {this.children});
 
+  // 检查是否有子项
+  bool get hasChildren => children != null && children!.isNotEmpty;
+  
+  // 获取所有子项（包括子项的子项）
+  List<T> getAllChildren() {
+    List<T> allChildren = [];
+    if (hasChildren) {
+      for (var child in children!) {
+        allChildren.add(child);
+        if (child.hasChildren) {
+          allChildren.addAll(child.getAllChildren());
+        }
+      }
+    }
+    return allChildren;
+  }
+  
+  // 根据ID查找项（包括子项）
+  T? findById(int searchId) {
+    if (id == searchId) return this as T;
+    if (hasChildren) {
+      for (var child in children!) {
+        final result = child.findById(searchId);
+        if (result != null) return result;
+      }
+    }
+    return null;
+  }
+
   @override
   String toString() => '$title $id $children';
 }
@@ -44,6 +73,37 @@ class CategorySelectItem extends BaseTreeSelectItem<CategorySelectItem> {
   factory CategorySelectItem.fromJson(Map<String, dynamic> json) =>
       _$CategorySelectItemFromJson(json);
   Map<String, dynamic> toJson() => _$CategorySelectItemToJson(this);
+
+  // 获取分类的层级路径
+  String getFullPath({String separator = ' > '}) {
+    return title;
+  }
+  
+  // 获取分类的完整路径（包括父分类）
+  static String getFullPathById(List<CategorySelectItem> allCategories, int categoryId, {String separator = ' > '}) {
+    for (var category in allCategories) {
+      if (category.id == categoryId) {
+        return category.title;
+      }
+      
+      if (category.hasChildren) {
+        for (var subCategory in category.children!) {
+          if (subCategory.id == categoryId) {
+            return '${category.title}$separator${subCategory.title}';
+          }
+          
+          if (subCategory.hasChildren) {
+            for (var thirdCategory in subCategory.children!) {
+              if (thirdCategory.id == categoryId) {
+                return '${category.title}$separator${subCategory.title}$separator${thirdCategory.title}';
+              }
+            }
+          }
+        }
+      }
+    }
+    return '未知分类';
+  }
 
   @override
   String toString() {
@@ -64,6 +124,32 @@ class TagSelectItem extends BaseTreeSelectItem<TagSelectItem> {
   factory TagSelectItem.fromJson(Map<String, dynamic> json) =>
       _$TagSelectItemFromJson(json);
   Map<String, dynamic> toJson() => _$TagSelectItemToJson(this);
+
+  // 获取标签的完整路径（包括父标签）
+  static String getFullPathById(List<TagSelectItem> allTags, int tagId, {String separator = ' > '}) {
+    for (var tag in allTags) {
+      if (tag.id == tagId) {
+        return tag.title;
+      }
+      
+      if (tag.hasChildren) {
+        for (var subTag in tag.children!) {
+          if (subTag.id == tagId) {
+            return '${tag.title}$separator${subTag.title}';
+          }
+          
+          if (subTag.hasChildren) {
+            for (var thirdTag in subTag.children!) {
+              if (thirdTag.id == tagId) {
+                return '${tag.title}$separator${subTag.title}$separator${thirdTag.title}';
+              }
+            }
+          }
+        }
+      }
+    }
+    return '未知标签';
+  }
 
   @override
   String toString() {
