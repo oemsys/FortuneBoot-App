@@ -1,22 +1,13 @@
-import 'dart:math';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_example/Home/stats/bloc/post/post_bloc.dart';
-import 'package:flutter_login_example/Home/stats/bloc/stats_bloc.dart';
 import 'package:flutter_login_example/Home/stats/models/mine_setting.dart';
 import 'package:flutter_login_example/Home/stats/models/setting_select_item.dart';
-import 'package:flutter_login_example/Home/stats/view/drop_down_animate.dart';
-import 'package:flutter_login_example/Login/model/users.dart';
 import 'package:flutter_login_example/Request/book_request.dart';
 import 'package:flutter_login_example/Request/group_request.dart';
+import 'package:flutter_login_example/generated/l10n.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
-import 'package:todos_repository/todos_repository.dart';
-import '../../../generated/l10n.dart';
-import 'package:sticky_grouped_list/sticky_grouped_list.dart';
-import 'package:intl/intl.dart';
 
 class MinePage extends StatelessWidget {
   const MinePage({super.key});
@@ -89,7 +80,7 @@ class _MineViewState extends State<MineView> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<SettingBloc>().state;
-    var elements = [
+    final elements = [
       ...state.settings,
       ...state.remoteSettings,
       ...state.groupSettings
@@ -179,17 +170,17 @@ class _MineViewState extends State<MineView> {
                   onTap: () {
                     // 跳转到个人资料页面
                   },
-                  child: Row(
+                  child: const Row(
                     children: [
-                      const Text(
+                      Text(
                         '查看个人资料',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white70,
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      const Icon(
+                      SizedBox(width: 4),
+                      Icon(
                         Icons.arrow_forward_ios,
                         size: 12,
                         color: Colors.white70,
@@ -321,7 +312,7 @@ class _MineViewState extends State<MineView> {
           ),
           const Divider(height: 1, indent: 16, endIndent: 16),
           ListTile(
-            leading: Icon(Icons.logout, color: Colors.red),
+            leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('退出登录', style: TextStyle(color: Colors.red)),
             onTap: () {
               _showLogoutConfirmation(context);
@@ -449,17 +440,17 @@ class _MineViewState extends State<MineView> {
   }
 
   void _showSelectionDialog(BuildContext context, Setting element) async {
-    List<DropdownItem<SettingSelectItem>> items = [];
+    final List<DropdownItem<SettingSelectItem>> items = [];
 
     if (element.type == SettingType.currentGroup) {
-      GroupService groupService = GroupService();
-      var res = await groupService.getEnableList();
+      final GroupService groupService = GroupService();
+      final res = await groupService.getEnableList();
       if (res.code == 0) {
-        var remoteList = res.data as List? ?? [];
+        final remoteList = res.data as List? ?? [];
         for (final remoteItem in remoteList) {
-          var remoteGroupName = remoteItem['groupName'] as String? ?? '';
+          final remoteGroupName = remoteItem['groupName'] as String? ?? '';
           bool selected = remoteGroupName == element.content;
-          var groupId = remoteItem['groupId'] as int? ?? 0;
+          final groupId = remoteItem['groupId'] as int? ?? 0;
           items.add(DropdownItem(
             label: remoteGroupName,
             value: SettingSelectItem(remoteGroupName, groupId),
@@ -468,14 +459,14 @@ class _MineViewState extends State<MineView> {
         }
       }
     } else if (element.type == SettingType.currentBook) {
-      BookService bookService = BookService();
-      var remoteBookResponse = await bookService
+      final BookService bookService = BookService();
+      final remoteBookResponse = await bookService
           .getByGroupId(element.data!['groupId'] as int? ?? 0);
       if (remoteBookResponse.code == 0) {
-        var remoteBookList = remoteBookResponse.data as List? ?? [];
+        final remoteBookList = remoteBookResponse.data as List? ?? [];
         for (final remoteBookItem in remoteBookList) {
-          var remoteBookName = remoteBookItem['bookName'] as String? ?? '';
-          bool selected = remoteBookName == element.content;
+          final remoteBookName = remoteBookItem['bookName'] as String? ?? '';
+          final bool selected = remoteBookName == element.content;
           items.add(
             DropdownItem(
               label: remoteBookName,

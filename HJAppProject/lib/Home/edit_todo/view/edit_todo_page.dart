@@ -90,7 +90,7 @@ class _EditTodoViewState extends State<EditTodoView> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          isNewTodo ? '新增账单' : '编辑账单',
+          isNewTodo ? '记一笔' : '编辑账单',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
