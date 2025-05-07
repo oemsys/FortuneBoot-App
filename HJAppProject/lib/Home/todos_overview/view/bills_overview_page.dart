@@ -38,6 +38,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
   List<DateTime> _groupDates = [];
   late TabController _tabController;
   final List<String> _tabs = ['日', '周', '月', '年'];
+  // final List<String> _tabs = ['日', '周', '月', '年'];
   int _selectedFilterIndex = 0; // 当前选中的筛选索引
   final List<Map<String, dynamic>> _filters = [
     {'name': '全部', 'icon': Icons.all_inclusive, 'color': null},
@@ -66,40 +67,40 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
         centerTitle: true,
         title: Text(S.current.todosOverviewAppBarTitle,
             style: Theme.of(context).appBarTheme.titleTextStyle),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Container(
-            color: Theme.of(context).appBarTheme.backgroundColor,
-            child: TabBar(
-              controller: _tabController,
-              tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
-              indicatorColor: Theme.of(context).primaryColor,
-              labelColor: Theme.of(context).primaryColor,
-              unselectedLabelColor: Colors.grey,
-              indicatorSize: TabBarIndicatorSize.label,
-              onTap: (index) {
-                // 可以在这里处理不同时间范围的数据加载
-              },
-            ),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            tooltip: S.current.todosOverviewFilterTooltip,
-            onPressed: () {
-              // 显示筛选选项
-              _showFilterOptions(context);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // 实现搜索功能
-              _showSearchDialog(context);
-            },
-          ),
-        ],
+        // bottom: PreferredSize( // TODO：时间范围选择
+        //   preferredSize: const Size.fromHeight(48),
+        //   child: Container(
+        //     color: Theme.of(context).appBarTheme.backgroundColor,
+        //     child: TabBar(
+        //       controller: _tabController,
+        //       tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
+        //       indicatorColor: Theme.of(context).primaryColor,
+        //       labelColor: Theme.of(context).primaryColor,
+        //       unselectedLabelColor: Colors.grey,
+        //       indicatorSize: TabBarIndicatorSize.label,
+        //       onTap: (index) {
+        //         // 可以在这里处理不同时间范围的数据加载
+        //       },
+        //     ),
+        //   ),
+        // ),
+        // actions: [
+          // IconButton( TODO：筛选
+          //   icon: const Icon(Icons.filter_list),
+          //   tooltip: S.current.todosOverviewFilterTooltip,
+          //   onPressed: () {
+          //     // 显示筛选选项
+          //     _showFilterOptions(context);
+          //   },
+          // ),
+          // IconButton( TODO：搜索
+          //   icon: const Icon(Icons.search),
+          //   onPressed: () {
+          //     // 实现搜索功能
+          //     _showSearchDialog(context);
+          //   },
+          // ),
+        // ],
       ),
       body: Column(
         children: [
@@ -441,110 +442,110 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
               ),
             ),
 
-            // 预算进度卡片
-            Card(
-              margin: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
-              elevation: 2.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          '本月预算',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '¥${monthExpense.toStringAsFixed(2)} / ¥${monthlyBudget.toStringAsFixed(0)}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isOverBudget ? Colors.red : Colors.grey[700],
-                            fontWeight: isOverBudget
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: (monthExpense / monthlyBudget).clamp(0.0, 1.0),
-                        backgroundColor: Colors.grey[200],
-                        color: isOverBudget
-                            ? Colors.red
-                            : budgetUsedPercentage > 80
-                                ? Colors.orange
-                                : Colors.green,
-                        minHeight: 8,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      isOverBudget
-                          ? '已超出预算 ¥${(monthExpense - monthlyBudget).toStringAsFixed(2)}'
-                          : '剩余预算 ¥${(monthlyBudget - monthExpense).toStringAsFixed(2)}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isOverBudget ? Colors.red : Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            // 预算进度卡片 隐藏预算逻辑 TODO
+            // Card(
+            //   margin: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
+            //   elevation: 2.0,
+            //   shape: RoundedRectangleBorder(
+            //     borderRadius: BorderRadius.circular(12.0),
+            //   ),
+            //   child: Padding(
+            //     padding: const EdgeInsets.all(16.0),
+            //     child: Column(
+            //       crossAxisAlignment: CrossAxisAlignment.start,
+            //       children: [
+            //         Row(
+            //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //           children: [
+            //             const Text(
+            //               '本月预算',
+            //               style: TextStyle(
+            //                 fontSize: 16,
+            //                 fontWeight: FontWeight.bold,
+            //               ),
+            //             ),
+            //             Text(
+            //               '¥${monthExpense.toStringAsFixed(2)} / ¥${monthlyBudget.toStringAsFixed(0)}',
+            //               style: TextStyle(
+            //                 fontSize: 14,
+            //                 color: isOverBudget ? Colors.red : Colors.grey[700],
+            //                 fontWeight: isOverBudget
+            //                     ? FontWeight.bold
+            //                     : FontWeight.normal,
+            //               ),
+            //             ),
+            //           ],
+            //         ),
+            //         const SizedBox(height: 8),
+            //         ClipRRect(
+            //           borderRadius: BorderRadius.circular(4),
+            //           child: LinearProgressIndicator(
+            //             value: (monthExpense / monthlyBudget).clamp(0.0, 1.0),
+            //             backgroundColor: Colors.grey[200],
+            //             color: isOverBudget
+            //                 ? Colors.red
+            //                 : budgetUsedPercentage > 80
+            //                     ? Colors.orange
+            //                     : Colors.green,
+            //             minHeight: 8,
+            //           ),
+            //         ),
+            //         const SizedBox(height: 8),
+            //         Text(
+            //           isOverBudget
+            //               ? '已超出预算 ¥${(monthExpense - monthlyBudget).toStringAsFixed(2)}'
+            //               : '剩余预算 ¥${(monthlyBudget - monthExpense).toStringAsFixed(2)}',
+            //           style: TextStyle(
+            //             fontSize: 12,
+            //             color: isOverBudget ? Colors.red : Colors.grey[600],
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
 
             // 快速筛选按钮
-            SizedBox(
-              height: 50,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                itemCount: _filters.length,
-                itemBuilder: (context, index) {
-                  final filter = _filters[index];
-                  final isSelected = _selectedFilterIndex == index;
+            // SizedBox(
+            //   height: 50,
+            //   child: ListView.builder(
+            //     scrollDirection: Axis.horizontal,
+            //     padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            //     itemCount: _filters.length,
+            //     itemBuilder: (context, index) {
+            //       final filter = _filters[index];
+            //       final isSelected = _selectedFilterIndex == index;
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: ChoiceChip(
-                      label: Text(filter['name'] as String),
-                      selected: isSelected,
-                      avatar: Icon(
-                        filter['icon'] as IconData,
-                        size: 16,
-                        color: isSelected
-                            ? Colors.white
-                            : filter['color'] as Color? ?? Colors.grey[700],
-                      ),
-                      selectedColor: Theme.of(context).primaryColor,
-                      backgroundColor: Colors.grey[100],
-                      labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : Colors.black,
-                      ),
-                      onSelected: (selected) {
-                        if (selected) {
-                          setState(() {
-                            _selectedFilterIndex = index;
-                          });
-                          // 应用筛选逻辑
-                        }
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
+            //       return Padding(
+            //         padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            //         child: ChoiceChip(
+            //           label: Text(filter['name'] as String),
+            //           selected: isSelected,
+            //           avatar: Icon(
+            //             filter['icon'] as IconData,
+            //             size: 16,
+            //             color: isSelected
+            //                 ? Colors.white
+            //                 : filter['color'] as Color? ?? Colors.grey[700],
+            //           ),
+            //           selectedColor: Theme.of(context).primaryColor,
+            //           backgroundColor: Colors.grey[100],
+            //           labelStyle: TextStyle(
+            //             color: isSelected ? Colors.white : Colors.black,
+            //           ),
+            //           onSelected: (selected) {
+            //             if (selected) {
+            //               setState(() {
+            //                 _selectedFilterIndex = index;
+            //               });
+            //               // 应用筛选逻辑
+            //             }
+            //           },
+            //         ),
+            //       );
+            //     },
+            //   ),
+            // ),
           ],
         );
       },

@@ -118,7 +118,7 @@ class _EditTodoViewState extends State<EditTodoView> {
               _buildBillTypeSelector(),
 
               // 金额输入区域 - 突出显示
-              _buildAmountSection(),
+              // _buildAmountSection(),
 
               // 主要信息区域
               Card(
@@ -319,8 +319,26 @@ class _EditTodoViewState extends State<EditTodoView> {
           controller: _titleController,
           decoration: InputDecoration(
             labelText: '标题',
+            labelStyle: TextStyle(
+              color: Colors.grey.shade700,
+              fontSize: 16,
+            ),
             prefixIcon: const Icon(Icons.title),
+            // 统一所有状态下的边框样式
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey.shade400),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.blue), // 聚焦状态边框颜色
+              borderRadius: BorderRadius.circular(12),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.red), // 错误状态边框颜色
+              borderRadius: BorderRadius.circular(12),
+            ),
             border: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey.shade400),
               borderRadius: BorderRadius.circular(12),
             ),
           ),
@@ -361,9 +379,7 @@ class _EditTodoViewState extends State<EditTodoView> {
             );
 
             if (dateTime != null) {
-              setState(() {
-                _selectedDate = dateTime;
-              });
+              _selectedDate = dateTime;
             }
           },
           child: Container(
@@ -380,6 +396,7 @@ class _EditTodoViewState extends State<EditTodoView> {
                   '日期时间',
                   style: TextStyle(
                     color: Colors.grey.shade700,
+                    fontSize: 16,
                   ),
                 ),
                 const Spacer(),
@@ -420,7 +437,7 @@ class _EditTodoViewState extends State<EditTodoView> {
         final items = snapshot.data!;
 
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          padding: const EdgeInsets.only(right: 6, top: 2, bottom: 2),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey.shade400),
             borderRadius: BorderRadius.circular(12),
@@ -428,6 +445,7 @@ class _EditTodoViewState extends State<EditTodoView> {
           child: DropdownButtonFormField<BookSelectItem>(
             decoration: const InputDecoration(
               labelText: '账本',
+              contentPadding: EdgeInsets.zero,
               prefixIcon: Icon(Icons.book),
               border: InputBorder.none,
             ),
@@ -438,9 +456,7 @@ class _EditTodoViewState extends State<EditTodoView> {
               );
             }).toList(),
             onChanged: (value) {
-              setState(() {
-                _selectedBook = value;
-              });
+              _selectedBook = value;
             },
             isExpanded: true,
           ),
@@ -491,7 +507,7 @@ class _EditTodoViewState extends State<EditTodoView> {
             final items = snapshot.data!;
 
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.only(right: 6, top: 2, bottom: 2),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade400),
                 borderRadius: BorderRadius.circular(12),
@@ -500,6 +516,7 @@ class _EditTodoViewState extends State<EditTodoView> {
                 decoration: const InputDecoration(
                   labelText: '账户',
                   prefixIcon: Icon(Icons.account_balance_wallet),
+                  contentPadding: EdgeInsets.zero,
                   border: InputBorder.none,
                 ),
                 items: items.map((item) {
@@ -509,9 +526,7 @@ class _EditTodoViewState extends State<EditTodoView> {
                   );
                 }).toList(),
                 onChanged: (value) {
-                  setState(() {
-                    _selectedAccount = value;
-                  });
+                  _selectedAccount = value;
                 },
                 isExpanded: true,
               ),
@@ -539,7 +554,7 @@ class _EditTodoViewState extends State<EditTodoView> {
             final items = snapshot.data!;
 
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.only(right: 6, top: 2, bottom: 2),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade400),
                 borderRadius: BorderRadius.circular(12),
@@ -547,6 +562,7 @@ class _EditTodoViewState extends State<EditTodoView> {
               child: DropdownButtonFormField<PayeeSelectItem>(
                 decoration: const InputDecoration(
                   labelText: '交易对象',
+                  contentPadding: EdgeInsets.zero,
                   prefixIcon: Icon(Icons.person),
                   border: InputBorder.none,
                 ),
@@ -557,9 +573,7 @@ class _EditTodoViewState extends State<EditTodoView> {
                   );
                 }).toList(),
                 onChanged: (value) {
-                  setState(() {
-                    _selectedPayee = value;
-                  });
+                  _selectedPayee = value;
                 },
                 isExpanded: true,
               ),
@@ -603,7 +617,7 @@ class _EditTodoViewState extends State<EditTodoView> {
             final items = snapshot.data!;
 
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.only(right: 6, top: 2, bottom: 2),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade400),
                 borderRadius: BorderRadius.circular(12),
@@ -611,6 +625,7 @@ class _EditTodoViewState extends State<EditTodoView> {
               child: DropdownButtonFormField<AccountSelectItem>(
                 decoration: const InputDecoration(
                   labelText: '转出账户',
+                  contentPadding: EdgeInsets.zero,
                   prefixIcon: Icon(Icons.arrow_upward),
                   border: InputBorder.none,
                 ),
@@ -621,9 +636,7 @@ class _EditTodoViewState extends State<EditTodoView> {
                   );
                 }).toList(),
                 onChanged: (value) {
-                  setState(() {
-                    _selectedAccount = value;
-                  });
+                  _selectedAccount = value;
                 },
                 isExpanded: true,
               ),
@@ -651,7 +664,7 @@ class _EditTodoViewState extends State<EditTodoView> {
             final items = snapshot.data!;
 
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.only(right: 6, top: 2, bottom: 2),
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.grey.shade400),
                 borderRadius: BorderRadius.circular(12),
@@ -659,6 +672,7 @@ class _EditTodoViewState extends State<EditTodoView> {
               child: DropdownButtonFormField<AccountSelectItem>(
                 decoration: const InputDecoration(
                   labelText: '转入账户',
+                  contentPadding: EdgeInsets.zero,
                   prefixIcon: Icon(Icons.arrow_downward),
                   border: InputBorder.none,
                 ),
@@ -669,9 +683,7 @@ class _EditTodoViewState extends State<EditTodoView> {
                   );
                 }).toList(),
                 onChanged: (value) {
-                  setState(() {
-                    _selectedToAccount = value;
-                  });
+                  _selectedToAccount = value;
                 },
                 isExpanded: true,
               ),
@@ -847,9 +859,7 @@ class _EditTodoViewState extends State<EditTodoView> {
           subtitle: const Text('确认后将会扣除对应账户金额'),
           value: _isConfirmed,
           onChanged: (value) {
-            setState(() {
-              _isConfirmed = value;
-            });
+            _isConfirmed = value;
           },
           secondary: const Icon(Icons.verified),
           contentPadding: EdgeInsets.zero,
@@ -861,9 +871,7 @@ class _EditTodoViewState extends State<EditTodoView> {
           subtitle: const Text('纳入统计的账单会在报表中显示'),
           value: _isIncluded,
           onChanged: (value) {
-            setState(() {
-              _isIncluded = value;
-            });
+            _isIncluded = value;
           },
           secondary: const Icon(Icons.bar_chart),
           contentPadding: EdgeInsets.zero,
@@ -881,7 +889,7 @@ class _EditTodoViewState extends State<EditTodoView> {
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          maxLines: 3,
+          maxLines: 2,
           maxLength: 300,
         ),
       ],
