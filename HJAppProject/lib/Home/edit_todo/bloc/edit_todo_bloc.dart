@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
@@ -21,6 +23,7 @@ class EditTodoBloc extends Bloc<EditTodoEvent, EditTodoState> {
     on<EditTodoTitleChanged>(_onTitleChanged);
     on<EditTodoDescriptionChanged>(_onDescriptionChanged);
     on<EditTodoSubmitted>(_onSubmitted);
+    on<EditBillSubmitted>(_onBillSubmitted);
   }
 
   final TodosRepository _todosRepository;
@@ -55,5 +58,11 @@ class EditTodoBloc extends Bloc<EditTodoEvent, EditTodoState> {
     } catch (e) {
       emit(state.copyWith(status: EditTodoStatus.failure));
     }
+  }
+
+  FutureOr<void> _onBillSubmitted(
+      EditBillSubmitted event, Emitter<EditTodoState> emit) {
+    // lxjtodo：提交账单，刷新列表
+    print('lxjtodo: ${event.submitData}');
   }
 }

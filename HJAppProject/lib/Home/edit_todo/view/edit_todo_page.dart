@@ -11,6 +11,7 @@ import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart'
 import 'package:flutter_login_example/Request/account_request.dart';
 import 'package:flutter_login_example/Request/book_request.dart';
 import 'package:flutter_login_example/Request/payee_request.dart';
+import 'package:flutter_login_example/generated/l10n.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
@@ -69,6 +70,8 @@ class _EditTodoViewState extends State<EditTodoView> {
   PayeeSelectItem? _selectedPayee;
   final List<int> _selectedTagIds = [];
   final Map<int, double> _categoryAmountPairs = {};
+  ValueNotifier<bool> _isCategoryExpanded = ValueNotifier(true);
+  ValueNotifier<bool> _isTagExpanded = ValueNotifier(true);
 
   @override
   void dispose() {
@@ -88,27 +91,37 @@ class _EditTodoViewState extends State<EditTodoView> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        tooltip: S.current.editTodoSaveButtonTooltip,
+        shape: const ContinuousRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32)),
+        ),
+        onPressed: status.isLoadingOrSuccess ? null : () => _submitBill(),
+        child: status.isLoadingOrSuccess
+            ? const CupertinoActivityIndicator()
+            : const Icon(Icons.check_rounded),
+      ),
       appBar: AppBar(
         title: Text(
           isNewTodo ? '记一笔' : '编辑账单',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        actions: [
-          if (status.isLoadingOrSuccess)
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: CupertinoActivityIndicator(),
-            )
-          else
-            TextButton.icon(
-              onPressed: _submitBill,
-              icon: const Icon(Icons.check_circle_outline),
-              label: const Text('保存'),
-              style: TextButton.styleFrom(
-                foregroundColor: theme.colorScheme.primary,
-              ),
-            ),
-        ],
+        // actions: [
+        //   if (status.isLoadingOrSuccess)
+        //     const Padding(
+        //       padding: EdgeInsets.all(16.0),
+        //       child: CupertinoActivityIndicator(),
+        //     )
+        //   else
+        //     TextButton.icon(
+        //       onPressed: _submitBill,
+        //       icon: const Icon(Icons.check_circle_outline),
+        //       label: const Text('保存'),
+        //       style: TextButton.styleFrom(
+        //         foregroundColor: theme.colorScheme.primary,
+        //       ),
+        //     ),
+        // ],
       ),
       body: CupertinoScrollbar(
         child: SingleChildScrollView(
@@ -158,7 +171,22 @@ class _EditTodoViewState extends State<EditTodoView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildTagSection(),
-                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+              ),
+              Card(
+                margin: const EdgeInsets.all(8),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.grey.shade300),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       _buildAdditionalOptionsSection(),
                     ],
                   ),
@@ -723,7 +751,7 @@ class _EditTodoViewState extends State<EditTodoView> {
             const SizedBox(height: 16),
 
             // 快速选择常用分类
-            _buildQuickCategorySelector(),
+            // _buildQuickCategorySelector(),
             const SizedBox(height: 16),
 
             // 分类选择器
@@ -814,29 +842,48 @@ class _EditTodoViewState extends State<EditTodoView> {
 
   // 标签选择区域
   Widget _buildTagSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '标签',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: TagSelectField(billType: widget.billType),
-          ),
-        ),
-      ],
-    );
+    return ValueListenableBuilder(
+        valueListenable: _isTagExpanded,
+        builder: (b, expanded, child) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                  onTap: () {
+                    _isTagExpanded.value = !expanded;
+                  },
+                  child: Row(
+                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '标签',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      expanded
+                          ? Icon(Icons.expand_more)
+                          : Icon(Icons.expand_less),
+                    ],
+                  )),
+              const SizedBox(height: 16),
+              Visibility(
+                visible: !expanded,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: TagSelectField(billType: widget.billType),
+                  ),
+                ),
+              )
+            ],
+          );
+        });
   }
 
   // 附加选项区域
@@ -881,6 +928,8 @@ class _EditTodoViewState extends State<EditTodoView> {
 
         // 备注
         TextField(
+          textInputAction: TextInputAction.done,
+          keyboardType: TextInputType.multiline,
           controller: _remarkController,
           decoration: InputDecoration(
             labelText: '备注',
@@ -899,7 +948,7 @@ class _EditTodoViewState extends State<EditTodoView> {
   // 提交账单
   void _submitBill() {
     // 验证必填字段
-    if (_amountController.text.isEmpty) {
+    if (_categoryAmountPairs.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('请输入金额')),
       );
@@ -993,7 +1042,7 @@ class _EditTodoViewState extends State<EditTodoView> {
 
       // 调用API提交账单
       // 这里应该调用实际的API，目前使用Bloc模拟提交
-      context.read<EditTodoBloc>().add(const EditTodoSubmitted());
+      context.read<EditTodoBloc>().add(EditBillSubmitted(requestData));
     } catch (e) {
       // 处理错误
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1002,5 +1051,3 @@ class _EditTodoViewState extends State<EditTodoView> {
     }
   }
 }
-
-

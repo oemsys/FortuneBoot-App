@@ -288,14 +288,14 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // 添加新账单
-          Navigator.of(context).pushNamed('/edit-bill');
-        },
-        child: const Icon(Icons.add),
-        tooltip: '添加账单',
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     // 添加新账单
+      //     Navigator.of(context).pushNamed('/edit-bill');
+      //   },
+      //   child: const Icon(Icons.add),
+      //   tooltip: '添加账单',
+      // ),
     );
   }
 

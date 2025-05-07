@@ -28,3 +28,10 @@ final class EditTodoDescriptionChanged extends EditTodoEvent {
 final class EditTodoSubmitted extends EditTodoEvent {
   const EditTodoSubmitted();
 }
+
+final class EditBillSubmitted extends EditTodoEvent {
+  final Map<String, dynamic> submitData;
+  const EditBillSubmitted(this.submitData);
+  @override
+  List<Object> get props => [submitData];
+}
