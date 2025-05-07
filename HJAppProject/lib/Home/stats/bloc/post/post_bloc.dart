@@ -93,8 +93,9 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     elements.add(Setting(SettingType.api,
         detail: DioClient().dio.options.baseUrl,
         leadingWidget: const Icon(Icons.edit_note)));
-    elements.add(const Setting(SettingType.currentVersion,
-        content: '99.99', leadingWidget: Icon(Icons.abc))); // todo：当前版本号
+    elements.add(Setting(SettingType.currentVersion,
+        content: _billsRepository.version,
+        leadingWidget: Icon(Icons.abc))); 
     return elements;
   }
 

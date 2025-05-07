@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_example/Home/stats/bloc/post/post_bloc.dart';
 import 'package:flutter_login_example/Home/stats/bloc/stats_bloc.dart';
@@ -656,22 +657,16 @@ class _MineViewState extends State<MineView> {
   }
 
   void _showApiSettingDialog(BuildContext context, Setting element) {
-    final TextEditingController controller = TextEditingController(
-      text: element.detail,
-    );
+    // final TextEditingController controller = TextEditingController(
+    //   text: element.detail,
+    // );
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('API设置'),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              labelText: 'API地址',
-              hintText: '请输入API地址',
-            ),
-          ),
+          title: const Text('API'),
+          content: Text('${element.detail}'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -679,13 +674,15 @@ class _MineViewState extends State<MineView> {
             ),
             TextButton(
               onPressed: () {
+                // 复制到剪贴板
+                Clipboard.setData(ClipboardData(text: element.detail ?? ''));
                 Navigator.pop(context);
-                // 保存API设置
+                // 显示复制成功的提示
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('API设置已保存')),
+                  const SnackBar(content: Text('已复制到剪贴板')),
                 );
               },
-              child: const Text('保存'),
+              child: const Text('复制'),
             ),
           ],
         );
