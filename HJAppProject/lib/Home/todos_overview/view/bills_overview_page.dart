@@ -31,7 +31,8 @@ class BillsOverviewView extends StatefulWidget {
   State<BillsOverviewView> createState() => _BillsOverviewViewState();
 }
 
-class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTickerProviderStateMixin {
+class _BillsOverviewViewState extends State<BillsOverviewView>
+    with SingleTickerProviderStateMixin {
   DateTime? _currentGroupDate;
   final Map<String, GlobalKey> _groupKeys = {};
   List<DateTime> _groupDates = [];
@@ -45,13 +46,13 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
     {'name': '转账', 'icon': Icons.swap_horiz, 'color': Colors.blue},
     {'name': '调整', 'icon': Icons.settings, 'color': Colors.orange},
   ];
-  
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
   }
-  
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -115,7 +116,8 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                         ..hideCurrentSnackBar()
                         ..showSnackBar(
                           SnackBar(
-                            content: Text(S.current.todosOverviewErrorSnackbarText),
+                            content:
+                                Text(S.current.todosOverviewErrorSnackbarText),
                             backgroundColor: Colors.red,
                           ),
                         );
@@ -139,12 +141,12 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                             ),
                           ),
                           action: SnackBarAction(
-                            label: S.current.todosOverviewUndoDeletionButtonText,
+                            label:
+                                S.current.todosOverviewUndoDeletionButtonText,
                             onPressed: () {
                               messenger.hideCurrentSnackBar();
-                              context
-                                  .read<BillsOverviewBloc>()
-                                  .add(const BillsOverviewUndoDeletionRequested());
+                              context.read<BillsOverviewBloc>().add(
+                                  const BillsOverviewUndoDeletionRequested());
                             },
                           ),
                         ),
@@ -172,16 +174,19 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                             const SizedBox(height: 16),
                             Text(
                               S.current.todosOverviewEmptyText,
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey[600],
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
                             ),
                           ],
                         ),
                       );
                     }
                   }
-  
+
                   final bills = state.bills ?? [];
                   // 按日期分组
                   final Map<String, List<BillItem>> grouped = {};
@@ -202,12 +207,12 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                   if (_currentGroupDate == null && _groupDates.isNotEmpty) {
                     _currentGroupDate = _groupDates.first;
                   }
-  
+
                   final groupKeys = _groupDates
-                      .map((d) =>
-                          _groupKeys.putIfAbsent(_dateKey(d), () => GlobalKey()))
+                      .map((d) => _groupKeys.putIfAbsent(
+                          _dateKey(d), () => GlobalKey()))
                       .toList();
-  
+
                   return NotificationListener<ScrollNotification>(
                     onNotification: (notification) {
                       WidgetsBinding.instance.addPostFrameCallback(
@@ -240,7 +245,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                           final date = _groupDates[groupIdx];
                           final key = _groupKeys[_dateKey(date)]!;
                           final billsInGroup = grouped[_dateKey(date)] ?? [];
-                          
+
                           // 计算当日收支总额
                           double dayIncome = 0;
                           double dayExpense = 0;
@@ -251,23 +256,24 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                               dayExpense += bill.convertedAmount ?? 0;
                             }
                           }
-                          
+
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              _getGroupSeparator(context, date, key, dayIncome, dayExpense),
+                              _getGroupSeparator(
+                                  context, date, key, dayIncome, dayExpense),
                               ...billsInGroup
                                   .map((bill) => BillListTile(
-                                    bill: bill,
-                                    onTap: () {
-                                      // 点击账单项跳转到详情页
-                                      _showBillDetails(context, bill);
-                                    },
-                                    onDismissed: (direction) {
-                                      // 实现左滑删除功能
-                                      // 这里需要添加删除账单的逻辑
-                                    },
-                                  ))
+                                        bill: bill,
+                                        onTap: () {
+                                          // 点击账单项跳转到详情页
+                                          _showBillDetails(context, bill);
+                                        },
+                                        onDismissed: (direction) {
+                                          // 实现左滑删除功能
+                                          // 这里需要添加删除账单的逻辑
+                                        },
+                                      ))
                                   .toList(),
                             ],
                           );
@@ -352,20 +358,22 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
   Widget _buildSummaryCard(BuildContext context) {
     return BlocBuilder<BillsOverviewBloc, BillsOverviewState>(
       builder: (context, state) {
-        if (state.status != BillsOverviewStatus.success || state.bills == null) {
+        if (state.status != BillsOverviewStatus.success ||
+            state.bills == null) {
           return const SizedBox.shrink();
         }
-        
+
         // 计算本月收支
         final now = DateTime.now();
         final currentMonth = DateTime(now.year, now.month);
         double monthIncome = 0;
         double monthExpense = 0;
-        
+
         for (var bill in state.bills!) {
           if (bill.tradeTime == null) continue;
-          
-          final billMonth = DateTime(bill.tradeTime!.year, bill.tradeTime!.month);
+
+          final billMonth =
+              DateTime(bill.tradeTime!.year, bill.tradeTime!.month);
           if (billMonth.isAtSameMomentAs(currentMonth)) {
             if (bill.billType == BillType.income) {
               monthIncome += bill.convertedAmount ?? 0;
@@ -374,12 +382,13 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
             }
           }
         }
-        
+
         // 计算预算使用情况（假设每月预算为5000元）
         const double monthlyBudget = 5000.0;
-        final double budgetUsedPercentage = (monthExpense / monthlyBudget) * 100;
+        final double budgetUsedPercentage =
+            (monthExpense / monthlyBudget) * 100;
         final bool isOverBudget = monthExpense > monthlyBudget;
-        
+
         return Column(
           children: [
             // 月度汇总卡片
@@ -419,15 +428,19 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                       children: [
                         _buildSummaryItem('收入', monthIncome, Colors.green),
                         _buildSummaryItem('支出', monthExpense, Colors.red),
-                        _buildSummaryItem('结余', monthIncome - monthExpense, 
-                          (monthIncome - monthExpense) >= 0 ? Colors.blue : Colors.red),
+                        _buildSummaryItem(
+                            '结余',
+                            monthIncome - monthExpense,
+                            (monthIncome - monthExpense) >= 0
+                                ? Colors.blue
+                                : Colors.red),
                       ],
                     ),
                   ],
                 ),
               ),
             ),
-            
+
             // 预算进度卡片
             Card(
               margin: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
@@ -455,7 +468,9 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                           style: TextStyle(
                             fontSize: 14,
                             color: isOverBudget ? Colors.red : Colors.grey[700],
-                            fontWeight: isOverBudget ? FontWeight.bold : FontWeight.normal,
+                            fontWeight: isOverBudget
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                         ),
                       ],
@@ -466,15 +481,17 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                       child: LinearProgressIndicator(
                         value: (monthExpense / monthlyBudget).clamp(0.0, 1.0),
                         backgroundColor: Colors.grey[200],
-                        color: isOverBudget ? Colors.red : 
-                               budgetUsedPercentage > 80 ? Colors.orange : 
-                               Colors.green,
+                        color: isOverBudget
+                            ? Colors.red
+                            : budgetUsedPercentage > 80
+                                ? Colors.orange
+                                : Colors.green,
                         minHeight: 8,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      isOverBudget 
+                      isOverBudget
                           ? '已超出预算 ¥${(monthExpense - monthlyBudget).toStringAsFixed(2)}'
                           : '剩余预算 ¥${(monthlyBudget - monthExpense).toStringAsFixed(2)}',
                       style: TextStyle(
@@ -486,7 +503,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                 ),
               ),
             ),
-            
+
             // 快速筛选按钮
             SizedBox(
               height: 50,
@@ -497,7 +514,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                 itemBuilder: (context, index) {
                   final filter = _filters[index];
                   final isSelected = _selectedFilterIndex == index;
-                  
+
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4.0),
                     child: ChoiceChip(
@@ -506,7 +523,9 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                       avatar: Icon(
                         filter['icon'] as IconData,
                         size: 16,
-                        color: isSelected ? Colors.white : filter['color'] ?? Colors.grey[700],
+                        color: isSelected
+                            ? Colors.white
+                            : filter['color'] as Color? ?? Colors.grey[700],
                       ),
                       selectedColor: Theme.of(context).primaryColor,
                       backgroundColor: Colors.grey[100],
@@ -531,7 +550,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
       },
     );
   }
-  
+
   // 构建汇总项
   Widget _buildSummaryItem(String label, double amount, Color color) {
     return Column(
@@ -557,19 +576,24 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
   }
 
   // 构建日期分组标题
-  Widget _getGroupSeparator(BuildContext context, DateTime date, Key key, double income, double expense) {
+  Widget _getGroupSeparator(BuildContext context, DateTime date, Key key,
+      double income, double expense) {
     // 使用更符合中国人习惯的日期格式
     final now = DateTime.now();
     final yesterday = DateTime(now.year, now.month, now.day - 1);
-    
+
     String dateText;
     String weekdayText;
     final weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
     weekdayText = weekdays[date.weekday % 7];
-    
-    if (date.year == now.year && date.month == now.month && date.day == now.day) {
+
+    if (date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day) {
       dateText = '今天';
-    } else if (date.year == yesterday.year && date.month == yesterday.month && date.day == yesterday.day) {
+    } else if (date.year == yesterday.year &&
+        date.month == yesterday.month &&
+        date.day == yesterday.day) {
       dateText = '昨天';
     } else if (date.year == now.year) {
       // 同年只显示月日
@@ -578,10 +602,10 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
       // 不同年显示年月日
       dateText = '${date.year}年${date.month}月${date.day}日';
     }
-    
+
     // 计算日收支差额
     final double dayBalance = income - expense;
-    
+
     return Container(
       key: key,
       margin: const EdgeInsets.only(top: 8.0),
@@ -600,7 +624,8 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
           children: [
             // 日期部分
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
               decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(4.0),
@@ -648,8 +673,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                         ),
                       ),
                     ],
-                    if (income > 0 && expense > 0)
-                      const SizedBox(width: 12),
+                    if (income > 0 && expense > 0) const SizedBox(width: 12),
                     if (expense > 0) ...[
                       const Icon(
                         Icons.arrow_upward,
@@ -685,7 +709,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
       ),
     );
   }
-  
+
   // 显示筛选选项
   void _showFilterOptions(BuildContext context) {
     showModalBottomSheet(
@@ -711,19 +735,24 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
               ),
               const Divider(),
               _buildFilterOption(context, '全部', Icons.all_inclusive),
-              _buildFilterOption(context, '收入', Icons.arrow_downward, color: Colors.green),
-              _buildFilterOption(context, '支出', Icons.arrow_upward, color: Colors.red),
-              _buildFilterOption(context, '转账', Icons.swap_horiz, color: Colors.blue),
-              _buildFilterOption(context, '余额调整', Icons.settings, color: Colors.orange),
+              _buildFilterOption(context, '收入', Icons.arrow_downward,
+                  color: Colors.green),
+              _buildFilterOption(context, '支出', Icons.arrow_upward,
+                  color: Colors.red),
+              _buildFilterOption(context, '转账', Icons.swap_horiz,
+                  color: Colors.blue),
+              _buildFilterOption(context, '余额调整', Icons.settings,
+                  color: Colors.orange),
             ],
           ),
         );
       },
     );
   }
-  
+
   // 构建筛选选项
-  Widget _buildFilterOption(BuildContext context, String title, IconData icon, {Color? color}) {
+  Widget _buildFilterOption(BuildContext context, String title, IconData icon,
+      {Color? color}) {
     return ListTile(
       leading: Icon(icon, color: color),
       title: Text(title),
@@ -733,7 +762,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
       },
     );
   }
-  
+
   // 显示搜索对话框
   void _showSearchDialog(BuildContext context) {
     showDialog(
@@ -768,28 +797,36 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
       },
     );
   }
-  
+
   // 显示账单详情
   void _showBillDetails(BuildContext context, BillItem bill) {
     // 根据账单类型设置颜色和图标
     Color billColor;
     IconData billIcon;
-    
+
     switch (bill.billType) {
       case BillType.expenditure:
-        billColor = Theme.of(context).extension<CustomColors>()!.expenseTextColor ?? Colors.red;
+        billColor =
+            Theme.of(context).extension<CustomColors>()!.expenseTextColor ??
+                Colors.red;
         billIcon = Icons.arrow_upward;
         break;
       case BillType.income:
-        billColor = Theme.of(context).extension<CustomColors>()!.incomeTextColor ?? Colors.green;
+        billColor =
+            Theme.of(context).extension<CustomColors>()!.incomeTextColor ??
+                Colors.green;
         billIcon = Icons.arrow_downward;
         break;
       case BillType.transfer:
-        billColor = Theme.of(context).extension<CustomColors>()!.transferTextColor ?? Colors.blue;
+        billColor =
+            Theme.of(context).extension<CustomColors>()!.transferTextColor ??
+                Colors.blue;
         billIcon = Icons.swap_horiz;
         break;
       case BillType.adjust:
-        billColor = Theme.of(context).extension<CustomColors>()!.adjustTextColor ?? Colors.orange;
+        billColor =
+            Theme.of(context).extension<CustomColors>()!.adjustTextColor ??
+                Colors.orange;
         billIcon = Icons.settings;
         break;
       default:
@@ -797,7 +834,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
         billIcon = Icons.help_outline;
         break;
     }
-    
+
     // 格式化金额，确保显示两位小数
     String amountText = '¥${(bill.convertedAmount ?? 0).toStringAsFixed(2)}';
     if (bill.billType == BillType.expenditure) {
@@ -805,14 +842,23 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
     } else if (bill.billType == BillType.income) {
       amountText = '+$amountText';
     }
-    
+
     // 获取分类名称
     String categoryName = _getCategoryNames(bill);
-    
+
     // 格式化时间
-    String formattedDate = DateFormat('yyyy年MM月dd日 HH:mm').format(bill.tradeTime ?? DateTime.now());
-    String weekday = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][(bill.tradeTime?.weekday ?? 7) % 7];
-    
+    String formattedDate = DateFormat('yyyy年MM月dd日 HH:mm')
+        .format(bill.tradeTime ?? DateTime.now());
+    String weekday = [
+      '周日',
+      '周一',
+      '周二',
+      '周三',
+      '周四',
+      '周五',
+      '周六'
+    ][(bill.tradeTime?.weekday ?? 7) % 7];
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -839,13 +885,14 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                   ),
                 ),
               ),
-              
+
               // 金额和类型区域
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
                 decoration: BoxDecoration(
                   color: billColor.withOpacity(0.1),
-                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+                  borderRadius:
+                      const BorderRadius.vertical(bottom: Radius.circular(20)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -874,7 +921,8 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                             ),
                             const SizedBox(width: 16),
                             IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Colors.red),
+                              icon: const Icon(Icons.delete_outline,
+                                  color: Colors.red),
                               onPressed: () {
                                 Navigator.pop(context);
                                 // 显示删除确认对话框
@@ -885,7 +933,8 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                                     content: const Text('确定要删除这条账单记录吗？'),
                                     actions: [
                                       TextButton(
-                                        onPressed: () => Navigator.of(context).pop(),
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(),
                                         child: const Text('取消'),
                                       ),
                                       TextButton(
@@ -910,9 +959,9 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 20),
-                    
+
                     // 金额
                     Text(
                       amountText,
@@ -922,14 +971,15 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                         color: billColor,
                       ),
                     ),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // 类型和分类
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: billColor.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(4),
@@ -952,7 +1002,8 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                         if (categoryName.isNotEmpty) ...[
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.grey[200],
                               borderRadius: BorderRadius.circular(4),
@@ -971,7 +1022,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                   ],
                 ),
               ),
-              
+
               // 详细信息
               Expanded(
                 child: ListView(
@@ -1010,10 +1061,10 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                         bill.remark!,
                         icon: Icons.comment,
                       ),
-                    
+
                     // 添加更多详情项...
                     const SizedBox(height: 20),
-                    
+
                     // 标签区域
                     if (bill.tagList != null && bill.tagList!.isNotEmpty) ...[
                       const Text(
@@ -1041,7 +1092,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
                   ],
                 ),
               ),
-              
+
               // 底部按钮
               SafeArea(
                 child: Padding(
@@ -1088,9 +1139,10 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
       },
     );
   }
-  
+
   // 构建详情项
-  Widget _buildDetailItem(BuildContext context, String label, String value, {IconData? icon}) {
+  Widget _buildDetailItem(BuildContext context, String label, String value,
+      {IconData? icon}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Row(
@@ -1126,7 +1178,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView> with SingleTicker
       ),
     );
   }
-  
+
   // 获取分类名称
   String _getCategoryNames(BillItem bill) {
     if (bill.categoryAmountPair == null || bill.categoryAmountPair!.isEmpty) {

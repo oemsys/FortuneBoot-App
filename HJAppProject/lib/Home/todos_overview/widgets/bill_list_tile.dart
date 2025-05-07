@@ -120,12 +120,12 @@ class BillListTile extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: (categoryIcon?['color'] ?? billColor)?.withOpacity(0.1),
+                  color: (categoryIcon?['color'] as Color? ?? billColor)?.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: Icon(
-                  categoryIcon?['icon'] ?? billIcon,
-                  color: categoryIcon?['color'] ?? billColor,
+                  categoryIcon?['icon'] as IconData? ?? billIcon,
+                  color: categoryIcon?['color'] as Color? ?? billColor,
                   size: 20,
                 ),
               ),

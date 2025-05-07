@@ -67,7 +67,7 @@ class CustomOverlayController extends OverlayPortalController {
 
 class _MineViewState extends State<MineView> {
   final FocusNode _focusNode = FocusNode();
-  
+
   @override
   void initState() {
     super.initState();
@@ -79,7 +79,7 @@ class _MineViewState extends State<MineView> {
       }
     });
   }
-  
+
   @override
   void dispose() {
     _focusNode.dispose();
@@ -95,10 +95,10 @@ class _MineViewState extends State<MineView> {
       ...state.groupSettings
     ];
     Setting.sortList(elements);
-    
+
     // 拉取账本信息
     context.read<SettingBloc>().add(GroupSettingFetched());
-    
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -123,16 +123,16 @@ class _MineViewState extends State<MineView> {
       ),
     );
   }
-  
+
   Widget _buildUserHeader(BuildContext context, List<Setting> elements) {
     // 查找用户名设置项
     final usernameSetting = elements.firstWhere(
       (element) => element.type == SettingType.username,
       orElse: () => const Setting(SettingType.username, content: '未登录用户'),
     );
-    
+
     final username = usernameSetting.content ?? '未登录用户';
-    
+
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
@@ -153,7 +153,9 @@ class _MineViewState extends State<MineView> {
             radius: 40,
             backgroundColor: Colors.white,
             child: Text(
-              username.isNotEmpty ? username.substring(0, 1).toUpperCase() : '?',
+              username.isNotEmpty
+                  ? username.substring(0, 1).toUpperCase()
+                  : '?',
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
@@ -178,6 +180,9 @@ class _MineViewState extends State<MineView> {
                 InkWell(
                   onTap: () {
                     // 跳转到个人资料页面
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('敬请期待...')),
+                    );
                   },
                   child: Row(
                     children: [
@@ -211,26 +216,29 @@ class _MineViewState extends State<MineView> {
       ),
     );
   }
-  
+
   Widget _buildSettingsGroups(BuildContext context, List<Setting> elements) {
     // 将设置项分组
-    final accountSettings = elements.where((e) => 
-      e.type == SettingType.currentGroup || 
-      e.type == SettingType.currentBook ||
-      e.type == SettingType.accountOverview
-    ).toList();
-    
-    final appSettings = elements.where((e) => 
-      e.type == SettingType.currentTheme || 
-      e.type == SettingType.currentLanguage
-    ).toList();
-    
-    final aboutSettings = elements.where((e) => 
-      e.type == SettingType.api || 
-      e.type == SettingType.currentVersion ||
-      e.type == SettingType.apiVersion
-    ).toList();
-    
+    final accountSettings = elements
+        .where((e) =>
+            e.type == SettingType.currentGroup ||
+            e.type == SettingType.currentBook ||
+            e.type == SettingType.accountOverview)
+        .toList();
+
+    final appSettings = elements
+        .where((e) =>
+            e.type == SettingType.currentTheme ||
+            e.type == SettingType.currentLanguage)
+        .toList();
+
+    final aboutSettings = elements
+        .where((e) =>
+            e.type == SettingType.api ||
+            e.type == SettingType.currentVersion ||
+            e.type == SettingType.apiVersion)
+        .toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -250,8 +258,9 @@ class _MineViewState extends State<MineView> {
       ],
     );
   }
-  
-  Widget _buildSettingGroup(BuildContext context, String title, List<Setting> settings) {
+
+  Widget _buildSettingGroup(
+      BuildContext context, String title, List<Setting> settings) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -259,7 +268,7 @@ class _MineViewState extends State<MineView> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -280,12 +289,14 @@ class _MineViewState extends State<MineView> {
             ),
           ),
           const Divider(height: 1),
-          ...settings.map((setting) => _getSettingItem(context, setting)).toList(),
+          ...settings
+              .map((setting) => _getSettingItem(context, setting))
+              .toList(),
         ],
       ),
     );
   }
-  
+
   Widget _buildAdditionalOptions(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -303,7 +314,8 @@ class _MineViewState extends State<MineView> {
       child: Column(
         children: [
           ListTile(
-            leading: Icon(Icons.feedback, color: Theme.of(context).primaryColor),
+            leading:
+                Icon(Icons.feedback, color: Theme.of(context).primaryColor),
             title: const Text('意见反馈'),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
@@ -334,20 +346,24 @@ class _MineViewState extends State<MineView> {
 
   Widget _getSettingItem(BuildContext context, Setting element) {
     final textTheme = Theme.of(context).textTheme;
-    
-    if (element.type == SettingType.currentGroup || element.type == SettingType.currentBook) {
+
+    if (element.type == SettingType.currentGroup ||
+        element.type == SettingType.currentBook) {
       var curItem = element.content;
-      
+
       return Column(
         children: [
           ListTile(
-            leading: element.leadingWidget ?? 
-              Icon(
-                element.type == SettingType.currentGroup ? Icons.group : Icons.book,
-                color: Theme.of(context).primaryColor,
-              ),
+            leading: element.leadingWidget ??
+                Icon(
+                  element.type == SettingType.currentGroup
+                      ? Icons.group
+                      : Icons.book,
+                  color: Theme.of(context).primaryColor,
+                ),
             title: Text(element.type.title),
-            subtitle: Text(curItem ?? '未选择', style: TextStyle(color: Colors.grey[600])),
+            subtitle: Text(curItem ?? '未选择',
+                style: TextStyle(color: Colors.grey[600])),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               _showSelectionDialog(context, element);
@@ -357,19 +373,23 @@ class _MineViewState extends State<MineView> {
         ],
       );
     }
-    
+
     if (element.type == SettingType.accountOverview) {
       return Column(
         children: [
           ListTile(
-            leading: element.leadingWidget ?? Icon(Icons.account_balance_wallet, color: Theme.of(context).primaryColor),
+            leading: element.leadingWidget ??
+                Icon(Icons.account_balance_wallet,
+                    color: Theme.of(context).primaryColor),
             title: const Text('账户概览'),
-            subtitle: element.detail != null ? Text(
-              element.detail!,
-              style: TextStyle(color: Colors.grey[600]),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ) : null,
+            subtitle: element.detail != null
+                ? Text(
+                    element.detail!,
+                    style: TextStyle(color: Colors.grey[600]),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : null,
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               // 跳转到账户概览详情页
@@ -379,21 +399,22 @@ class _MineViewState extends State<MineView> {
         ],
       );
     }
-    
+
     return Column(
       children: [
         ListTile(
-          leading: element.leadingWidget ?? 
-            Icon(
-              _getIconForSettingType(element.type),
-              color: Theme.of(context).primaryColor,
-            ),
+          leading: element.leadingWidget ??
+              Icon(
+                _getIconForSettingType(element.type),
+                color: Theme.of(context).primaryColor,
+              ),
           title: Text(element.type.title),
-          subtitle: element.content != null || element.detail != null ? 
-            Text(
-              element.content ?? element.detail ?? '',
-              style: TextStyle(color: Colors.grey[600]),
-            ) : null,
+          subtitle: element.content != null || element.detail != null
+              ? Text(
+                  element.content ?? element.detail ?? '',
+                  style: TextStyle(color: Colors.grey[600]),
+                )
+              : null,
           trailing: const Icon(Icons.arrow_forward_ios, size: 16),
           onTap: () {
             // 处理点击事件
@@ -404,7 +425,7 @@ class _MineViewState extends State<MineView> {
       ],
     );
   }
-  
+
   IconData _getIconForSettingType(SettingType type) {
     switch (type) {
       case SettingType.username:
@@ -429,7 +450,7 @@ class _MineViewState extends State<MineView> {
         return Icons.settings;
     }
   }
-  
+
   void _handleSettingTap(BuildContext context, Setting element) {
     switch (element.type) {
       case SettingType.currentTheme:
@@ -447,10 +468,10 @@ class _MineViewState extends State<MineView> {
         break;
     }
   }
-  
+
   void _showSelectionDialog(BuildContext context, Setting element) async {
     List<DropdownItem<SettingSelectItem>> items = [];
-    
+
     if (element.type == SettingType.currentGroup) {
       GroupService groupService = GroupService();
       var res = await groupService.getEnableList();
@@ -469,8 +490,8 @@ class _MineViewState extends State<MineView> {
       }
     } else if (element.type == SettingType.currentBook) {
       BookService bookService = BookService();
-      var remoteBookResponse = await bookService
-          .getByGroupId(element.data!['groupId'] as int? ?? 0);
+      var remoteBookResponse =
+          await bookService.getByGroupId(element.data!['groupId'] as int? ?? 0);
       if (remoteBookResponse.code == 0) {
         var remoteBookList = remoteBookResponse.data as List? ?? [];
         for (final remoteBookItem in remoteBookList) {
@@ -489,14 +510,15 @@ class _MineViewState extends State<MineView> {
         }
       }
     }
-    
+
     if (items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('暂无可选项')),
       );
       return;
     }
-    
+    var settingBloc = context.read<SettingBloc>();
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -524,15 +546,17 @@ class _MineViewState extends State<MineView> {
                   final item = items[index];
                   return ListTile(
                     title: Text(item.label),
-                    trailing: item.selected ? const Icon(Icons.check, color: Colors.green) : null,
+                    trailing: item.selected
+                        ? const Icon(Icons.check, color: Colors.green)
+                        : null,
                     onTap: () {
                       Navigator.pop(context);
                       if (element.type == SettingType.currentGroup) {
-                        context.read<SettingBloc>().add(
+                        settingBloc.add(
                           GroupSettingFetched(groupId: item.value.id),
                         );
                       } else if (element.type == SettingType.currentBook) {
-                        context.read<SettingBloc>().add(
+                        settingBloc.add(
                           BookIdChanged(item.value.id),
                         );
                       }
@@ -546,10 +570,10 @@ class _MineViewState extends State<MineView> {
       },
     );
   }
-  
+
   void _showThemeSelectionDialog(BuildContext context) {
     final themes = ['跟随系统', '浅色模式', '深色模式'];
-    
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -571,25 +595,27 @@ class _MineViewState extends State<MineView> {
             ),
             const Divider(height: 1),
             ...themes.map((theme) => ListTile(
-              title: Text(theme),
-              trailing: theme == '跟随系统' ? const Icon(Icons.check, color: Colors.green) : null,
-              onTap: () {
-                Navigator.pop(context);
-                // 应用主题
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('已切换到$theme')),
-                );
-              },
-            )),
+                  title: Text(theme),
+                  trailing: theme == '跟随系统'
+                      ? const Icon(Icons.check, color: Colors.green)
+                      : null,
+                  onTap: () {
+                    Navigator.pop(context);
+                    // 应用主题
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('已切换到$theme')),
+                    );
+                  },
+                )),
           ],
         );
       },
     );
   }
-  
+
   void _showLanguageSelectionDialog(BuildContext context) {
     final languages = ['🇨🇳 简体中文', '🇺🇸 English'];
-    
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -611,27 +637,29 @@ class _MineViewState extends State<MineView> {
             ),
             const Divider(height: 1),
             ...languages.map((language) => ListTile(
-              title: Text(language),
-              trailing: language == '🇨🇳 简体中文' ? const Icon(Icons.check, color: Colors.green) : null,
-              onTap: () {
-                Navigator.pop(context);
-                // 应用语言
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('已切换到$language')),
-                );
-              },
-            )),
+                  title: Text(language),
+                  trailing: language == '🇨🇳 简体中文'
+                      ? const Icon(Icons.check, color: Colors.green)
+                      : null,
+                  onTap: () {
+                    Navigator.pop(context);
+                    // 应用语言
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('已切换到$language')),
+                    );
+                  },
+                )),
           ],
         );
       },
     );
   }
-  
+
   void _showApiSettingDialog(BuildContext context, Setting element) {
     final TextEditingController controller = TextEditingController(
       text: element.detail,
     );
-    
+
     showDialog(
       context: context,
       builder: (context) {
@@ -664,7 +692,7 @@ class _MineViewState extends State<MineView> {
       },
     );
   }
-  
+
   void _showSettingDetailDialog(BuildContext context, Setting element) {
     showDialog(
       context: context,
@@ -675,8 +703,7 @@ class _MineViewState extends State<MineView> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (element.content != null)
-                Text('内容: ${element.content}'),
+              if (element.content != null) Text('内容: ${element.content}'),
               if (element.detail != null) ...[
                 const SizedBox(height: 8),
                 Text('详情: ${element.detail}'),
@@ -693,7 +720,7 @@ class _MineViewState extends State<MineView> {
       },
     );
   }
-  
+
   void _showQRCode(BuildContext context) {
     showDialog(
       context: context,
@@ -725,7 +752,7 @@ class _MineViewState extends State<MineView> {
       },
     );
   }
-  
+
   void _showHelpDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -740,11 +767,13 @@ class _MineViewState extends State<MineView> {
               SizedBox(height: 4),
               Text('点击"当前账本"选项，在弹出的列表中选择需要的账本。'),
               SizedBox(height: 12),
-              Text('2. 如何修改个人资料?', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('2. 如何修改个人资料?',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               SizedBox(height: 4),
               Text('点击头像或"查看个人资料"进入个人资料页面进行修改。'),
               SizedBox(height: 12),
-              Text('3. 遇到问题怎么办?', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('3. 遇到问题怎么办?',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               SizedBox(height: 4),
               Text('可以通过"意见反馈"功能向我们反馈问题，我们会尽快处理。'),
             ],
@@ -759,7 +788,7 @@ class _MineViewState extends State<MineView> {
       },
     );
   }
-  
+
   void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
