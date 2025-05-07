@@ -6,8 +6,9 @@ import 'package:flutter_login_example/Request/tag_request.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 
 class TagSelectField extends StatefulWidget {
-  TagSelectField({super.key, required this.billType});
+  TagSelectField({super.key, required this.billType, this.onTagSelected});
   BillType billType;
+  Function(List<int>)? onTagSelected;
 
   @override
   State<TagSelectField> createState() => _TagSelectFieldState();
@@ -62,7 +63,8 @@ class _TagSelectFieldState extends State<TagSelectField> {
 
         // 数据加载成功，构建UI
         final tags = snapshot.data!;
-        return TagTreeSelection(tags: tags);
+        return TagTreeSelection(
+            tags: tags, onTagSelected: widget.onTagSelected);
       },
     );
   }
@@ -86,8 +88,9 @@ Future<List<TagSelectItem>> tagFutureItems(
 }
 
 class TagTreeSelection extends StatefulWidget {
-  TagTreeSelection({super.key, required this.tags});
+  TagTreeSelection({super.key, required this.tags, this.onTagSelected});
   List<TagSelectItem> tags;
+  Function(List<int>)? onTagSelected;
 
   @override
   State<TagTreeSelection> createState() => _TagTreeSelectionState();
@@ -101,6 +104,7 @@ class _TagTreeSelectionState extends State<TagTreeSelection> {
 
   @override
   Widget build(BuildContext context) {
+    widget.onTagSelected?.call(_selectedTagIds);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

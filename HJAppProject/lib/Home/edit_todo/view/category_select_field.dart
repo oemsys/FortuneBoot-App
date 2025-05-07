@@ -7,8 +7,10 @@ import 'package:flutter_login_example/Request/category_request.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 
 class CategorySelectField extends StatefulWidget {
-  CategorySelectField({super.key, required this.billType});
+  CategorySelectField(
+      {super.key, required this.billType, this.onCategorySelected});
   BillType billType;
+  Function(Map<int, double>)? onCategorySelected;
 
   @override
   State<CategorySelectField> createState() => _CategorySelectFieldState();
@@ -64,7 +66,9 @@ class _CategorySelectFieldState extends State<CategorySelectField> {
         // 数据加载成功，构建UI
         final categories = snapshot.data!;
         return CategoryTreeWidget(
-            categories: categories, billType: widget.billType);
+            categories: categories,
+            billType: widget.billType,
+            onCategorySelected: widget.onCategorySelected);
       },
     );
   }
@@ -89,8 +93,12 @@ Future<List<CategorySelectItem>> categroyFutureItems(
 
 class CategoryTreeWidget extends StatefulWidget {
   CategoryTreeWidget(
-      {super.key, required this.categories, required this.billType});
+      {super.key,
+      required this.categories,
+      required this.billType,
+      this.onCategorySelected});
   List<CategorySelectItem> categories;
+  Function(Map<int, double>)? onCategorySelected;
   BillType billType;
 
   @override
@@ -127,6 +135,7 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
 
   // 已选择的分类和金额
   Widget _buildSelectedCategories() {
+    widget.onCategorySelected?.call(_categoryAmountPairs);
     return FutureBuilder<List<CategorySelectItem>>(
         future: categroyFutureItems(context, widget.billType),
         builder: (context, snapshot) {

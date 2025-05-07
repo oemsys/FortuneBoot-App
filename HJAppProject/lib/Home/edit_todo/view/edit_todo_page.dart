@@ -68,8 +68,8 @@ class _EditTodoViewState extends State<EditTodoView> {
   AccountSelectItem? _selectedAccount;
   AccountSelectItem? _selectedToAccount;
   PayeeSelectItem? _selectedPayee;
-  final List<int> _selectedTagIds = [];
-  final Map<int, double> _categoryAmountPairs = {};
+  List<int> _selectedTagIds = [];
+  Map<int, double> _categoryAmountPairs = {};
   ValueNotifier<bool> _isCategoryExpanded = ValueNotifier(true);
   ValueNotifier<bool> _isTagExpanded = ValueNotifier(true);
 
@@ -471,8 +471,9 @@ class _EditTodoViewState extends State<EditTodoView> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<BookSelectItem>(
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: '账本',
+              hintText: _selectedBook?.title,
               contentPadding: EdgeInsets.zero,
               prefixIcon: Icon(Icons.book),
               border: InputBorder.none,
@@ -484,7 +485,9 @@ class _EditTodoViewState extends State<EditTodoView> {
               );
             }).toList(),
             onChanged: (value) {
-              _selectedBook = value;
+              setState(() {
+                _selectedBook = value;
+              });
             },
             isExpanded: true,
           ),
@@ -762,7 +765,11 @@ class _EditTodoViewState extends State<EditTodoView> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: CategorySelectField(billType: widget.billType),
+                child: CategorySelectField(
+                    billType: widget.billType,
+                    onCategorySelected: (categorys) {
+                      _categoryAmountPairs = categorys;
+                    }),
               ),
             ),
           ],
@@ -877,7 +884,11 @@ class _EditTodoViewState extends State<EditTodoView> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: TagSelectField(billType: widget.billType),
+                    child: TagSelectField(
+                        billType: widget.billType,
+                        onTagSelected: (tags) {
+                          _selectedTagIds = tags;
+                        }),
                   ),
                 ),
               )
@@ -945,7 +956,7 @@ class _EditTodoViewState extends State<EditTodoView> {
     );
   }
 
-  // 提交账单
+  // 提交账单 lxjtodo：提交账单
   void _submitBill() {
     // 验证必填字段
     if (_categoryAmountPairs.isEmpty) {
@@ -965,14 +976,6 @@ class _EditTodoViewState extends State<EditTodoView> {
     if (widget.billType != BillType.transfer && _selectedAccount == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('请选择账户')),
-      );
-      return;
-    }
-
-    if (widget.billType == BillType.transfer &&
-        (_selectedAccount == null || _selectedToAccount == null)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请选择转出和转入账户')),
       );
       return;
     }
@@ -1012,7 +1015,7 @@ class _EditTodoViewState extends State<EditTodoView> {
           List<Map<String, dynamic>> categoryAmountPairList = [];
           _categoryAmountPairs.forEach((categoryId, categoryAmount) {
             categoryAmountPairList
-                .add({"first": categoryId, "second": categoryAmount});
+                .add({"key": categoryId, "value": categoryAmount});
           });
           requestData["data"]["categoryAmountPair"] = categoryAmountPairList;
         }

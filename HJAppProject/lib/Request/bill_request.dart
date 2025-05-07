@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_login_example/Home/todos_overview/models/bill_item_add.dart';
 import 'package:flutter_login_example/Login/model/login_model.dart';
 import 'package:flutter_login_example/Request/base_request.dart';
 import 'package:flutter_login_example/util/dio_client.dart';
@@ -64,4 +64,8 @@ abstract class BillService {
     // 账单类型过滤
     @Query('billType') String? billType,
   });
+
+  // /fortune/bill/add
+  @POST('/fortune/bill/add')
+  Future<HJResponse> addBill(@Body() BillItemAdd addItem);
 }
