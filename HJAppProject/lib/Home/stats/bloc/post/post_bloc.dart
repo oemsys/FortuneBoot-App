@@ -94,8 +94,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
         detail: DioClient().dio.options.baseUrl,
         leadingWidget: const Icon(Icons.edit_note)));
     elements.add(Setting(SettingType.currentVersion,
-        content: _billsRepository.version,
-        leadingWidget: Icon(Icons.abc))); 
+        content: _billsRepository.version, leadingWidget: Icon(Icons.abc)));
     return elements;
   }
 
@@ -195,6 +194,31 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
 
   FutureOr<void> _onChangedBookId(
       BookIdChanged event, Emitter<SettingState> emit) async {
+    var newGroup = <Setting>[];
+    Setting? groupSetting;
+    Setting? bookSetting;
+    state.groupSettings.forEach((element) {
+      if (element.type == SettingType.currentGroup) {
+        groupSetting = element;
+      } else if (element.type == SettingType.currentBook) {
+        bookSetting = Setting(SettingType.currentBook,
+            content: event.bookName,
+            leadingWidget: const Icon(Icons.book_online_outlined),
+            data: {
+              "groupId": _billsRepository.groupId(),
+              "bookId": event.bookId,
+            });
+      }
+    });
     _billsRepository.updateRemoteBill(bookId: event.bookId);
+    if (groupSetting != null) {
+      newGroup.add(groupSetting!);
+    }
+    if (bookSetting != null) {
+      newGroup.add(bookSetting!);
+    }
+    emit(
+      state.copyWith(status: SettingStatus.failure, groupSettings: newGroup),
+    );
   }
 }

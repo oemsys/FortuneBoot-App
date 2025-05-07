@@ -5,19 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_example/Home/stats/bloc/post/post_bloc.dart';
-import 'package:flutter_login_example/Home/stats/bloc/stats_bloc.dart';
 import 'package:flutter_login_example/Home/stats/models/mine_setting.dart';
 import 'package:flutter_login_example/Home/stats/models/setting_select_item.dart';
-import 'package:flutter_login_example/Home/stats/view/drop_down_animate.dart';
-import 'package:flutter_login_example/Login/model/users.dart';
 import 'package:flutter_login_example/Request/book_request.dart';
 import 'package:flutter_login_example/Request/group_request.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
-import 'package:todos_repository/todos_repository.dart';
 import '../../../generated/l10n.dart';
-import 'package:sticky_grouped_list/sticky_grouped_list.dart';
-import 'package:intl/intl.dart';
 
 class MinePage extends StatelessWidget {
   const MinePage({super.key});
@@ -72,6 +66,8 @@ class _MineViewState extends State<MineView> {
   @override
   void initState() {
     super.initState();
+    // 拉取账本信息
+    context.read<SettingBloc>().add(GroupSettingFetched());
     _focusNode.addListener(() {
       if (_focusNode.hasFocus) {
         print('lxjtodo:焦点已获取'); // 触发获取焦点的逻辑
@@ -96,9 +92,6 @@ class _MineViewState extends State<MineView> {
       ...state.groupSettings
     ];
     Setting.sortList(elements);
-
-    // 拉取账本信息
-    context.read<SettingBloc>().add(GroupSettingFetched());
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -558,7 +551,7 @@ class _MineViewState extends State<MineView> {
                         );
                       } else if (element.type == SettingType.currentBook) {
                         settingBloc.add(
-                          BookIdChanged(item.value.id),
+                          BookIdChanged(item.value.id, item.value.title),
                         );
                       }
                     },
