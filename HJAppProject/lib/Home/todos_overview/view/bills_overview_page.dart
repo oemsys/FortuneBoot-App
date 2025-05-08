@@ -5,6 +5,7 @@ import 'package:flutter_login_example/Home/edit_bill/view/edit_bill_page.dart';
 import 'package:flutter_login_example/Home/theme/theme.dart';
 import 'package:flutter_login_example/Home/todos_overview/bloc/bills_overview_bloc.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
+import 'package:flutter_login_example/Home/todos_overview/models/bill_item_add.dart';
 import 'package:flutter_login_example/Home/todos_overview/widgets/bill_list_tile.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:intl/intl.dart';
@@ -914,8 +915,9 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                               icon: const Icon(Icons.edit),
                               onPressed: () {
                                 Navigator.pop(context);
-                                Navigator.of(context)
-                                    .push(EditBillPage.route());
+                                Navigator.of(context).push(EditBillPage.route(
+                                    initialBill:
+                                        BillItemAdd.fromBillItem(bill)));
                                 // 跳转到编辑页面
                               },
                               tooltip: '编辑',

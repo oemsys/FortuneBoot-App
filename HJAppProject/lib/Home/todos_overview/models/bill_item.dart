@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:equatable/equatable.dart';
+import 'package:intl/intl.dart';
 
 part 'bill_item.g.dart';
 
@@ -53,6 +54,12 @@ class BillItem extends Equatable {
   String? remark;
   List<CategoryAmountPair>? categoryAmountPair;
   List<TagList>? tagList;
+
+  // 'yyyy-MM-dd HH:mm:ss'
+  String get tradeTimeString {
+    DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+    return formatter.format(tradeTime ?? DateTime.now());
+  }
 
   BillItem(
       {this.billId,

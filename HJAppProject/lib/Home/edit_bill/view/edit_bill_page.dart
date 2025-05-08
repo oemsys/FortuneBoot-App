@@ -101,16 +101,7 @@ class _EditBillViewState extends State<EditBillView> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _remarkController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
-  bool _isConfirmed = true;
-  bool _isIncluded = true;
 
-  // 选中的账本、账户、分类等
-  AccountSelectItem? _selectedAccount;
-  AccountSelectItem? _selectedToAccount;
-  PayeeSelectItem? _selectedPayee;
-  List<int> _selectedTagIds = [];
-  Map<int, double> _categoryAmountPairs = {};
   ValueNotifier<bool> _isCategoryExpanded = ValueNotifier(true);
   ValueNotifier<bool> _isTagExpanded = ValueNotifier(true);
 
@@ -138,7 +129,7 @@ class _EditBillViewState extends State<EditBillView> {
           borderRadius: BorderRadius.all(Radius.circular(32)),
         ),
         onPressed:
-            status.isLoadingOrInit ? null : () => _submitBill(state.billType),
+            status.isLoadingOrInit ? null : () => _submitBill(state.editBill),
         child: status.isLoadingOrInit
             ? const CupertinoActivityIndicator()
             : const Icon(Icons.check_rounded),
@@ -244,7 +235,9 @@ class _EditBillViewState extends State<EditBillView> {
   }
 
   BillType curBillType() {
-    return context.watch<EditBillBloc>().state.billType;
+    var state = context.watch<EditBillBloc>().state;
+    return BillType.fromValue(state.editBill.data?.billType ?? 1) ??
+        BillType.expenditure;
   }
 
   // 账单类型选择器
@@ -379,6 +372,8 @@ class _EditBillViewState extends State<EditBillView> {
 
   // 基本信息区域
   Widget _buildBasicInfoSection() {
+    var state = context.watch<EditBillBloc>().state;
+    var initDate = state.editBill.data!.tradeDate;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -432,7 +427,7 @@ class _EditBillViewState extends State<EditBillView> {
           onTap: () async {
             final DateTime? dateTime = await showOmniDateTimePicker(
               context: context,
-              initialDate: _selectedDate,
+              initialDate: initDate,
               firstDate: DateTime(2000),
               lastDate: DateTime.now().add(const Duration(days: 3650)),
               is24HourMode: true,
@@ -460,7 +455,8 @@ class _EditBillViewState extends State<EditBillView> {
             );
 
             if (dateTime != null) {
-              _selectedDate = dateTime;
+              state.editBill.data?.tradeTime =
+                  DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
             }
           },
           child: Container(
@@ -482,7 +478,8 @@ class _EditBillViewState extends State<EditBillView> {
                 ),
                 const Spacer(),
                 Text(
-                  DateFormat('yyyy-MM-dd HH:mm').format(_selectedDate),
+                  state.editBill.data?.tradeTime ??
+                      DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now()),
                   style: const TextStyle(
                     fontWeight: FontWeight.w500,
                   ),
@@ -514,6 +511,20 @@ class _EditBillViewState extends State<EditBillView> {
         ? state.incomeAccountList
         : state.expenseAccountList;
     var payeeItems = state.payeeList;
+    AccountSelectItem? selectItem;
+    for (final item in items) {
+      if (item.value.id == state.editBill.data?.accountId) {
+        selectItem = item.value;
+        break;
+      }
+    }
+    PayeeSelectItem? payeeSelectItem;
+    for (final item in payeeItems) {
+      if (item.value.id == state.editBill.data?.payeeId) {
+        payeeSelectItem = item.value;
+        break;
+      }
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -525,7 +536,6 @@ class _EditBillViewState extends State<EditBillView> {
           ),
         ),
         const SizedBox(height: 16),
-
         // 账户选择
         Container(
           padding: const EdgeInsets.only(right: 6, top: 2, bottom: 2),
@@ -534,6 +544,7 @@ class _EditBillViewState extends State<EditBillView> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<AccountSelectItem>(
+            value: selectItem,
             decoration: const InputDecoration(
               labelText: '账户',
               prefixIcon: Icon(Icons.account_balance_wallet),
@@ -547,7 +558,7 @@ class _EditBillViewState extends State<EditBillView> {
               );
             }).toList(),
             onChanged: (value) {
-              _selectedAccount = value;
+              state.editBill.data?.accountId = value?.id;
             },
             isExpanded: true,
           ),
@@ -562,6 +573,7 @@ class _EditBillViewState extends State<EditBillView> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<PayeeSelectItem>(
+            value: payeeSelectItem,
             decoration: const InputDecoration(
               labelText: '交易对象',
               contentPadding: EdgeInsets.zero,
@@ -575,7 +587,7 @@ class _EditBillViewState extends State<EditBillView> {
               );
             }).toList(),
             onChanged: (value) {
-              _selectedPayee = value;
+              state.editBill.data?.payeeId = value?.id;
             },
             isExpanded: true,
           ),
@@ -586,9 +598,23 @@ class _EditBillViewState extends State<EditBillView> {
 
   // 转账账户选择
   Widget _buildTransferAccountSection() {
-    var state = context.watch<EditBillBloc>();
-    final inItems = state.state.transferAccountList;
-    final outItems = state.state.transferOutAccountList;
+    var state = context.watch<EditBillBloc>().state;
+    final inItems = state.transferAccountList;
+    final outItems = state.transferOutAccountList;
+    AccountSelectItem? selectInItem;
+    for (final item in inItems) {
+      if (item.value.id == state.editBill.data?.accountId) {
+        selectInItem = item.value;
+        break;
+      }
+    }
+    AccountSelectItem? selectOutItem;
+    for (final item in outItems) {
+      if (item.value.id == state.editBill.data?.toAccountId) {
+        selectOutItem = item.value;
+        break;
+      }
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -607,6 +633,7 @@ class _EditBillViewState extends State<EditBillView> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<AccountSelectItem>(
+            value: selectOutItem,
             decoration: const InputDecoration(
               labelText: '转出账户',
               contentPadding: EdgeInsets.zero,
@@ -620,7 +647,7 @@ class _EditBillViewState extends State<EditBillView> {
               );
             }).toList(),
             onChanged: (value) {
-              _selectedAccount = value;
+              state.editBill.data?.accountToId = value?.id;
             },
             isExpanded: true,
           ),
@@ -635,6 +662,7 @@ class _EditBillViewState extends State<EditBillView> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<AccountSelectItem>(
+            value: selectInItem,
             decoration: const InputDecoration(
               labelText: '转入账户',
               contentPadding: EdgeInsets.zero,
@@ -648,7 +676,7 @@ class _EditBillViewState extends State<EditBillView> {
               );
             }).toList(),
             onChanged: (value) {
-              _selectedToAccount = value;
+              state.editBill.data?.accountId = value?.id;
             },
             isExpanded: true,
           ),
@@ -665,6 +693,15 @@ class _EditBillViewState extends State<EditBillView> {
       return const SizedBox.shrink();
     }
     var state = context.watch<EditBillBloc>().state;
+    List<Map<String, num>> curCategroy =
+        state.editBill.data?.categoryAmountPair ?? [];
+    Map<int, double> categoryAmountPair = {};
+    curCategroy.forEach((Map<String, num> category) {
+      var amount = category["amount"] as num? ?? 0.0;
+      var categoryId = category["categoryId"] as num? ?? 0;
+
+      categoryAmountPair[categoryId.toInt()] = amount.toDouble();
+    });
 
     return Card(
       margin: const EdgeInsets.all(8),
@@ -700,10 +737,19 @@ class _EditBillViewState extends State<EditBillView> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: CategoryTreeWidget(
+                    categoryAmountPairs: categoryAmountPair,
                     categories: state.categoryList,
                     billType: billType,
                     onCategorySelected: (categorys) {
-                      _categoryAmountPairs = categorys;
+                      List<Map<String, num>> categoryAmountPairList = [];
+                      categorys.forEach((categoryId, categoryAmount) {
+                        categoryAmountPairList.add({
+                          "categoryId": categoryId,
+                          "amount": categoryAmount
+                        });
+                      });
+                      state.editBill.data?.categoryAmountPair =
+                          categoryAmountPairList;
                     }),
               ),
             ),
@@ -824,7 +870,7 @@ class _EditBillViewState extends State<EditBillView> {
                     child: TagTreeSelection(
                         tags: state.tagList,
                         onTagSelected: (tags) {
-                          _selectedTagIds = tags;
+                          state.editBill.data?.tagIdList = tags;
                         }),
                   ),
                 ),
@@ -836,6 +882,7 @@ class _EditBillViewState extends State<EditBillView> {
 
   // 附加选项区域
   Widget _buildAdditionalOptionsSection() {
+    var state = context.watch<EditBillBloc>().state;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -852,9 +899,9 @@ class _EditBillViewState extends State<EditBillView> {
         SwitchListTile(
           title: const Text('是否确认'),
           subtitle: const Text('确认后将会扣除对应账户金额'),
-          value: _isConfirmed,
+          value: state.editBill.data?.confirm ?? false,
           onChanged: (value) {
-            _isConfirmed = value;
+            state.editBill.data?.confirm = value;
           },
           secondary: const Icon(Icons.verified),
           contentPadding: EdgeInsets.zero,
@@ -864,9 +911,9 @@ class _EditBillViewState extends State<EditBillView> {
         SwitchListTile(
           title: const Text('是否统计'),
           subtitle: const Text('纳入统计的账单会在报表中显示'),
-          value: _isIncluded,
+          value: state.editBill.data?.include ?? false,
           onChanged: (value) {
-            _isIncluded = value;
+            state.editBill.data?.include = value;
           },
           secondary: const Icon(Icons.bar_chart),
           contentPadding: EdgeInsets.zero,
@@ -894,98 +941,25 @@ class _EditBillViewState extends State<EditBillView> {
   }
 
   // 提交账单
-  void _submitBill(BillType billType) {
+  void _submitBill(BillItemAdd billItemAdd) {
     // 验证必填字段
-    if (_categoryAmountPairs.isEmpty) {
+
+    if (!(billItemAdd.data?.categoryAmountPair?.isNotEmpty == true)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('请输入金额')),
       );
       return;
     }
-
-    // 构建请求参数
-    final amount = double.tryParse(_amountController.text) ?? 0.0;
-    DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
-    String formattedDate = formatter.format(_selectedDate);
-    try {
-      // 构建符合接口格式的请求数据
-      final Map<String, dynamic> requestData = {
-        "data": {
-          "bookId": context.read<BillsRepository>().bookId() ?? 0,
-          "title": _titleController.text.isNotEmpty
-              ? _titleController.text
-              : "未命名账单",
-          "tradeTime": formattedDate,
-          "amount": amount,
-          "billType": billType.value,
-          "confirm": _isConfirmed,
-          "include": _isIncluded,
-          "remark": _remarkController.text,
-        }
-      };
-
-      // 根据账单类型添加不同的字段
-      if (billType == BillType.transfer) {
-        // 转账类型
-        if (_selectedAccount == null || _selectedToAccount == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('请选择转账账户')),
-          );
-          return;
-        }
-        requestData["data"]["accountId"] = _selectedAccount?.id;
-        requestData["data"]["toAccountId"] = _selectedToAccount?.id;
-      } else {
-        // 支出或收入类型
-        if (_selectedAccount != null) {
-          requestData["data"]["accountId"] = _selectedAccount?.id;
-        }
-        if (_selectedPayee != null) {
-          requestData["data"]["payeeId"] = _selectedPayee?.id;
-        }
-
-        // 获取分类金额对
-        if (_categoryAmountPairs.isNotEmpty) {
-          List<Map<String, num>> categoryAmountPairList = [];
-          _categoryAmountPairs.forEach((categoryId, categoryAmount) {
-            categoryAmountPairList
-                .add({"categoryId": categoryId, "amount": categoryAmount});
-          });
-
-          requestData["data"]["categoryAmountPair"] = categoryAmountPairList;
-        }
+    if (billItemAdd.data?.billType == BillType.transfer) {
+      // 转账类型
+      if (billItemAdd.data?.accountId == null ||
+          billItemAdd.data?.toAccountId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('请选择转账账户')),
+        );
+        return;
       }
-
-      // 添加标签ID列表
-      if (_selectedTagIds.isNotEmpty) {
-        requestData["data"]["tagIdList"] = _selectedTagIds;
-      }
-
-      // 打印请求数据，方便调试
-      print('账单提交数据: $requestData');
-
-      // 显示提交中的加载状态
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Row(
-            children: [
-              CircularProgressIndicator(strokeWidth: 2),
-              SizedBox(width: 16),
-              Text('正在提交账单...'),
-            ],
-          ),
-          duration: Duration(seconds: 1),
-        ),
-      );
-
-      // 调用API提交账单
-      // 这里应该调用实际的API，目前使用Bloc模拟提交
-      context.read<EditBillBloc>().add(EditBillSubmitted(requestData));
-    } catch (e) {
-      // 处理错误
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('提交账单失败: $e')),
-      );
     }
+    context.read<EditBillBloc>().add(EditBillSubmitted());
   }
 }

@@ -11,9 +11,11 @@ class CategoryTreeWidget extends StatefulWidget {
       {super.key,
       required this.categories,
       required this.billType,
-      this.onCategorySelected});
+      this.onCategorySelected,
+      required this.categoryAmountPairs});
   List<CategorySelectItem> categories;
   Function(Map<int, double>)? onCategorySelected;
+  Map<int, double> categoryAmountPairs;
   BillType billType;
 
   @override
@@ -21,7 +23,6 @@ class CategoryTreeWidget extends StatefulWidget {
 }
 
 class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
-  Map<int, double> _categoryAmountPairs = {};
   CategorySelectItem? _selectedMainCategory;
   CategorySelectItem? _selectedSubCategory;
   CategorySelectItem? _selectedThirdCategory;
@@ -40,7 +41,7 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
     return Column(
       children: [
         // 已选择的分类和金额
-        if (_categoryAmountPairs.isNotEmpty) _buildSelectedCategories(),
+        if (widget.categoryAmountPairs.isNotEmpty) _buildSelectedCategories(),
 
         // 分类选择器
         _buildCategorySelector(widget.categories),
@@ -50,7 +51,7 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
 
   // 已选择的分类和金额
   Widget _buildSelectedCategories() {
-    widget.onCategorySelected?.call(_categoryAmountPairs);
+    widget.onCategorySelected?.call(widget.categoryAmountPairs);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -67,10 +68,10 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
         ListView.builder(
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
-          itemCount: _categoryAmountPairs.length,
+          itemCount: widget.categoryAmountPairs.length,
           itemBuilder: (context, index) {
-            final categoryId = _categoryAmountPairs.keys.elementAt(index);
-            final amount = _categoryAmountPairs[categoryId];
+            final categoryId = widget.categoryAmountPairs.keys.elementAt(index);
+            final amount = widget.categoryAmountPairs[categoryId];
 
             // 查找分类名称
             String categoryName = CategorySelectItem.getFullPathById(
@@ -113,7 +114,7 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
                         icon: Icon(Icons.close, size: 18),
                         onPressed: () {
                           setState(() {
-                            _categoryAmountPairs.remove(categoryId);
+                            widget.categoryAmountPairs.remove(categoryId);
                           });
                         },
                         padding: EdgeInsets.zero,
@@ -399,7 +400,7 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
                               final categoryId = _selectedThirdCategory?.id ??
                                   _selectedSubCategory?.id ??
                                   _selectedMainCategory!.id;
-                              _categoryAmountPairs[categoryId] = amount;
+                              widget.categoryAmountPairs[categoryId] = amount;
                               _amountController.clear();
                             });
                           } else {

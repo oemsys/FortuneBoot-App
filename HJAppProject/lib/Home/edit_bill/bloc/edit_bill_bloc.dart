@@ -26,7 +26,7 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
     required BillItemAdd? initialBill,
   })  : _billRepository = billRepository,
         super(
-          EditBillState(
+          EditBillState.init(
             initialBill: initialBill,
           ),
         ) {
@@ -39,8 +39,7 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
 
   FutureOr<void> _onBillSubmitted(
       EditBillSubmitted event, Emitter<EditBillState> emit) async {
-    Data data = Data.fromJson(
-        Map<String, dynamic>.from(event.submitData['data'] as Map? ?? {}));
+    BillItemAddData data = state.editBill.data!;
     print('lxjtodo: _onBillSubmitted request: ${data.toJson()}');
     FromBillAddRequest request = FromBillAddRequest();
     Response? response = (await request.submitBill(data.toJson()));
@@ -112,7 +111,10 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
 
   FutureOr<void> _onBillTypeChange(
       EditBillTypeChange event, Emitter<EditBillState> emit) async {
-    emit(state.copyWith(billType: event.type, status: EditBillStatus.loading));
+    var editedBill = state.editBill.copyWith(
+        data: state.editBill.data?.copyWith(billType: event.type.value));
+    print('lxjtodo: _onBillTypeChange: ${editedBill}');
+    emit(state.copyWith(editBill: editedBill, status: EditBillStatus.loading));
     await refreshData(event.type, emit);
   }
 }

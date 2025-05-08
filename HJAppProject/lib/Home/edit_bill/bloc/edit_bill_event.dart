@@ -23,8 +23,5 @@ final class EditBillTypeChange extends EditBillEvent {
 }
 
 final class EditBillSubmitted extends EditBillEvent {
-  final Map<String, dynamic> submitData;
-  const EditBillSubmitted(this.submitData);
-  @override
-  List<Object> get props => [submitData];
+  const EditBillSubmitted();
 }

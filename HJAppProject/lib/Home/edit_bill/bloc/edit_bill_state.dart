@@ -21,11 +21,32 @@ final class EditBillState extends Equatable {
     this.payeeList = const [],
     this.tagList = const [],
     this.categoryList = const [],
-    this.billType = BillType.expenditure,
+    required this.editBill,
   });
+
+  EditBillState.init({
+    this.status = EditBillStatus.initial,
+    this.initialBill,
+    this.bookList = const [],
+    this.expenseAccountList = const [],
+    this.transferAccountList = const [],
+    this.incomeAccountList = const [],
+    this.transferOutAccountList = const [],
+    this.payeeList = const [],
+    this.tagList = const [],
+    this.categoryList = const [],
+  }) {
+    if (initialBill != null) {
+      editBill = initialBill!.copyWith();
+    } else {
+      editBill = BillItemAdd(
+          data: BillItemAddData(billType: BillType.expenditure.value));
+    }
+  }
 
   final EditBillStatus status;
   final BillItemAdd? initialBill;
+  late BillItemAdd editBill;
   // 账单类型
   List<DropdownItem<BookSelectItem>> bookList;
   // 支出账户
@@ -42,8 +63,6 @@ final class EditBillState extends Equatable {
   List<TagSelectItem> tagList;
   // 类别
   List<CategorySelectItem> categoryList;
-  // 账单类型
-  BillType billType;
 
   bool get isNewBill => initialBill == null;
 
@@ -58,7 +77,7 @@ final class EditBillState extends Equatable {
     List<DropdownItem<PayeeSelectItem>>? payeeList,
     List<TagSelectItem>? tagList,
     List<CategorySelectItem>? categoryList,
-    BillType? billType,
+    BillItemAdd? editBill,
   }) {
     return EditBillState(
       status: status ?? this.status,
@@ -72,7 +91,7 @@ final class EditBillState extends Equatable {
       payeeList: payeeList ?? this.payeeList,
       tagList: tagList ?? this.tagList,
       categoryList: categoryList ?? this.categoryList,
-      billType: billType ?? this.billType,
+      editBill: editBill ?? this.editBill,
     );
   }
 
@@ -88,6 +107,6 @@ final class EditBillState extends Equatable {
         payeeList,
         tagList,
         categoryList,
-        billType,
+        editBill,
       ];
 }

@@ -9,7 +9,7 @@ part of 'bill_item_add.dart';
 BillItemAdd _$BillItemAddFromJson(Map<String, dynamic> json) => BillItemAdd(
       data: json['data'] == null
           ? null
-          : Data.fromJson(json['data'] as Map<String, dynamic>),
+          : BillItemAddData.fromJson(json['data'] as Map<String, dynamic>),
       files:
           (json['files'] as List<dynamic>?)?.map((e) => e as String).toList(),
     );
@@ -20,7 +20,7 @@ Map<String, dynamic> _$BillItemAddToJson(BillItemAdd instance) =>
       'files': instance.files,
     };
 
-Data _$DataFromJson(Map<String, dynamic> json) => Data(
+BillItemAddData _$DataFromJson(Map<String, dynamic> json) => BillItemAddData(
       bookId: (json['bookId'] as num?)?.toInt(),
       title: json['title'] as String?,
       tradeTime: json['tradeTime'] as String?,
@@ -45,7 +45,8 @@ Data _$DataFromJson(Map<String, dynamic> json) => Data(
           .toList(),
     );
 
-Map<String, dynamic> _$DataToJson(Data instance) => <String, dynamic>{
+Map<String, dynamic> _$DataToJson(BillItemAddData instance) =>
+    <String, dynamic>{
       'bookId': instance.bookId,
       'title': instance.title,
       'tradeTime': instance.tradeTime,
