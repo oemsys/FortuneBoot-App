@@ -2,12 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_login_example/Home/edit_todo/bloc/edit_todo_bloc.dart';
-import 'package:flutter_login_example/Home/edit_todo/edit_select_item.dart';
-import 'package:flutter_login_example/Home/edit_todo/view/category_select_field.dart';
-import 'package:flutter_login_example/Home/edit_todo/view/tag_select_field.dart';
-import 'package:flutter_login_example/Home/edit_todo/viewmodel/edit_field_cell_viewmodel.dart';
+import 'package:flutter_login_example/Home/edit_bill/bloc/edit_bill_bloc.dart';
+import 'package:flutter_login_example/Home/edit_bill/edit_select_item.dart';
+import 'package:flutter_login_example/Home/edit_bill/view/category_select_field.dart';
+import 'package:flutter_login_example/Home/edit_bill/view/tag_select_field.dart';
+import 'package:flutter_login_example/Home/edit_bill/viewmodel/edit_field_cell_viewmodel.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
+import 'package:flutter_login_example/Home/todos_overview/models/bill_item_add.dart';
 import 'package:flutter_login_example/Request/account_request.dart';
 import 'package:flutter_login_example/Request/book_request.dart';
 import 'package:flutter_login_example/Request/payee_request.dart';
@@ -16,18 +17,17 @@ import 'package:flutter_login_example/repository/repository/bills_repository.dar
 import 'package:intl/intl.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
-import 'package:todos_repository/todos_repository.dart';
 
 class EditTodoPage extends StatelessWidget {
   const EditTodoPage({super.key});
 
-  static Route<void> route({Todo? initialTodo}) {
+  static Route<void> route({BillItemAdd? initialBill}) {
     return MaterialPageRoute(
       fullscreenDialog: true,
       builder: (context) => BlocProvider(
-        create: (context) => EditTodoBloc(
-          todosRepository: context.read<TodosRepository>(),
-          initialTodo: initialTodo,
+        create: (context) => EditBillBloc(
+          billRepository: context.read<BillsRepository>(),
+          initialBill: initialBill,
         ),
         child: const EditTodoPage(),
       ),
@@ -38,11 +38,11 @@ class EditTodoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocListener(
         listeners: [
-          BlocListener<EditTodoBloc, EditTodoState>(
+          BlocListener<EditBillBloc, EditBillState>(
             listenWhen: (previous, current) =>
                 previous.status != current.status,
             listener: (context, state) {
-              if (state.status == EditTodoStatus.failure) {
+              if (state.status == EditBillStatus.failure) {
                 ScaffoldMessenger.of(context)
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
@@ -53,11 +53,11 @@ class EditTodoPage extends StatelessWidget {
               }
             },
           ),
-          BlocListener<EditTodoBloc, EditTodoState>(
+          BlocListener<EditBillBloc, EditBillState>(
             listenWhen: (previous, current) =>
                 previous.status != current.status,
             listener: (context, state) {
-              if (state.status == EditTodoStatus.closed) {
+              if (state.status == EditBillStatus.closed) {
                 ScaffoldMessenger.of(context)
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
@@ -69,26 +69,26 @@ class EditTodoPage extends StatelessWidget {
               }
             },
           ),
-          BlocListener<EditTodoBloc, EditTodoState>(
+          BlocListener<EditBillBloc, EditBillState>(
             listenWhen: (previous, current) =>
                 previous.status != current.status,
             listener: (context, state) {
-              if (state.status == EditTodoStatus.submitFailed) {
+              if (state.status == EditBillStatus.submitFailed) {
                 ScaffoldMessenger.of(context)
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
                     SnackBar(
-                      content: Text('添加成功'),
+                      content: Text('添加失败'),
                     ),
                   );
               }
             },
           ),
         ],
-        child: BlocListener<EditTodoBloc, EditTodoState>(
+        child: BlocListener<EditBillBloc, EditBillState>(
           listenWhen: (previous, current) =>
               previous.status != current.status &&
-              current.status == EditTodoStatus.success,
+              current.status == EditBillStatus.success,
           listener: (context, state) => Navigator.of(context).pop(),
           child: EditTodoView(),
         ));
@@ -132,9 +132,9 @@ class _EditTodoViewState extends State<EditTodoView> {
 
   @override
   Widget build(BuildContext context) {
-    final status = context.select((EditTodoBloc bloc) => bloc.state.status);
+    final status = context.select((EditBillBloc bloc) => bloc.state.status);
     final isNewTodo = context.select(
-      (EditTodoBloc bloc) => bloc.state.isNewTodo,
+      (EditBillBloc bloc) => bloc.state.isNewBill,
     );
 
     final theme = Theme.of(context);
@@ -1088,7 +1088,7 @@ class _EditTodoViewState extends State<EditTodoView> {
 
       // 调用API提交账单
       // 这里应该调用实际的API，目前使用Bloc模拟提交
-      context.read<EditTodoBloc>().add(EditBillSubmitted(requestData));
+      context.read<EditBillBloc>().add(EditBillSubmitted(requestData));
     } catch (e) {
       // 处理错误
       ScaffoldMessenger.of(context).showSnackBar(

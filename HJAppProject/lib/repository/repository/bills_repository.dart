@@ -30,4 +30,6 @@ class BillsRepository {
 
   /// Disposes any resources managed by the repository.
   void dispose() => _billsApi.close();
+
+  void refreshBills() => _billsApi.refreshBills();
 }

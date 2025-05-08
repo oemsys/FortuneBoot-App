@@ -28,4 +28,6 @@ abstract class BillsApi {
 
   /// Closes the client and frees up any resources.
   Future<void> close();
+
+  Future<void> refreshBills();
 }

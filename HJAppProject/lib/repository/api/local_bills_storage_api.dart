@@ -135,4 +135,11 @@ class LocalStorageBillsApi extends BillsApi {
       queryNewBills();
     }
   }
+
+  @override
+  Future<void> refreshBills() async {
+    pageNum = 1;
+    _billStreamController.add([]);
+    queryNewBills();
+  }
 }
