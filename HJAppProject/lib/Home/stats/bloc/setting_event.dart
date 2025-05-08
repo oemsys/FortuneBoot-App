@@ -1,4 +1,4 @@
-part of 'post_bloc.dart';
+part of 'setting_bloc.dart';
 
 sealed class SettingEvent extends Equatable {
   @override

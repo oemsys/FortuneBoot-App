@@ -6,91 +6,6 @@ import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart'
 import 'package:flutter_login_example/Request/category_request.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 
-class CategorySelectField extends StatefulWidget {
-  CategorySelectField(
-      {super.key, required this.billType, this.onCategorySelected});
-  BillType billType;
-  Function(Map<int, double>)? onCategorySelected;
-
-  @override
-  State<CategorySelectField> createState() => _CategorySelectFieldState();
-}
-
-class _CategorySelectFieldState extends State<CategorySelectField> {
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<CategorySelectItem>>(
-      future: categroyFutureItems(context, widget.billType),
-      builder: (context, snapshot) {
-        // 处理不同状态
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-        if (snapshot.hasError) {
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Icon(Icons.error_outline, color: Colors.red, size: 48),
-                SizedBox(height: 8),
-                Text('加载分类失败: ${snapshot.error}'),
-                SizedBox(height: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {});
-                  },
-                  child: Text('重试'),
-                ),
-              ],
-            ),
-          );
-        }
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Icon(Icons.category_outlined, color: Colors.grey, size: 48),
-                SizedBox(height: 8),
-                Text('没有可用的分类'),
-              ],
-            ),
-          );
-        }
-
-        // 数据加载成功，构建UI
-        final categories = snapshot.data!;
-        return CategoryTreeWidget(
-            categories: categories,
-            billType: widget.billType,
-            onCategorySelected: widget.onCategorySelected);
-      },
-    );
-  }
-}
-
-Future<List<CategorySelectItem>> categroyFutureItems(
-    BuildContext context, BillType billType) async {
-  CategoryService categoryService = CategoryService();
-  var response = await categoryService.getEnableList(
-      context.read<BillsRepository>().bookId() ?? 1,
-      type: billType.value);
-  List<CategorySelectItem> categroyItems = [];
-  if (response.code == 0) {
-    var list = response.data as List? ?? [];
-    for (final item in list) {
-      categroyItems.add(CategorySelectItem.fromJson(
-          Map<String, dynamic>.from(item as Map? ?? {})));
-    }
-  }
-  return categroyItems;
-}
-
 class CategoryTreeWidget extends StatefulWidget {
   CategoryTreeWidget(
       {super.key,
@@ -136,97 +51,86 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
   // 已选择的分类和金额
   Widget _buildSelectedCategories() {
     widget.onCategorySelected?.call(_categoryAmountPairs);
-    return FutureBuilder<List<CategorySelectItem>>(
-        future: categroyFutureItems(context, widget.billType),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return SizedBox();
-          }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Text(
+            '已选择的分类',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: _categoryAmountPairs.length,
+          itemBuilder: (context, index) {
+            final categoryId = _categoryAmountPairs.keys.elementAt(index);
+            final amount = _categoryAmountPairs[categoryId];
 
-          final allCategories = snapshot.data!;
+            // 查找分类名称
+            String categoryName = CategorySelectItem.getFullPathById(
+                widget.categories, categoryId);
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Text(
-                  '已选择的分类',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
+            return Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+              child: Card(
+                elevation: 0,
+                color: Theme.of(context)
+                    .colorScheme
+                    .surfaceVariant
+                    .withOpacity(0.3),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.category, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          categoryName,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                      Text(
+                        '¥${amount?.toStringAsFixed(2) ?? '0.00'}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: widget.billType == BillType.expenditure
+                              ? Colors.red.shade700
+                              : Colors.green.shade700,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close, size: 18),
+                        onPressed: () {
+                          setState(() {
+                            _categoryAmountPairs.remove(categoryId);
+                          });
+                        },
+                        padding: EdgeInsets.zero,
+                        constraints: BoxConstraints(),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ],
                   ),
                 ),
               ),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: _categoryAmountPairs.length,
-                itemBuilder: (context, index) {
-                  final categoryId = _categoryAmountPairs.keys.elementAt(index);
-                  final amount = _categoryAmountPairs[categoryId];
-
-                  // 查找分类名称
-                  String categoryName = CategorySelectItem.getFullPathById(
-                      allCategories, categoryId);
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 4.0),
-                    child: Card(
-                      elevation: 0,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceVariant
-                          .withOpacity(0.3),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.category, size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                categoryName,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w500),
-                              ),
-                            ),
-                            Text(
-                              '¥${amount?.toStringAsFixed(2) ?? '0.00'}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: widget.billType == BillType.expenditure
-                                    ? Colors.red.shade700
-                                    : Colors.green.shade700,
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.close, size: 18),
-                              onPressed: () {
-                                setState(() {
-                                  _categoryAmountPairs.remove(categoryId);
-                                });
-                              },
-                              padding: EdgeInsets.zero,
-                              constraints: BoxConstraints(),
-                              visualDensity: VisualDensity.compact,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              SizedBox(height: 16),
-              Divider(),
-            ],
-          );
-        });
+            );
+          },
+        ),
+        SizedBox(height: 16),
+        Divider(),
+      ],
+    );
   }
 
   // 分类选择器

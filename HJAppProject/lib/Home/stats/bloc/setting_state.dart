@@ -1,4 +1,4 @@
-part of 'post_bloc.dart';
+part of 'setting_bloc.dart';
 
 enum SettingStatus { initial, success, failure }
 

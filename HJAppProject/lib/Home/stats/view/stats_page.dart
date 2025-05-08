@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_login_example/Home/stats/bloc/stats_bloc.dart';
+import 'package:flutter_login_example/Home/stats/bloc/setting_bloc.dart';
+import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:todos_repository/todos_repository.dart';
 import '../../../generated/l10n.dart';
 import 'package:intl/intl.dart';
@@ -11,9 +12,8 @@ class StatsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => StatsBloc(
-        todosRepository: context.read<TodosRepository>(),
-      )..add(const StatsSubscriptionRequested()),
+      create: (context) =>
+          SettingBloc(billsRepository: context.read<BillsRepository>()),
       child: const StatsView(),
     );
   }
@@ -47,7 +47,7 @@ class _StatsViewState extends State<StatsView>
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<StatsBloc>().state;
+    final state = context.watch<SettingBloc>().state;
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -109,7 +109,7 @@ class _StatsViewState extends State<StatsView>
     );
   }
 
-  Widget _buildTrendsTab(BuildContext context, StatsState state) {
+  Widget _buildTrendsTab(BuildContext context, SettingState state) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -132,7 +132,7 @@ class _StatsViewState extends State<StatsView>
     );
   }
 
-  Widget _buildIncomeAnalysisTab(BuildContext context, StatsState state) {
+  Widget _buildIncomeAnalysisTab(BuildContext context, SettingState state) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -209,7 +209,7 @@ class _StatsViewState extends State<StatsView>
     );
   }
 
-  Widget _buildExpenseAnalysisTab(BuildContext context, StatsState state) {
+  Widget _buildExpenseAnalysisTab(BuildContext context, SettingState state) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -298,7 +298,7 @@ class _StatsViewState extends State<StatsView>
     );
   }
 
-  Widget _buildAssetsLiabilitiesTab(BuildContext context, StatsState state) {
+  Widget _buildAssetsLiabilitiesTab(BuildContext context, SettingState state) {
     // 模拟数据 - 实际应用中应从API获取
     final double totalAssets = 120000.0;
     final double totalLiabilities = 45000.0;
@@ -621,7 +621,7 @@ class _StatsViewState extends State<StatsView>
     );
   }
 
-  Widget _buildCompletionStats(BuildContext context, StatsState state) {
+  Widget _buildCompletionStats(BuildContext context, SettingState state) {
     final textTheme = Theme.of(context).textTheme;
 
     return Card(
@@ -652,7 +652,7 @@ class _StatsViewState extends State<StatsView>
               ),
               title: Text(S.current.statsCompletedTodoCountLabel),
               trailing: Text(
-                '${state.completedTodos}',
+                '',
                 style: textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Colors.green,
@@ -671,7 +671,7 @@ class _StatsViewState extends State<StatsView>
               ),
               title: Text(S.current.statsActiveTodoCountLabel),
               trailing: Text(
-                '${state.activeTodos}',
+                '',
                 style: textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Colors.orange,

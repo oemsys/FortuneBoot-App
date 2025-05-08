@@ -16,8 +16,8 @@ import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:intl/intl.dart';
 import 'package:stream_transform/stream_transform.dart';
 
-part 'post_event.dart';
-part 'post_state.dart';
+part 'setting_event.dart';
+part 'setting_state.dart';
 
 const throttleDuration = Duration(milliseconds: 100);
 

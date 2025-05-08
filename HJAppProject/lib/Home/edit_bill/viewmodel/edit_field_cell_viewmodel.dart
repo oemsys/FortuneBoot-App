@@ -38,17 +38,6 @@ Future<List<DropdownItem<PayeeSelectItem>>> payeeItems(BaseService service,
       (name, id) => PayeeSelectItem(name, id),
     );
 
-Future<List<DropdownItem<TagSelectItem>>> tagItems(BaseService service,
-        {int? id, int? type}) =>
-    _fetchDropdownItems(
-      id,
-      type,
-      'tagName',
-      'tagId',
-      service,
-      (name, id) => TagSelectItem(name, id),
-    );
-
 Future<List<DropdownItem<AccountSelectItem>>> accountItems(BaseService service,
         {int? id, int? type}) =>
     _fetchDropdownItems(

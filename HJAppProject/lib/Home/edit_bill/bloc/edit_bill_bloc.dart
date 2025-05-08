@@ -2,11 +2,20 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_login_example/Home/edit_bill/edit_select_item.dart';
+import 'package:flutter_login_example/Home/edit_bill/viewmodel/edit_field_cell_viewmodel.dart';
+import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item_add.dart';
 import 'package:flutter_login_example/Login/model/login_model.dart';
+import 'package:flutter_login_example/Request/account_request.dart';
 import 'package:flutter_login_example/Request/bill_request.dart';
+import 'package:flutter_login_example/Request/book_request.dart';
+import 'package:flutter_login_example/Request/category_request.dart';
+import 'package:flutter_login_example/Request/payee_request.dart';
+import 'package:flutter_login_example/Request/tag_request.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:dio/dio.dart';
+import 'package:multi_dropdown/multi_dropdown.dart';
 
 part 'edit_bill_event.dart';
 part 'edit_bill_state.dart';
@@ -22,6 +31,8 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
           ),
         ) {
     on<EditBillSubmitted>(_onBillSubmitted);
+    on<EditBillInitialized>(_onBillInitialized);
+    on<EditBillTypeChange>(_onBillTypeChange);
   }
 
   final BillsRepository _billRepository;
@@ -46,4 +57,94 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
     }
     emit(state.copyWith(status: EditBillStatus.failure));
   }
+
+  FutureOr<void> _onBillInitialized(
+      EditBillInitialized event, Emitter<EditBillState> emit) async {
+    await refreshData(event.type, emit);
+  }
+
+  FutureOr<void> refreshData(BillType type, Emitter<EditBillState> emit) async {
+    var groupId = _billRepository.groupId();
+    var bookId = _billRepository.bookId();
+    var billType = type.value;
+    var books = await bookItems(BookService(), id: groupId, type: billType);
+    AccountService service = AccountService();
+    var accountRes = await service.getEnableList(groupId ?? 0);
+    List<DropdownItem<AccountSelectItem>> expenseAccountList = [];
+    List<DropdownItem<AccountSelectItem>> incomeAccountList = [];
+    List<DropdownItem<AccountSelectItem>> transferAccountList = [];
+    List<DropdownItem<AccountSelectItem>> transferOutAccountList = [];
+    if (accountRes.code == 0) {
+      accountRes.data?.forEach((element) {
+        String accountName = element['accountName'] as String? ?? '';
+        DropdownItem<AccountSelectItem> account = DropdownItem(
+            label: accountName,
+            value: AccountSelectItem(
+                accountName, element['accountId'] as int? ?? 0));
+        if ((element['canExpense'] as bool? ?? false)) {
+          expenseAccountList.add(account);
+        }
+        if ((element['canIncome'] as bool? ?? false)) {
+          incomeAccountList.add(account);
+        }
+        if ((element['canTransferIn'] as bool? ?? false)) {
+          transferAccountList.add(account);
+        }
+        if ((element['canTransferOut'] as bool? ?? false)) {
+          transferOutAccountList.add(account);
+        }
+      });
+    }
+    var payees = await payeeItems(PayeeService(), id: bookId, type: billType);
+    var categroies = await categroyFutureItems(type, bookId ?? 1);
+    var tags = await tagFutureItems(type, bookId ?? 1);
+    emit(state.copyWith(
+      bookList: books,
+      payeeList: payees,
+      expenseAccountList: expenseAccountList,
+      incomeAccountList: incomeAccountList,
+      transferAccountList: transferAccountList,
+      transferOutAccountList: transferOutAccountList,
+      categoryList: categroies,
+      tagList: tags,
+      status: EditBillStatus.success,
+    ));
+  }
+
+  FutureOr<void> _onBillTypeChange(
+      EditBillTypeChange event, Emitter<EditBillState> emit) async {
+    emit(state.copyWith(billType: event.type));
+    await refreshData(event.type, emit);
+  }
+}
+
+Future<List<CategorySelectItem>> categroyFutureItems(
+    BillType billType, int bookId) async {
+  CategoryService categoryService = CategoryService();
+  var response =
+      await categoryService.getEnableList(bookId, type: billType.value);
+  List<CategorySelectItem> categroyItems = [];
+  if (response.code == 0) {
+    var list = response.data as List? ?? [];
+    for (final item in list) {
+      categroyItems.add(CategorySelectItem.fromJson(
+          Map<String, dynamic>.from(item as Map? ?? {})));
+    }
+  }
+  return categroyItems;
+}
+
+Future<List<TagSelectItem>> tagFutureItems(
+    BillType billType, int bookId) async {
+  TagService tagService = TagService();
+  var response = await tagService.getEnableList(bookId, type: billType.value);
+  List<TagSelectItem> tagItems = [];
+  if (response.code == 0) {
+    var list = response.data as List? ?? [];
+    for (final item in list) {
+      tagItems.add(TagSelectItem.fromJson(
+          Map<String, dynamic>.from(item as Map? ?? {})));
+    }
+  }
+  return tagItems;
 }

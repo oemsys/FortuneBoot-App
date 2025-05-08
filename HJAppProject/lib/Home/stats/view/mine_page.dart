@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_login_example/Home/stats/bloc/post/post_bloc.dart';
+import 'package:flutter_login_example/Home/stats/bloc/setting_bloc.dart';
 import 'package:flutter_login_example/Home/stats/models/mine_setting.dart';
 import 'package:flutter_login_example/Home/stats/models/setting_select_item.dart';
 import 'package:flutter_login_example/Request/book_request.dart';
