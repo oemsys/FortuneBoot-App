@@ -113,7 +113,7 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
 
   FutureOr<void> _onBillTypeChange(
       EditBillTypeChange event, Emitter<EditBillState> emit) async {
-    emit(state.copyWith(billType: event.type));
+    emit(state.copyWith(billType: event.type, status: EditBillStatus.loading));
     await refreshData(event.type, emit);
   }
 }

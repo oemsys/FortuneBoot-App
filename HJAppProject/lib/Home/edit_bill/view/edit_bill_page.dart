@@ -247,6 +247,8 @@ class _EditBillViewState extends State<EditBillView> {
 
   // 账单类型选择器
   Widget _buildBillTypeSelector() {
+    var enable =
+        context.watch<EditBillBloc>().state.status != EditBillStatus.loading;
     var billType = curBillType();
     return Container(
       margin: const EdgeInsets.all(8),
@@ -263,18 +265,21 @@ class _EditBillViewState extends State<EditBillView> {
         ],
       ),
       child: SegmentedButton<BillType>(
-        segments: const [
+        segments: [
           ButtonSegment(
+            enabled: enable,
             value: BillType.expenditure,
             label: Text('支出'),
             icon: Icon(Icons.arrow_upward),
           ),
           ButtonSegment(
+            enabled: enable,
             value: BillType.income,
             label: Text('收入'),
             icon: Icon(Icons.arrow_downward),
           ),
           ButtonSegment(
+            enabled: enable,
             value: BillType.transfer,
             label: Text('转账'),
             icon: Icon(Icons.swap_horiz),
