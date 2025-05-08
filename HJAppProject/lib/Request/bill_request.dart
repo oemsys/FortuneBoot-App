@@ -1,9 +1,13 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item_add.dart';
 import 'package:flutter_login_example/Login/model/login_model.dart';
 import 'package:flutter_login_example/Request/base_request.dart';
 import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:retrofit/retrofit.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'bill_request.g.dart'; // 代码生成文件
 
@@ -67,5 +71,61 @@ abstract class BillService {
 
   // /fortune/bill/add
   @POST('/fortune/bill/add')
-  Future<HJResponse> addBill(@Body() Data addItem, {@Body() String? file});
+  @MultiPart()
+  Future<HJResponse> addBill(
+    @Part(name: 'data') String jsonData, // JSON 数据字段
+    // @Part(name: 'data') MultipartFile? jsonData, // 文件字段
+  );
+}
+
+class FromBillAddRequest {
+  Future<Response?>? submitBill(Map<String, dynamic> data) async {
+    try {
+      // 2. 构建 FormData
+      final formData = FormData();
+
+      // 添加 JSON 数据 (模拟 Blob)
+      formData.files.add(MapEntry(
+        'data',
+        MultipartFile.fromString(
+          jsonEncode(data), // 使用清理后的 JSON
+          contentType: DioMediaType('application', 'json'),
+        ),
+      ));
+
+      // // 3. 处理文件列表
+      // if (_selectedFiles.isNotEmpty) {
+      //   for (final file in _selectedFiles) {
+      //     formData.files.add(MapEntry(
+      //       'files', // 字段名需与后端一致
+      //       await MultipartFile.fromFile(
+      //         file.path,
+      //         filename:
+      //             'upload_${DateTime.now().millisecondsSinceEpoch}.${file.extension}',
+      //         contentType: MediaType('image', file.extension), // 自动推断类型
+      //       ),
+      //     ));
+      //   }
+      // }
+      // https://fortuneboot.com/prod-api/fortune/bill/add
+      // 4. 发送请求
+      final response = await DioClient().dio.post(
+        '/fortune/bill/add',
+        data: formData,
+        options: Options(
+          contentType: 'multipart/form-data',
+          sendTimeout: const Duration(seconds: 15),
+        ),
+        onSendProgress: (sent, total) {
+          // 进度更新 (可选)
+          // _updateProgress(sent / total);
+        },
+      );
+      return response;
+    } on DioException catch (e) {
+      // 错误处理
+      print('Error: ${e.message}');
+      return null;
+    } finally {}
+  }
 }

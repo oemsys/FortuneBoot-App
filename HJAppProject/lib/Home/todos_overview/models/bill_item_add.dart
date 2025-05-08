@@ -22,7 +22,7 @@ class Data {
   String? tradeTime;
   int? accountId;
   int? accountToId;
-  List<Map<int, double>>? categoryAmountPair;
+  List<Map<String, num>>? categoryAmountPair;
   int? amount;
   int? convertedAmount;
   int? payeeId;

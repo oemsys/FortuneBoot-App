@@ -2,10 +2,11 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item_add.dart';
+import 'package:flutter_login_example/Login/model/login_model.dart';
 import 'package:flutter_login_example/Request/bill_request.dart';
 import 'package:todos_repository/todos_repository.dart';
+import 'package:dio/dio.dart';
 
 part 'edit_todo_event.dart';
 part 'edit_todo_state.dart';
@@ -69,11 +70,20 @@ class EditTodoBloc extends Bloc<EditTodoEvent, EditTodoState> {
     BillItemAdd billItemAdd = BillItemAdd.fromJson(event.submitData);
     Data data = Data.fromJson(
         Map<String, dynamic>.from(event.submitData['data'] as Map? ?? {}));
-    print('lxjtodo: _onBillSubmitted ${event.submitData} $billItemAdd');
-    var result = await billService.addBill(data);
-    if (result.code == 0) {
-    } else {
-      emit(state.copyWith(status: EditTodoStatus.failure));
+    print('lxjtodo: _onBillSubmitted request: ${data.toJson()}');
+    // var result = await billService.addBill(data.toJson());
+    FromBillAddRequest request = FromBillAddRequest();
+    Response? response = (await request.submitBill(data.toJson()));
+    if (response?.statusCode == 200) {
+      print('lxjtodo _onBillSubmitte response: ${response?.data} ');
+      var hjResponse = HJResponse.fromJson(
+          Map<String, dynamic>.from(response?.data as Map? ?? {}));
+      if (hjResponse.code == 0) {
+        emit(state.copyWith(status: EditTodoStatus.closed));
+      } else {
+        emit(state.copyWith(status: EditTodoStatus.submitFailed));
+      }
     }
+    emit(state.copyWith(status: EditTodoStatus.failure));
   }
 }

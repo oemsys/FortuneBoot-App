@@ -98,20 +98,20 @@ class _BillService implements BillService {
   }
 
   @override
-  Future<HJResponse> addBill(
-    Data addItem, {
-    String? file,
-  }) async {
+  Future<HJResponse> addBill(String jsonData) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
-    final _data = <String, dynamic>{};
-    _data.addAll(addItem.toJson());
+    final _data = FormData();
+    _data.fields.add(MapEntry(
+      'data',
+      jsonData,
+    ));
     final _options = _setStreamType<HJResponse>(Options(
       method: 'POST',
       headers: _headers,
       extra: _extra,
+      contentType: 'multipart/form-data',
     )
         .compose(
           _dio.options,

@@ -53,6 +53,37 @@ class EditTodoPage extends StatelessWidget {
               }
             },
           ),
+          BlocListener<EditTodoBloc, EditTodoState>(
+            listenWhen: (previous, current) =>
+                previous.status != current.status,
+            listener: (context, state) {
+              if (state.status == EditTodoStatus.closed) {
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(
+                      content: Text('添加成功'),
+                    ),
+                  );
+                Navigator.of(context).pop();
+              }
+            },
+          ),
+          BlocListener<EditTodoBloc, EditTodoState>(
+            listenWhen: (previous, current) =>
+                previous.status != current.status,
+            listener: (context, state) {
+              if (state.status == EditTodoStatus.submitFailed) {
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(
+                      content: Text('添加成功'),
+                    ),
+                  );
+              }
+            },
+          ),
         ],
         child: BlocListener<EditTodoBloc, EditTodoState>(
           listenWhen: (previous, current) =>
@@ -992,7 +1023,8 @@ class _EditTodoViewState extends State<EditTodoView> {
 
     // 构建请求参数
     final amount = double.tryParse(_amountController.text) ?? 0.0;
-
+    DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+    String formattedDate = formatter.format(_selectedDate);
     try {
       // 构建符合接口格式的请求数据
       final Map<String, dynamic> requestData = {
@@ -1001,7 +1033,7 @@ class _EditTodoViewState extends State<EditTodoView> {
           "title": _titleController.text.isNotEmpty
               ? _titleController.text
               : "未命名账单",
-          "tradeTime": _selectedDate.toIso8601String(),
+          "tradeTime": formattedDate,
           "amount": amount,
           "billType": widget.billType.value,
           "confirm": _isConfirmed,
@@ -1022,11 +1054,12 @@ class _EditTodoViewState extends State<EditTodoView> {
 
         // 获取分类金额对
         if (_categoryAmountPairs.isNotEmpty) {
-          List<Map<String, double>> categoryAmountPairList = [];
+          List<Map<String, num>> categoryAmountPairList = [];
           _categoryAmountPairs.forEach((categoryId, categoryAmount) {
             categoryAmountPairList
-                .add({'$categoryId': categoryAmount});
+                .add({"categoryId": categoryId, "amount": categoryAmount});
           });
+
           requestData["data"]["categoryAmountPair"] = categoryAmountPairList;
         }
       }

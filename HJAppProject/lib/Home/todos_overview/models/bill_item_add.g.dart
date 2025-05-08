@@ -27,9 +27,7 @@ Data _$DataFromJson(Map<String, dynamic> json) => Data(
       accountId: (json['accountId'] as num?)?.toInt(),
       accountToId: (json['accountToId'] as num?)?.toInt(),
       categoryAmountPair: (json['categoryAmountPair'] as List<dynamic>?)
-          ?.map((e) => (e as Map<String, dynamic>).map(
-                (k, e) => MapEntry(int.parse(k), (e as num).toDouble()),
-              ))
+          ?.map((e) => Map<String, num>.from(e as Map))
           .toList(),
       amount: (json['amount'] as num?)?.toInt(),
       convertedAmount: (json['convertedAmount'] as num?)?.toInt(),
@@ -53,9 +51,7 @@ Map<String, dynamic> _$DataToJson(Data instance) => <String, dynamic>{
       'tradeTime': instance.tradeTime,
       'accountId': instance.accountId,
       'accountToId': instance.accountToId,
-      'categoryAmountPair': instance.categoryAmountPair
-          ?.map((e) => e.map((k, e) => MapEntry(k.toString(), e)))
-          .toList(),
+      'categoryAmountPair': instance.categoryAmountPair,
       'amount': instance.amount,
       'convertedAmount': instance.convertedAmount,
       'payeeId': instance.payeeId,
