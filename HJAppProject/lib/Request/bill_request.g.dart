@@ -98,9 +98,13 @@ class _BillService implements BillService {
   }
 
   @override
-  Future<HJResponse> addBill(BillItemAdd addItem) async {
+  Future<HJResponse> addBill(
+    Data addItem, {
+    String? file,
+  }) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     _data.addAll(addItem.toJson());

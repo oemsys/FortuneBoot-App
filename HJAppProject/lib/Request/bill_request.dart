@@ -67,5 +67,5 @@ abstract class BillService {
 
   // /fortune/bill/add
   @POST('/fortune/bill/add')
-  Future<HJResponse> addBill(@Body() BillItemAdd addItem);
+  Future<HJResponse> addBill(@Body() Data addItem, {@Body() String? file});
 }

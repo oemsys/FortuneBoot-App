@@ -13,11 +13,6 @@ class BillItemAdd {
   factory BillItemAdd.fromJson(Map<String, dynamic> json) =>
       _$BillItemAddFromJson(json);
   Map<String, dynamic> toJson() => _$BillItemAddToJson(this);
-
-  @override
-  String toString() {
-    return 'BillItemAdd{data: $data, files: $files}';
-  }
 }
 
 @JsonSerializable()
@@ -27,7 +22,7 @@ class Data {
   String? tradeTime;
   int? accountId;
   int? accountToId;
-  List<CategoryAmountPair>? categoryAmountPair;
+  List<Map<int, double>>? categoryAmountPair;
   int? amount;
   int? convertedAmount;
   int? payeeId;
@@ -59,26 +54,4 @@ class Data {
 
   factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
   Map<String, dynamic> toJson() => _$DataToJson(this);
-
-  @override
-  String toString() {
-    return 'Data{bookId: $bookId, title: $title, tradeTime: $tradeTime, accountId: $accountId, accountToId: $accountToId, categoryAmountPair: $categoryAmountPair, amount: $amount, convertedAmount: $convertedAmount, payeeId: $payeeId, billType: $billType, toAccountId: $toAccountId, confirm: $confirm, include: $include, remark: $remark, tagIdList: $tagIdList, fileList: $fileList}';
-  }
-}
-
-@JsonSerializable()
-class CategoryAmountPair {
-  int? key;
-  int? value;
-
-  CategoryAmountPair({this.key, this.value});
-
-  factory CategoryAmountPair.fromJson(Map<String, dynamic> json) => _$CategoryAmountPairFromJson(json);
-  Map<String, dynamic> toJson() => _$CategoryAmountPairToJson(this);
-
-  @override
-  String toString() {
-    return 'CategoryAmountPair{key: $key, value: $value}';
-  }
-
 }

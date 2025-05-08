@@ -1,6 +1,6 @@
 part of 'edit_todo_bloc.dart';
 
-enum EditTodoStatus { initial, loading, success, failure }
+enum EditTodoStatus { initial, loading, success, failure, closed }
 
 extension EditTodoStatusX on EditTodoStatus {
   bool get isLoadingOrSuccess => [

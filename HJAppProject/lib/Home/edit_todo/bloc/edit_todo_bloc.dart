@@ -67,8 +67,13 @@ class EditTodoBloc extends Bloc<EditTodoEvent, EditTodoState> {
     // lxjtodo：提交账单，刷新列表
     BillService billService = BillService();
     BillItemAdd billItemAdd = BillItemAdd.fromJson(event.submitData);
+    Data data = Data.fromJson(
+        Map<String, dynamic>.from(event.submitData['data'] as Map? ?? {}));
     print('lxjtodo: _onBillSubmitted ${event.submitData} $billItemAdd');
-    billService.addBill(billItemAdd);
-    emit(state.copyWith(status: EditTodoStatus.failure));
+    var result = await billService.addBill(data);
+    if (result.code == 0) {
+    } else {
+      emit(state.copyWith(status: EditTodoStatus.failure));
+    }
   }
 }

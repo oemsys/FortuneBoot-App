@@ -36,13 +36,31 @@ class EditTodoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<EditTodoBloc, EditTodoState>(
-      listenWhen: (previous, current) =>
-          previous.status != current.status &&
-          current.status == EditTodoStatus.success,
-      listener: (context, state) => Navigator.of(context).pop(),
-      child: EditTodoView(),
-    );
+    return MultiBlocListener(
+        listeners: [
+          BlocListener<EditTodoBloc, EditTodoState>(
+            listenWhen: (previous, current) =>
+                previous.status != current.status,
+            listener: (context, state) {
+              if (state.status == EditTodoStatus.failure) {
+                ScaffoldMessenger.of(context)
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(
+                      content: Text(S.current.todosOverviewErrorSnackbarText),
+                    ),
+                  );
+              }
+            },
+          ),
+        ],
+        child: BlocListener<EditTodoBloc, EditTodoState>(
+          listenWhen: (previous, current) =>
+              previous.status != current.status &&
+              current.status == EditTodoStatus.success,
+          listener: (context, state) => Navigator.of(context).pop(),
+          child: EditTodoView(),
+        ));
   }
 }
 
@@ -89,7 +107,6 @@ class _EditTodoViewState extends State<EditTodoView> {
     );
 
     final theme = Theme.of(context);
-
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         tooltip: S.current.editTodoSaveButtonTooltip,
@@ -973,13 +990,6 @@ class _EditTodoViewState extends State<EditTodoView> {
       return;
     }
 
-    if (widget.billType != BillType.transfer && _selectedAccount == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请选择账户')),
-      );
-      return;
-    }
-
     // 构建请求参数
     final amount = double.tryParse(_amountController.text) ?? 0.0;
 
@@ -1012,10 +1022,10 @@ class _EditTodoViewState extends State<EditTodoView> {
 
         // 获取分类金额对
         if (_categoryAmountPairs.isNotEmpty) {
-          List<Map<String, dynamic>> categoryAmountPairList = [];
+          List<Map<String, double>> categoryAmountPairList = [];
           _categoryAmountPairs.forEach((categoryId, categoryAmount) {
             categoryAmountPairList
-                .add({"key": categoryId, "value": categoryAmount});
+                .add({'$categoryId': categoryAmount});
           });
           requestData["data"]["categoryAmountPair"] = categoryAmountPairList;
         }

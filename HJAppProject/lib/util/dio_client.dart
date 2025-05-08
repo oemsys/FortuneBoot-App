@@ -29,6 +29,7 @@ class DioClient {
       // 日志拦截器
       LogInterceptor(
         request: true,
+        requestBody: true,
         responseBody: true,
         requestHeader: true,
         responseHeader: true,
