@@ -55,7 +55,6 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
         emit(state.copyWith(status: EditBillStatus.submitFailed));
       }
     }
-    emit(state.copyWith(status: EditBillStatus.failure));
   }
 
   FutureOr<void> _onBillInitialized(

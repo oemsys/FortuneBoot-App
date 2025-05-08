@@ -34,7 +34,7 @@ class HomeView extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
         key: const Key('homeView_addTodo_floatingActionButton'),
-        onPressed: () => Navigator.of(context).push(EditTodoPage.route()),
+        onPressed: () => Navigator.of(context).push(EditBillPage.route()),
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomAppBar(

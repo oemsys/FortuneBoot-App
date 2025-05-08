@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_login_example/Home/edit_bill/view/edit_bill_page.dart';
 import 'package:flutter_login_example/Home/theme/theme.dart';
 import 'package:flutter_login_example/Home/todos_overview/bloc/bills_overview_bloc.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
@@ -85,21 +86,21 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
         //   ),
         // ),
         // actions: [
-          // IconButton( TODO：筛选
-          //   icon: const Icon(Icons.filter_list),
-          //   tooltip: S.current.todosOverviewFilterTooltip,
-          //   onPressed: () {
-          //     // 显示筛选选项
-          //     _showFilterOptions(context);
-          //   },
-          // ),
-          // IconButton( TODO：搜索
-          //   icon: const Icon(Icons.search),
-          //   onPressed: () {
-          //     // 实现搜索功能
-          //     _showSearchDialog(context);
-          //   },
-          // ),
+        // IconButton( TODO：筛选
+        //   icon: const Icon(Icons.filter_list),
+        //   tooltip: S.current.todosOverviewFilterTooltip,
+        //   onPressed: () {
+        //     // 显示筛选选项
+        //     _showFilterOptions(context);
+        //   },
+        // ),
+        // IconButton( TODO：搜索
+        //   icon: const Icon(Icons.search),
+        //   onPressed: () {
+        //     // 实现搜索功能
+        //     _showSearchDialog(context);
+        //   },
+        // ),
         // ],
       ),
       body: Column(
@@ -913,6 +914,8 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                               icon: const Icon(Icons.edit),
                               onPressed: () {
                                 Navigator.pop(context);
+                                Navigator.of(context)
+                                    .push(EditBillPage.route());
                                 // 跳转到编辑页面
                               },
                               tooltip: '编辑',

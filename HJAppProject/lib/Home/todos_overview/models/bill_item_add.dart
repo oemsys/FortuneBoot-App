@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'bill_item_add.g.dart';
@@ -13,6 +14,21 @@ class BillItemAdd {
   factory BillItemAdd.fromJson(Map<String, dynamic> json) =>
       _$BillItemAddFromJson(json);
   Map<String, dynamic> toJson() => _$BillItemAddToJson(this);
+
+  // BillItemAdd.fromBillItem(BillItem billItem) {
+  //   // data = Data(
+  //   //   bookId: billItem.bookId,
+  //   //   title: billItem.title,
+  //   //   tradeTime: billItem.tradeTime,
+  //   //   accountId: billItem.accountId,
+  //   //   accountToId: billItem.accountToId,
+  //   //   categoryAmountPair: billItem.categoryAmountPair,
+  //   //   amount: billItem.amount,
+  //   //   convertedAmount: billItem.convertedAmount,
+  //   //   payeeId: billItem.payeeId,
+  //   //   billType: billItem.billType,
+  //   // );
+  // }
 }
 
 @JsonSerializable()

@@ -13,8 +13,8 @@ import 'package:flutter_login_example/repository/repository/bills_repository.dar
 import 'package:intl/intl.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
-class EditTodoPage extends StatelessWidget {
-  const EditTodoPage({super.key});
+class EditBillPage extends StatelessWidget {
+  const EditBillPage({super.key});
 
   static Route<void> route({BillItemAdd? initialBill}) {
     return MaterialPageRoute(
@@ -24,7 +24,7 @@ class EditTodoPage extends StatelessWidget {
           billRepository: context.read<BillsRepository>(),
           initialBill: initialBill,
         )..add(EditBillInitialized(BillType.expenditure)),
-        child: const EditTodoPage(),
+        child: const EditBillPage(),
       ),
     );
   }
@@ -125,6 +125,7 @@ class _EditBillViewState extends State<EditBillView> {
   @override
   Widget build(BuildContext context) {
     final status = context.select((EditBillBloc bloc) => bloc.state.status);
+    final state = context.select((EditBillBloc bloc) => bloc.state);
     final isNewBill = context.select(
       (EditBillBloc bloc) => bloc.state.isNewBill,
     );
@@ -136,7 +137,8 @@ class _EditBillViewState extends State<EditBillView> {
         shape: const ContinuousRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(32)),
         ),
-        onPressed: status.isLoadingOrInit ? null : () => _submitBill(),
+        onPressed:
+            status.isLoadingOrInit ? null : () => _submitBill(state.billType),
         child: status.isLoadingOrInit
             ? const CupertinoActivityIndicator()
             : const Icon(Icons.check_rounded),
@@ -892,8 +894,7 @@ class _EditBillViewState extends State<EditBillView> {
   }
 
   // 提交账单
-  void _submitBill() {
-    var billType = curBillType();
+  void _submitBill(BillType billType) {
     // 验证必填字段
     if (_categoryAmountPairs.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -926,12 +927,22 @@ class _EditBillViewState extends State<EditBillView> {
       // 根据账单类型添加不同的字段
       if (billType == BillType.transfer) {
         // 转账类型
+        if (_selectedAccount == null || _selectedToAccount == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('请选择转账账户')),
+          );
+          return;
+        }
         requestData["data"]["accountId"] = _selectedAccount?.id;
         requestData["data"]["toAccountId"] = _selectedToAccount?.id;
       } else {
         // 支出或收入类型
-        requestData["data"]["accountId"] = _selectedAccount?.id;
-        requestData["data"]["payeeId"] = _selectedPayee?.id;
+        if (_selectedAccount != null) {
+          requestData["data"]["accountId"] = _selectedAccount?.id;
+        }
+        if (_selectedPayee != null) {
+          requestData["data"]["payeeId"] = _selectedPayee?.id;
+        }
 
         // 获取分类金额对
         if (_categoryAmountPairs.isNotEmpty) {
