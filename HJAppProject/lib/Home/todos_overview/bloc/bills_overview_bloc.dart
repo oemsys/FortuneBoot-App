@@ -18,6 +18,7 @@ class BillsOverviewBloc extends Bloc<BillsOverviewEvent, BillsOverviewState> {
     on<BillsOverviewUndoDeletionRequested>(_onUndoDeletionRequested);
     on<BillsOverviewLoadMoreRequested>(_onLoadMoreRequested);
     on<BillsOverviewDeleteRequested>(_onDeleteRequested);
+    on<BillsOverviewLoadLastRequested>(_onLoadLastRequested);
   }
   final BillService _billService = BillService();
 
@@ -75,5 +76,10 @@ class BillsOverviewBloc extends Bloc<BillsOverviewEvent, BillsOverviewState> {
     } else {
       emit(state.copyWith(status: () => BillsOverviewStatus.failure));
     }
+  }
+
+  FutureOr<void> _onLoadLastRequested(
+      BillsOverviewLoadLastRequested event, Emitter<BillsOverviewState> emit) {
+    _billsRepository.refreshBills(clear: false);
   }
 }

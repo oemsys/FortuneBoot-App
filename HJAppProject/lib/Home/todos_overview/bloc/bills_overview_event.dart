@@ -25,3 +25,8 @@ final class BillsOverviewDeleteRequested extends BillsOverviewEvent {
 class BillsOverviewLoadMoreRequested extends BillsOverviewEvent {
   const BillsOverviewLoadMoreRequested();
 }
+
+/// 上拉加载更多事件
+class BillsOverviewLoadLastRequested extends BillsOverviewEvent {
+  const BillsOverviewLoadLastRequested();
+}

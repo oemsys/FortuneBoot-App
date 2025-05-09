@@ -31,7 +31,7 @@ class BillsRepository {
   /// Disposes any resources managed by the repository.
   void dispose() => _billsApi.close();
 
-  void refreshBills() => _billsApi.refreshBills();
+  void refreshBills({bool clear = true}) => _billsApi.refreshBills(clear);
 
   void deleteBill(int billId) => _billsApi.deleteBill(billId);
 }

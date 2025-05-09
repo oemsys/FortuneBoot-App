@@ -98,7 +98,7 @@ class LocalStorageBillsApi extends BillsApi {
     queryNewBills();
   }
 
-  Future<void> queryNewBills() async {
+  Future<void> queryNewBills({bool clear = true}) async {
     isLoadingMore = true;
     List<BillItem> items = [..._billStreamController.value];
     var billResponse = await _billService.getPage(
@@ -111,7 +111,11 @@ class LocalStorageBillsApi extends BillsApi {
       List<BillItem> remoteItems = billList.map((ele) {
         return BillItem.fromJson(Map<String, dynamic>.from(ele as Map? ?? {}));
       }).toList();
-      items.addAll(remoteItems);
+      if (clear) {
+        items.addAll(remoteItems);
+      } else {
+        items = remoteItems;
+      }
       final allBillsCount = billResponse.data['total'] as int? ?? 20;
       hasMore = items.length < allBillsCount;
       isLoadingMore = false;
@@ -137,9 +141,11 @@ class LocalStorageBillsApi extends BillsApi {
   }
 
   @override
-  Future<void> refreshBills() async {
+  Future<void> refreshBills(bool clear) async {
     pageNum = 1;
-    _billStreamController.add([]);
-    queryNewBills();
+    if (clear) {
+      _billStreamController.add([]);
+    }
+    queryNewBills(clear: clear);
   }
 }

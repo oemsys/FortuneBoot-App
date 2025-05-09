@@ -236,7 +236,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                       onRefresh: () async {
                         context
                             .read<BillsOverviewBloc>()
-                            .add(const BillsOverviewSubscriptionRequested());
+                            .add(const BillsOverviewLoadLastRequested());
                       },
                       child: ListView.builder(
                         itemCount: _groupDates.length + 1, // +1 for footer
