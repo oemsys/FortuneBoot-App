@@ -5,10 +5,7 @@ import 'package:flutter_login_example/Login/view/login_screen.dart';
 import 'package:flutter_login_example/generated/l10n.dart';
 import 'package:flutter_login_example/theme/app_theme.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_login_example/util/custom_route.dart';
 import 'package:flutter_login_example/util/dio_client.dart';
-import 'package:loading_indicator/loading_indicator.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 enum AuthMode {
   loading,
@@ -70,6 +67,8 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
         ),
         (route) => false,
       );
+    } else {
+      _authMode.value = AuthMode.signIn;
     }
   }
 
