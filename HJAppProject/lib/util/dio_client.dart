@@ -51,9 +51,8 @@ class DioClient {
         onRequest: (options, handler) {
           // 动态注入token
           bool needAuth = true;
-          needAuth = !options.path.contains('getApiVersion');
           if (needAuth) {
-            options.headers.addAll(header);
+            options.headers = header;
           }
           // options.headers['Authorization'] = 'Bearer ${_getToken()}';
           return handler.next(options);

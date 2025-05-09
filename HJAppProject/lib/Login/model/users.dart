@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:local_storage_todos_api/local_storage_todos_api.dart';
+
 const mockUsers = {
   'dribbble@gmail.com': '12345',
   'hunter@gmail.com': 'hunter',
@@ -7,9 +11,14 @@ const mockUsers = {
 
 class UserDataSingleton {
   static const String userInfo = 'userInfo';
+  static const String userToken = 'userToken';
+  static const String baseUrlDomain = 'baseUrlDomain';
+  static const String baseUrlPort = 'baseUrlPort';
   // 私有静态实例
   static final UserDataSingleton _instance = UserDataSingleton._internal();
-  
+
+  SharedPreferences? prefs;
+
   // 数据存储核心结构
   Map<String, dynamic> _userData = {};
 
@@ -20,13 +29,67 @@ class UserDataSingleton {
   UserDataSingleton._internal();
 
   // 数据操作方法
-  void set(String key, dynamic value) => _userData[key] = value;
-  
-  dynamic get(String key) => _userData[key];
-  
-  void remove(String key) => _userData.remove(key);
-  
-  void clear() => _userData.clear();
-  
+  void setMap(String key, Map<String, dynamic> value) {
+    _userData[key] = value;
+    if (prefs == null) {
+      SharedPreferences.getInstance().then((pre) {
+        prefs = pre;
+        prefs!.setString(key, jsonEncode(value));
+      });
+    } else {
+      prefs!.setString(key, jsonEncode(value));
+    }
+  }
+
+  void setStr(String key, String value) {
+    _userData[key] = value;
+    if (prefs == null) {
+      SharedPreferences.getInstance().then((pre) {
+        prefs = pre;
+        prefs!.setString(key, value);
+      });
+    } else {
+      prefs!.setString(key, value);
+    }
+  }
+
+  Future<Map<String, dynamic>?> getMap(String key) async {
+    if (_userData[key] != null) {
+      return _userData[key] as Map<String, dynamic>?;
+    }
+    prefs ??= await SharedPreferences.getInstance();
+    String? localValue = prefs!.getString(key);
+    var localData = Map<String, dynamic>.from(
+        jsonDecode(localValue ?? '{}') as Map? ?? {});
+    if (localData.isNotEmpty) {
+      _userData[key] = localData;
+    }
+    return localData;
+  }
+
+  Future<String?> getStr(String key) async {
+    if (_userData[key] != null) {
+      return _userData[key] as String?;
+    }
+    prefs ??= await SharedPreferences.getInstance();
+    String? localValue = prefs!.getString(key);
+    if (localValue != null) {
+      _userData[key] = localValue;
+    }
+    return localValue;
+  }
+
+  void remove(String key) {
+    _userData.remove(key);
+    if (prefs == null) {
+      SharedPreferences.getInstance().then((value) {
+        prefs = value;
+        prefs!.remove(key);
+      });
+    } else {
+      prefs!.remove(key);
+    }
+  }
+
   bool containsKey(String key) => _userData.containsKey(key);
 }

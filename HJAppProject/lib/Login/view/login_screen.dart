@@ -99,13 +99,17 @@ class LoginScreen extends StatelessWidget {
             var userInfo = Map<String, dynamic>.from(
                 responseData["currentUser"] as Map? ?? {});
             var token = responseData["token"] as String? ?? "";
-            DioClient().refreshToken({
-              "Cookie": 'authorized-token=${Uri.encodeComponent(jsonEncode(responseData))}}',
-              "Authorization": "Bearer $token"}
-            );
+            var userToken = {
+              "Cookie":
+                  'authorized-token=${Uri.encodeComponent(jsonEncode(responseData))}}',
+              "Authorization": "Bearer $token"
+            };
+            DioClient().refreshToken(userToken);
             var user = UserDataSingleton();
-            user.set(UserDataSingleton.userInfo, userInfo);
-            debugPrint('lxjtodo $user ${user.get(UserDataSingleton.userInfo)}');
+            user.setMap(UserDataSingleton.userInfo, userInfo);
+            user.setMap(UserDataSingleton.userToken, userToken);
+            debugPrint(
+                'lxjtodo $user ${user.getMap(UserDataSingleton.userInfo)}');
           }
           return null;
         }
@@ -323,7 +327,7 @@ class LoginScreen extends StatelessWidget {
       },
       onSubmitAnimationCompleted: () {
         Navigator.of(context).pushReplacement(
-          FadePageRoute(
+          MaterialPageRoute(
             builder: (context) => const HomePage(),
           ),
         );

@@ -77,7 +77,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
   Future<List<Setting>> _fetchStaticSettings() async {
     final user = UserDataSingleton();
     final List<Setting> elements = [];
-    final curUser = user.get(UserDataSingleton.userInfo);
+    final curUser = await user.getMap(UserDataSingleton.userInfo) ?? {};
     final userInfo =
         Map<String, dynamic>.from(curUser['userInfo'] as Map? ?? {});
     final nickName = userInfo['nickname'] as String? ?? '';

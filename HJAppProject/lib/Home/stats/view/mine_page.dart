@@ -7,9 +7,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_login_example/Home/stats/bloc/setting_bloc.dart';
 import 'package:flutter_login_example/Home/stats/models/mine_setting.dart';
 import 'package:flutter_login_example/Home/stats/models/setting_select_item.dart';
+import 'package:flutter_login_example/Login/model/users.dart';
+import 'package:flutter_login_example/Login/view/base_url_config_page.dart';
+import 'package:flutter_login_example/Login/view/login_screen.dart';
 import 'package:flutter_login_example/Request/book_request.dart';
 import 'package:flutter_login_example/Request/group_request.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
+import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
 import '../../../generated/l10n.dart';
 
@@ -792,6 +796,14 @@ class _MineViewState extends State<MineView> {
                 // 执行退出登录操作
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('已退出登录')),
+                );
+                // 跳转到登录页面
+                UserDataSingleton().remove(UserDataSingleton.userInfo);
+                DioClient().refreshToken({});
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => BaseUrlConfigPage(),
+                  ),
                 );
               },
               style: TextButton.styleFrom(
