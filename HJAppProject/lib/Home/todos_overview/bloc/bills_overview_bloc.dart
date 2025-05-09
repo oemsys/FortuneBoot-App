@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
@@ -15,6 +17,7 @@ class BillsOverviewBloc extends Bloc<BillsOverviewEvent, BillsOverviewState> {
     on<BillsOverviewSubscriptionRequested>(_onSubscriptionRequested);
     on<BillsOverviewUndoDeletionRequested>(_onUndoDeletionRequested);
     on<BillsOverviewLoadMoreRequested>(_onLoadMoreRequested);
+    on<BillsOverviewDeleteRequested>(_onDeleteRequested);
   }
   final BillService _billService = BillService();
 
@@ -61,5 +64,16 @@ class BillsOverviewBloc extends Bloc<BillsOverviewEvent, BillsOverviewState> {
     if (state.isLoadingMore || !state.hasMore) return;
     emit(state.copyWith(isLoadingMore: true));
     _billsRepository.nextBillPage();
+  }
+
+  FutureOr<void> _onDeleteRequested(BillsOverviewDeleteRequested event,
+      Emitter<BillsOverviewState> emit) async {
+    var response = await _billService.removeBill(
+        _billsRepository.bookId() ?? 1, event.billId);
+    if (response.code == 0) {
+      _billsRepository.deleteBill(event.billId);
+    } else {
+      emit(state.copyWith(status: () => BillsOverviewStatus.failure));
+    }
   }
 }

@@ -32,4 +32,6 @@ class BillsRepository {
   void dispose() => _billsApi.close();
 
   void refreshBills() => _billsApi.refreshBills();
+
+  void deleteBill(int billId) => _billsApi.deleteBill(billId);
 }

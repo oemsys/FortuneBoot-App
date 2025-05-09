@@ -36,7 +36,6 @@ dependencies:
   accordion: ^2.6.0
   awesome_select_plus: ^1.0.0
   omni_datetime_picker: ^2.1.1
-  loading_indicator: ^3.1.1
   # intl: ^0.19.0
 
 dev_dependencies:

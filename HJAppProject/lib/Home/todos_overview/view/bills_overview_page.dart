@@ -275,6 +275,9 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                                         onDismissed: (direction) {
                                           // 实现左滑删除功能
                                           // 这里需要添加删除账单的逻辑
+                                          context.read<BillsOverviewBloc>().add(
+                                              BillsOverviewDeleteRequested(
+                                                  bill.billId!));
                                         },
                                       ))
                                   .toList(),
@@ -805,6 +808,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
     // 根据账单类型设置颜色和图标
     Color billColor;
     IconData billIcon;
+    var state = context.read<BillsOverviewBloc>();
 
     switch (bill.billType) {
       case BillType.expenditure:
@@ -945,7 +949,9 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                                       TextButton(
                                         onPressed: () {
                                           Navigator.of(context).pop();
-                                          // 执行删除操作
+                                          state.add(
+                                              BillsOverviewDeleteRequested(
+                                                  bill.billId!));
                                         },
                                         style: TextButton.styleFrom(
                                           foregroundColor: Colors.red,

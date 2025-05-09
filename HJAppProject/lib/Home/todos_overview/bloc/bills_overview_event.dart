@@ -15,6 +15,12 @@ final class BillsOverviewUndoDeletionRequested extends BillsOverviewEvent {
   const BillsOverviewUndoDeletionRequested();
 }
 
+// 删除
+final class BillsOverviewDeleteRequested extends BillsOverviewEvent {
+  final int billId;
+  const BillsOverviewDeleteRequested(this.billId);
+}
+
 /// 上拉加载更多事件
 class BillsOverviewLoadMoreRequested extends BillsOverviewEvent {
   const BillsOverviewLoadMoreRequested();

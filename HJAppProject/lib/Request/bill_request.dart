@@ -76,6 +76,10 @@ abstract class BillService {
     @Part(name: 'data') String jsonData, // JSON 数据字段
     // @Part(name: 'data') MultipartFile? jsonData, // 文件字段
   );
+
+  @DELETE('/fortune/bill/{bookId}/{billId}/remove')
+  Future<HJResponse> removeBill(
+      @Path('bookId') int bookId, @Path('billId') int billId);
 }
 
 class FromBillAddRequest {
