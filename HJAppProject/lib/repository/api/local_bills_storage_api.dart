@@ -8,7 +8,6 @@ import 'package:flutter_login_example/repository/api/bills_api.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:todos_api/todos_api.dart';
 
 /// {@template local_storage_todos_api}
 /// A Flutter implementation of the [TodosApi] that uses local storage.
@@ -79,7 +78,6 @@ class LocalStorageBillsApi extends BillsApi {
     final bills = [..._billStreamController.value];
     final billIndex = bills.indexWhere((t) => t.billId == billId);
     if (billIndex == -1) {
-      throw TodoNotFoundException();
     } else {
       bills.removeAt(billIndex);
       _billStreamController.add(bills);

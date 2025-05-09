@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_login_example/Home/theme/theme.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
-import 'package:todos_repository/todos_repository.dart';
 import 'package:intl/intl.dart';
 
 class BillListTile extends StatelessWidget {

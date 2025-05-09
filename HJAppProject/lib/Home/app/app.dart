@@ -10,25 +10,18 @@ import 'package:flutter_login_example/generated/l10n.dart';
 import 'package:flutter_login_example/Login/view/login_screen.dart';
 import 'package:flutter_login_example/Home/home/view/home_page.dart';
 import 'package:flutter_login_example/Home/theme/theme.dart';
-import 'package:todos_repository/todos_repository.dart';
 
 class App extends StatelessWidget {
   const App(
-      {required this.createTodosRepository,
-      required this.createBillsRepository,
+      {required this.createBillsRepository,
       super.key});
 
-  final TodosRepository Function() createTodosRepository;
   final BillsRepository Function() createBillsRepository;
 
   @override
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
-        RepositoryProvider<TodosRepository>(
-          create: (_) => createTodosRepository(),
-          dispose: (repository) => repository.dispose(),
-        ),
         RepositoryProvider<BillsRepository>(
           create: (_) => createBillsRepository(),
           dispose: (repository) => repository.dispose(),

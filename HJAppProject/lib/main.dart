@@ -9,20 +9,18 @@ import 'package:flutter_login_example/theme/app_theme.dart';
 import 'package:flutter_login_example/Home/bootstrap.dart';
 import 'package:flutter_login_example/transition_route_observer.dart';
 import 'package:local_storage_todos_api/local_storage_todos_api.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'generated/l10n.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final todosApi = LocalStorageTodosApi(
-    plugin: await SharedPreferences.getInstance(),
-  );
 
   final billsApi = LocalStorageBillsApi(
     plugin: await SharedPreferences.getInstance(),
   );
 
-  bootstrap(todosApi: todosApi, billsApi: billsApi);
+  bootstrap(billsApi: billsApi);
   // SystemChrome.setSystemUIOverlayStyle(
   //   SystemUiOverlayStyle(
   //     systemNavigationBarColor:
