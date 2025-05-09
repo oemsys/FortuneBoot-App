@@ -21,6 +21,7 @@ final class EditBillState extends Equatable {
     this.payeeList = const [],
     this.tagList = const [],
     this.categoryList = const [],
+    this.isNewBill = true,
     required this.editBill,
   });
 
@@ -36,6 +37,7 @@ final class EditBillState extends Equatable {
     this.payeeList = const [],
     this.tagList = const [],
     this.categoryList = const [],
+    this.isNewBill = true,
   }) {
     if (initialBill != null) {
       editBill = initialBill!.copyWith();
@@ -64,7 +66,7 @@ final class EditBillState extends Equatable {
   // 类别
   List<CategorySelectItem> categoryList;
 
-  bool get isNewBill => initialBill == null;
+  bool isNewBill;
 
   EditBillState copyWith({
     EditBillStatus? status,

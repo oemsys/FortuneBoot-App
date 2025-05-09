@@ -1112,6 +1112,8 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('账单已复制，请编辑后保存')),
                             );
+                            Navigator.of(context).push(EditBillPage.route(
+                                initialBill: BillItemAdd.fromBillItem(bill)));
                           },
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1119,21 +1121,21 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                           child: const Text('复制账单'),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // 添加相似账单
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          child: const Text('添加相似'),
-                        ),
-                      ),
+                      // const SizedBox(width: 16),
+                      // Expanded(
+                      //   child: ElevatedButton(
+                      //     onPressed: () {
+                      //       // 添加相似账单
+                      //       Navigator.pop(context);
+                      //     },
+                      //     style: ElevatedButton.styleFrom(
+                      //       backgroundColor: Theme.of(context).primaryColor,
+                      //       foregroundColor: Colors.white,
+                      //       padding: const EdgeInsets.symmetric(vertical: 12),
+                      //     ),
+                      //     child: const Text('添加相似'),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),

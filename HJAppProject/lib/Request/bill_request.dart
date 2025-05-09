@@ -79,7 +79,8 @@ abstract class BillService {
 }
 
 class FromBillAddRequest {
-  Future<Response?>? submitBill(Map<String, dynamic> data) async {
+  Future<Response?>? submitBill(Map<String, dynamic> data,
+      {bool modify = false}) async {
     try {
       // 2. 构建 FormData
       final formData = FormData();
@@ -109,19 +110,35 @@ class FromBillAddRequest {
       // }
       // https://fortuneboot.com/prod-api/fortune/bill/add
       // 4. 发送请求
-      final response = await DioClient().dio.post(
-        '/fortune/bill/add',
-        data: formData,
-        options: Options(
-          contentType: 'multipart/form-data',
-          sendTimeout: const Duration(seconds: 15),
-        ),
-        onSendProgress: (sent, total) {
-          // 进度更新 (可选)
-          // _updateProgress(sent / total);
-        },
-      );
-      return response;
+      if (!modify) {
+        final response = await DioClient().dio.post(
+          '/fortune/bill/add',
+          data: formData,
+          options: Options(
+            contentType: 'multipart/form-data',
+            sendTimeout: const Duration(seconds: 15),
+          ),
+          onSendProgress: (sent, total) {
+            // 进度更新 (可选)
+            // _updateProgress(sent / total);
+          },
+        );
+        return response;
+      } else {
+        final response = await DioClient().dio.put(
+          '/fortune/bill/modify',
+          data: formData,
+          options: Options(
+            contentType: 'multipart/form-data',
+            sendTimeout: const Duration(seconds: 15),
+          ),
+          onSendProgress: (sent, total) {
+            // 进度更新 (可选)
+            // _updateProgress(sent / total);
+          },
+        );
+        return response;
+      }
     } on DioException catch (e) {
       // 错误处理
       print('Error: ${e.message}');

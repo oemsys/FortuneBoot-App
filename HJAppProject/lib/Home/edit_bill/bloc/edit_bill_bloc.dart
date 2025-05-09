@@ -25,11 +25,13 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
   EditBillBloc({
     required BillsRepository billRepository,
     required BillItemAdd? initialBill,
+    bool isCopyBill = false,
   })  : _billRepository = billRepository,
         super(
           EditBillState.init(
             bookId: billRepository.bookId() ?? 1,
             initialBill: initialBill,
+            isNewBill: initialBill == null || isCopyBill,
           ),
         ) {
     on<EditBillSubmitted>(_onBillSubmitted);
@@ -44,7 +46,8 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
     BillItemAddData data = state.editBill.data!;
     print('lxjtodo: _onBillSubmitted request: ${data.toJson()}');
     FromBillAddRequest request = FromBillAddRequest();
-    Response? response = (await request.submitBill(data.toJson()));
+    Response? response =
+        await request.submitBill(data.toJson(), modify: !state.isNewBill);
     if (response?.statusCode == 200) {
       print('lxjtodo _onBillSubmitte response: ${response?.data} ');
       var hjResponse = HJResponse.fromJson(

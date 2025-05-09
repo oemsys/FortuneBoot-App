@@ -20,8 +20,10 @@ Map<String, dynamic> _$BillItemAddToJson(BillItemAdd instance) =>
       'files': instance.files,
     };
 
-BillItemAddData _$DataFromJson(Map<String, dynamic> json) => BillItemAddData(
+BillItemAddData _$BillItemAddDataFromJson(Map<String, dynamic> json) =>
+    BillItemAddData(
       bookId: (json['bookId'] as num?)?.toInt(),
+      billId: (json['billId'] as num?)?.toInt(),
       title: json['title'] as String?,
       tradeTime: json['tradeTime'] as String?,
       accountId: (json['accountId'] as num?)?.toInt(),
@@ -45,8 +47,9 @@ BillItemAddData _$DataFromJson(Map<String, dynamic> json) => BillItemAddData(
           .toList(),
     );
 
-Map<String, dynamic> _$DataToJson(BillItemAddData instance) =>
+Map<String, dynamic> _$BillItemAddDataToJson(BillItemAddData instance) =>
     <String, dynamic>{
+      'billId': instance.billId,
       'bookId': instance.bookId,
       'title': instance.title,
       'tradeTime': instance.tradeTime,

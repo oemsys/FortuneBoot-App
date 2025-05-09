@@ -127,8 +127,8 @@ class LocalStorageBillsApi extends BillsApi {
     print('lxjtodo change bookId $bookId $groupId ');
     if ((groupId != null && groupId != this.groupId) ||
         (bookId != null && bookId != this.bookId)) {
-      this.groupId = groupId;
-      this.bookId = bookId;
+      this.groupId = groupId ?? this.groupId;
+      this.bookId = bookId ?? this.bookId;
       pageNum = 1;
       _billStreamController.add([]);
       // await _setValue(kBillsCollectionKey, json.encode([]));

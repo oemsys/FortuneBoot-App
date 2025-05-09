@@ -57,7 +57,7 @@ class EditBillPage extends StatelessWidget {
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
                     SnackBar(
-                      content: Text('添加成功'),
+                      content: Text(state.isNewBill ? '添加成功' : '修改成功'),
                     ),
                   );
                 Navigator.of(context).pop();

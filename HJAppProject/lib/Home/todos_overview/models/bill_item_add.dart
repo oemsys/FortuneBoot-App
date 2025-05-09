@@ -43,6 +43,7 @@ class BillItemAdd {
       });
     });
     data = BillItemAddData(
+      billId: billItem.billId,
       bookId: billItem.bookId,
       title: billItem.title,
       tradeTime: billItem.tradeTimeString,
@@ -62,6 +63,7 @@ class BillItemAdd {
 
 @JsonSerializable()
 class BillItemAddData {
+  int? billId;
   int? bookId;
   String? title;
   String? tradeTime;
@@ -81,6 +83,7 @@ class BillItemAddData {
 
   BillItemAddData.init(
       {required this.bookId,
+      this.billId,
       this.accountId,
       this.accountToId,
       this.categoryAmountPair,
@@ -100,6 +103,7 @@ class BillItemAddData {
 
   BillItemAddData(
       {this.bookId,
+      this.billId,
       this.title,
       this.tradeTime,
       this.accountId,
@@ -127,8 +131,8 @@ class BillItemAddData {
   }
 
   factory BillItemAddData.fromJson(Map<String, dynamic> json) =>
-      _$DataFromJson(json);
-  Map<String, dynamic> toJson() => _$DataToJson(this);
+      _$BillItemAddDataFromJson(json);
+  Map<String, dynamic> toJson() => _$BillItemAddDataToJson(this);
 
   DateTime? get tradeDate => tradeTime != null
       ? DateFormat("yyyy-MM-dd HH:mm:ss").parse(tradeTime!)
@@ -136,6 +140,7 @@ class BillItemAddData {
 
   // copyWith
   BillItemAddData copyWith({
+    int? billId,
     int? bookId,
     String? title,
     String? tradeTime,
@@ -154,6 +159,7 @@ class BillItemAddData {
     List<String>? fileList,
   }) {
     return BillItemAddData(
+      billId: billId ?? this.billId,
       bookId: bookId ?? this.bookId,
       title: title ?? this.title,
       tradeTime: tradeTime ?? this.tradeTime,
@@ -175,6 +181,6 @@ class BillItemAddData {
 
   @override
   String toString() {
-    return 'BillItemAddData{bookId: $bookId, title: $title, tradeTime: $tradeTime, accountId: $accountId, accountToId: $accountToId, categoryAmountPair: $categoryAmountPair, amount: $amount, convertedAmount: $convertedAmount, payeeId: $payeeId, billType: $billType, toAccountId: $toAccountId, confirm: $confirm, include: $include, remark: $remark, tagIdList: $tagIdList, fileList: $fileList}';
+    return 'BillItemAddData{billId:$billId bookId: $bookId, title: $title, tradeTime: $tradeTime, accountId: $accountId, accountToId: $accountToId, categoryAmountPair: $categoryAmountPair, amount: $amount, convertedAmount: $convertedAmount, payeeId: $payeeId, billType: $billType, toAccountId: $toAccountId, confirm: $confirm, include: $include, remark: $remark, tagIdList: $tagIdList, fileList: $fileList}';
   }
 }
