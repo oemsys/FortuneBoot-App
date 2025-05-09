@@ -77,28 +77,6 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
     return ValueListenableBuilder(
         valueListenable: _authMode,
         builder: (a, v, b) {
-          // if (v == AuthMode.loading) {
-          //   return Container(
-          //     // color: Theme.of(context).scaffoldBackgroundColor,
-          //     child: LoadingIndicator(
-          //         indicatorType: Indicator.ballPulse,
-
-          //         /// Required, The loading type of the widget
-          //         colors: const [Colors.white],
-
-          //         /// Optional, The color collections
-          //         strokeWidth: 2,
-
-          //         /// Optional, The stroke of the line, only applicable to widget which contains line
-          //         backgroundColor: Colors.black,
-
-          //         /// Optional, Background of the widget
-          //         pathBackgroundColor: Colors.black
-
-          //         /// Optional, the stroke backgroundColor
-          //         ),
-          //   );
-          // }
           return Scaffold(
             appBar: AppBar(
               title: Text(S.of(context).baseUrlConfig),
@@ -164,19 +142,6 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
                                                 .of(context)
                                                 .pleaseEnterDomain; // 可为空
                                           }
-                                          // // IPv4, IPv6, 或域名的简单验证
-                                          // final ipv4Regex =
-                                          //     RegExp(r'^(\d{1,3}\.){3}\d{1,3}$');
-                                          // final ipv6Regex = RegExp(
-                                          //     r'^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$');
-                                          // final domainRegex =
-                                          //     RegExp(r'^[a-zA-Z0-9.-]+(\.[a-zA-Z]{2,})?$');
-                                          // if (value != 'localhost' &&
-                                          //     !ipv4Regex.hasMatch(value) &&
-                                          //     !ipv6Regex.hasMatch(value) &&
-                                          //     !domainRegex.hasMatch(value)) {
-                                          //   return S.of(context).invalidDomain;
-                                          // }
                                           return null;
                                         },
                                       ),
@@ -216,7 +181,7 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
         });
   }
 
-  void _submitForm() async {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       var baseUrl = '$_protocol://${_domainController.text}';
       if (_portController.text.isNotEmpty) {
@@ -241,13 +206,13 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
               ),
             );
           } else {
-            _showErrorDialog(S.of(context).serverConnectionFailed);
+            _showErrorDialog(S.current.serverConnectionFailed);
           }
         } else {
-          _showErrorDialog(S.of(context).serverConnectionFailed);
+          _showErrorDialog(S.current.serverConnectionFailed);
         }
       } catch (e) {
-        _showErrorDialog(S.of(context).serverConnectionFailed);
+        _showErrorDialog(S.current.serverConnectionFailed);
       }
     }
   }

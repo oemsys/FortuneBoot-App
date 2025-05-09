@@ -1,5 +1,5 @@
-import 'package:flutter_login_example/Home/edit_bill/edit_select_item.dart';
-import 'package:flutter_login_example/Request/base_request.dart';
+import 'package:flutter_login_example/Home/edit_bill/models/edit_select_item.dart';
+import 'package:flutter_login_example/request/base_request.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
 
 typedef ItemMapper<T> = T Function(String name, int id);

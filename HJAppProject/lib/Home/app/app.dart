@@ -5,10 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_login_example/Login/view/base_url_config_page.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
-import 'package:flutter_login_example/tempNeedToDelete/dashboard_screen.dart';
 import 'package:flutter_login_example/generated/l10n.dart';
 import 'package:flutter_login_example/Login/view/login_screen.dart';
-import 'package:flutter_login_example/Home/home/view/home_page.dart';
 import 'package:flutter_login_example/Home/theme/theme.dart';
 
 class App extends StatelessWidget {
@@ -44,9 +42,9 @@ class AppView extends StatelessWidget {
       navigatorKey: navigatorKey,
       theme: FlutterTodosTheme.light,
       darkTheme: FlutterTodosTheme.dark,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       locale: const Locale('zh', 'CN'),
-      localizationsDelegates: const [
+    localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate, // 提供 Material 组件本地化资源
         GlobalWidgetsLocalizations.delegate, // 支持文本方向（如阿拉伯语右对齐）
         GlobalCupertinoLocalizations.delegate,
@@ -58,7 +56,6 @@ class AppView extends StatelessWidget {
       routes: {
         BaseUrlConfigPage.routeName: (context) => const BaseUrlConfigPage(),
         LoginScreen.routeName: (context) => const LoginScreen(),
-        DashboardScreen.routeName: (context) => const DashboardScreen(),
       },
     );
   }

@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
-import 'package:flutter_login_example/Request/bill_request.dart';
-import 'package:flutter_login_example/Request/book_request.dart';
+import 'package:flutter_login_example/request/bill_request.dart';
+import 'package:flutter_login_example/request/book_request.dart';
 import 'package:flutter_login_example/repository/api/bills_api.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/subjects.dart';

@@ -286,20 +286,20 @@ class AppTheme {
       pageColorLight: primaryColor.withOpacity(0.8),
       pageColorDark: primaryColor,
       logoWidth: 0.80,
-      titleStyle: const TextStyle(
-        color: Colors.white,
-        fontFamily: fontFamily,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 2,
-      ),
+      // titleStyle: const TextStyle(
+      //   color: Colors.white,
+      //   fontFamily: fontFamily,
+      //   fontWeight: FontWeight.w600,
+      //   letterSpacing: 2,
+      // ),
       bodyStyle: const TextStyle(
         fontFamily: fontFamily,
         color: textPrimaryColor,
       ),
-      textFieldStyle: const TextStyle(
-        fontFamily: fontFamily,
-        color: textPrimaryColor,
-      ),
+      // textFieldStyle: const TextStyle(
+      //   fontFamily: fontFamily,
+      //   color: textPrimaryColor,
+      // ),
       buttonStyle: const TextStyle(
         fontFamily: fontFamily,
         fontWeight: FontWeight.w600,
@@ -346,7 +346,7 @@ class AppTheme {
         hintStyle: const TextStyle(
           fontFamily: fontFamily,
           fontSize: 14,
-          color: textSecondaryColor,
+          // color: textSecondaryColor,
         ),
         errorStyle: const TextStyle(
           fontFamily: fontFamily,

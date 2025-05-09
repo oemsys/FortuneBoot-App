@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class FlutterTodosTheme {
   static ThemeData get light {
-    return ThemeData(
+    return ThemeData().copyWith(
       appBarTheme: const AppBarTheme(color: Color.fromARGB(255, 117, 208, 247)),
       colorScheme: ColorScheme.fromSeed(
         seedColor: const Color(0xFF13B9FF),
@@ -23,7 +23,7 @@ class FlutterTodosTheme {
   }
 
   static ThemeData get dark {
-    return ThemeData(
+    return ThemeData.dark().copyWith(
         appBarTheme: const AppBarTheme(
           color: Color.fromARGB(255, 16, 46, 59),
         ),

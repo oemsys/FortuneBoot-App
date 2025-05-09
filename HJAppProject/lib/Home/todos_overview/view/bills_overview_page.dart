@@ -6,7 +6,7 @@ import 'package:flutter_login_example/Home/theme/theme.dart';
 import 'package:flutter_login_example/Home/todos_overview/bloc/bills_overview_bloc.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item_add.dart';
-import 'package:flutter_login_example/Home/todos_overview/widgets/bill_list_tile.dart';
+import 'package:flutter_login_example/Home/todos_overview/view/bill_list_tile.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:intl/intl.dart';
 
