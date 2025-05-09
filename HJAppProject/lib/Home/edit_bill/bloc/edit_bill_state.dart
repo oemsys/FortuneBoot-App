@@ -25,6 +25,7 @@ final class EditBillState extends Equatable {
   });
 
   EditBillState.init({
+    required int bookId,
     this.status = EditBillStatus.initial,
     this.initialBill,
     this.bookList = const [],
@@ -39,8 +40,7 @@ final class EditBillState extends Equatable {
     if (initialBill != null) {
       editBill = initialBill!.copyWith();
     } else {
-      editBill = BillItemAdd(
-          data: BillItemAddData(billType: BillType.expenditure.value));
+      editBill = BillItemAdd(data: BillItemAddData.init(bookId: bookId));
     }
   }
 

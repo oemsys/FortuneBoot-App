@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
 import 'package:json_annotation/json_annotation.dart';
@@ -78,6 +79,25 @@ class BillItemAddData {
   List<int>? tagIdList;
   List<String>? fileList;
 
+  BillItemAddData.init(
+      {required this.bookId,
+      this.accountId,
+      this.accountToId,
+      this.categoryAmountPair,
+      this.amount,
+      this.convertedAmount,
+      this.payeeId,
+      this.toAccountId,
+      this.remark,
+      this.tagIdList,
+      this.fileList}) {
+    tradeTime = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now());
+    confirm = true;
+    include = true;
+    billType = BillType.expenditure.value;
+    title = '未命名账单';
+  }
+
   BillItemAddData(
       {this.bookId,
       this.title,
@@ -94,7 +114,17 @@ class BillItemAddData {
       this.include,
       this.remark,
       this.tagIdList,
-      this.fileList});
+      this.fileList}) {
+    if (accountId == -1) {
+      accountId = null;
+    }
+    if (accountToId == -1) {
+      accountToId = null;
+    }
+    if (payeeId == -1) {
+      payeeId = null;
+    }
+  }
 
   factory BillItemAddData.fromJson(Map<String, dynamic> json) =>
       _$DataFromJson(json);

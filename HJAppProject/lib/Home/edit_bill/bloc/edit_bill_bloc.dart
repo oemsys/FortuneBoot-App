@@ -16,6 +16,7 @@ import 'package:flutter_login_example/Request/tag_request.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:dio/dio.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
+import 'package:intl/intl.dart';
 
 part 'edit_bill_event.dart';
 part 'edit_bill_state.dart';
@@ -27,6 +28,7 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
   })  : _billRepository = billRepository,
         super(
           EditBillState.init(
+            bookId: billRepository.bookId() ?? 1,
             initialBill: initialBill,
           ),
         ) {
@@ -112,9 +114,19 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
   FutureOr<void> _onBillTypeChange(
       EditBillTypeChange event, Emitter<EditBillState> emit) async {
     var editedBill = state.editBill.copyWith(
-        data: state.editBill.data?.copyWith(billType: event.type.value));
+        data: state.editBill.data?.copyWith(
+      billType: event.type.value,
+      categoryAmountPair: [],
+      tagIdList: [],
+      accountId: -1,
+      accountToId: -1,
+      payeeId: -1,
+    ));
     print('lxjtodo: _onBillTypeChange: ${editedBill}');
-    emit(state.copyWith(editBill: editedBill, status: EditBillStatus.loading));
+    emit(state.copyWith(
+      editBill: editedBill,
+      status: EditBillStatus.loading,
+    ));
     await refreshData(event.type, emit);
   }
 }

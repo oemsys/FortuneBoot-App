@@ -5,31 +5,32 @@ import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart'
 import 'package:flutter_login_example/Request/tag_request.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 
-
-
 class TagTreeSelection extends StatefulWidget {
-  TagTreeSelection({super.key, required this.tags, this.onTagSelected});
+  TagTreeSelection(
+      {super.key,
+      required this.tags,
+      this.onTagSelected,
+      required this.selectedTagIds});
   List<TagSelectItem> tags;
   Function(List<int>)? onTagSelected;
+  List<int> selectedTagIds;
 
   @override
   State<TagTreeSelection> createState() => _TagTreeSelectionState();
 }
 
 class _TagTreeSelectionState extends State<TagTreeSelection> {
-  // 已选择的标签ID列表
-  List<int> _selectedTagIds = [];
   // 展开的二级标签ID列表（用于控制UI展开/折叠）
   List<int> _expandedSecondLevelIds = [];
 
   @override
   Widget build(BuildContext context) {
-    widget.onTagSelected?.call(_selectedTagIds);
+    widget.onTagSelected?.call(widget.selectedTagIds);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 已选择的标签
-        if (_selectedTagIds.isNotEmpty) _buildSelectedTags(widget.tags),
+        if (widget.selectedTagIds.isNotEmpty) _buildSelectedTags(widget.tags),
 
         // 标签选择器
         _buildTagSelector(widget.tags),
@@ -42,7 +43,7 @@ class _TagTreeSelectionState extends State<TagTreeSelection> {
     // 从所有标签中找出已选择的标签
     List<String> selectedTagNames = [];
 
-    for (int tagId in _selectedTagIds) {
+    for (int tagId in widget.selectedTagIds) {
       // 获取标签的完整路径
       String tagPath = TagSelectItem.getFullPathById(allTags, tagId);
       selectedTagNames.add(tagPath);
@@ -64,8 +65,8 @@ class _TagTreeSelectionState extends State<TagTreeSelection> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: List.generate(_selectedTagIds.length, (index) {
-              final tagId = _selectedTagIds[index];
+            children: List.generate(widget.selectedTagIds.length, (index) {
+              final tagId = widget.selectedTagIds[index];
               final tagName = selectedTagNames[index];
 
               return Chip(
@@ -73,7 +74,7 @@ class _TagTreeSelectionState extends State<TagTreeSelection> {
                 deleteIcon: Icon(Icons.close, size: 16),
                 onDeleted: () {
                   setState(() {
-                    _selectedTagIds.remove(tagId);
+                    widget.selectedTagIds.remove(tagId);
                   });
                 },
                 backgroundColor:
@@ -127,15 +128,15 @@ class _TagTreeSelectionState extends State<TagTreeSelection> {
                       // 选择一级标签
                       FilterChip(
                         label: Text('选择'),
-                        selected: _selectedTagIds.contains(tag.id),
+                        selected: widget.selectedTagIds.contains(tag.id),
                         onSelected: (selected) {
                           setState(() {
                             if (selected) {
-                              if (!_selectedTagIds.contains(tag.id)) {
-                                _selectedTagIds.add(tag.id);
+                              if (!widget.selectedTagIds.contains(tag.id)) {
+                                widget.selectedTagIds.add(tag.id);
                               }
                             } else {
-                              _selectedTagIds.remove(tag.id);
+                              widget.selectedTagIds.remove(tag.id);
                             }
                           });
                         },
@@ -210,18 +211,18 @@ class _TagTreeSelectionState extends State<TagTreeSelection> {
                                     FilterChip(
                                       label: Text('选择'),
                                       labelStyle: TextStyle(fontSize: 12),
-                                      selected: _selectedTagIds
+                                      selected: widget.selectedTagIds
                                           .contains(secondLevelTag.id),
                                       onSelected: (selected) {
                                         setState(() {
                                           if (selected) {
-                                            if (!_selectedTagIds
+                                            if (!widget.selectedTagIds
                                                 .contains(secondLevelTag.id)) {
-                                              _selectedTagIds
+                                              widget.selectedTagIds
                                                   .add(secondLevelTag.id);
                                             }
                                           } else {
-                                            _selectedTagIds
+                                            widget.selectedTagIds
                                                 .remove(secondLevelTag.id);
                                           }
                                         });
@@ -254,18 +255,18 @@ class _TagTreeSelectionState extends State<TagTreeSelection> {
                                       .map((thirdLevelTag) {
                                     return FilterChip(
                                       label: Text(thirdLevelTag.title),
-                                      selected: _selectedTagIds
+                                      selected: widget.selectedTagIds
                                           .contains(thirdLevelTag.id),
                                       onSelected: (selected) {
                                         setState(() {
                                           if (selected) {
-                                            if (!_selectedTagIds
+                                            if (!widget.selectedTagIds
                                                 .contains(thirdLevelTag.id)) {
-                                              _selectedTagIds
+                                              widget.selectedTagIds
                                                   .add(thirdLevelTag.id);
                                             }
                                           } else {
-                                            _selectedTagIds
+                                            widget.selectedTagIds
                                                 .remove(thirdLevelTag.id);
                                           }
                                         });

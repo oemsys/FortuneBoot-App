@@ -104,6 +104,8 @@ class _EditBillViewState extends State<EditBillView> {
 
   ValueNotifier<bool> _isCategoryExpanded = ValueNotifier(true);
   ValueNotifier<bool> _isTagExpanded = ValueNotifier(true);
+  ValueNotifier<bool?> _confirm = ValueNotifier(null);
+  ValueNotifier<bool?> _include = ValueNotifier(null);
 
   @override
   void dispose() {
@@ -117,6 +119,10 @@ class _EditBillViewState extends State<EditBillView> {
   Widget build(BuildContext context) {
     final status = context.select((EditBillBloc bloc) => bloc.state.status);
     final state = context.select((EditBillBloc bloc) => bloc.state);
+    if (_confirm.value == null || _include.value == null) {
+      _confirm.value = state.editBill.data!.confirm;
+      _include.value = state.editBill.data!.include;
+    }
     final isNewBill = context.select(
       (EditBillBloc bloc) => bloc.state.isNewBill,
     );
@@ -374,6 +380,7 @@ class _EditBillViewState extends State<EditBillView> {
   Widget _buildBasicInfoSection() {
     var state = context.watch<EditBillBloc>().state;
     var initDate = state.editBill.data!.tradeDate;
+    _titleController.text = state.editBill.data?.title ?? '';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -394,6 +401,7 @@ class _EditBillViewState extends State<EditBillView> {
         TextField(
           controller: _titleController,
           decoration: InputDecoration(
+            hintText: '请输入标题',
             labelText: '标题',
             labelStyle: TextStyle(
               color: Colors.grey.shade700,
@@ -544,6 +552,7 @@ class _EditBillViewState extends State<EditBillView> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<AccountSelectItem>(
+            key: Key('${curBillType()}_account'),
             value: selectItem,
             decoration: const InputDecoration(
               labelText: '账户',
@@ -573,6 +582,7 @@ class _EditBillViewState extends State<EditBillView> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<PayeeSelectItem>(
+            key: Key('${curBillType()}_payee'),
             value: payeeSelectItem,
             decoration: const InputDecoration(
               labelText: '交易对象',
@@ -633,6 +643,7 @@ class _EditBillViewState extends State<EditBillView> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<AccountSelectItem>(
+            key: Key('${curBillType()}_transfer'),
             value: selectOutItem,
             decoration: const InputDecoration(
               labelText: '转出账户',
@@ -662,6 +673,7 @@ class _EditBillViewState extends State<EditBillView> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<AccountSelectItem>(
+            key: Key('${curBillType()}_transfer_in'),
             value: selectInItem,
             decoration: const InputDecoration(
               labelText: '转入账户',
@@ -868,6 +880,7 @@ class _EditBillViewState extends State<EditBillView> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: TagTreeSelection(
+                        selectedTagIds: state.editBill.data?.tagIdList ?? [],
                         tags: state.tagList,
                         onTagSelected: (tags) {
                           state.editBill.data?.tagIdList = tags;
@@ -896,28 +909,36 @@ class _EditBillViewState extends State<EditBillView> {
         const SizedBox(height: 16),
 
         // 是否确认
-        SwitchListTile(
-          title: const Text('是否确认'),
-          subtitle: const Text('确认后将会扣除对应账户金额'),
-          value: state.editBill.data?.confirm ?? false,
-          onChanged: (value) {
-            state.editBill.data?.confirm = value;
-          },
-          secondary: const Icon(Icons.verified),
-          contentPadding: EdgeInsets.zero,
-        ),
-
-        // 是否统计
-        SwitchListTile(
-          title: const Text('是否统计'),
-          subtitle: const Text('纳入统计的账单会在报表中显示'),
-          value: state.editBill.data?.include ?? false,
-          onChanged: (value) {
-            state.editBill.data?.include = value;
-          },
-          secondary: const Icon(Icons.bar_chart),
-          contentPadding: EdgeInsets.zero,
-        ),
+        ValueListenableBuilder(
+            valueListenable: _confirm,
+            builder: (_, confirm, __) {
+              return SwitchListTile(
+                title: const Text('是否确认'),
+                subtitle: const Text('确认后将会扣除对应账户金额'),
+                value: confirm ?? true,
+                onChanged: (value) {
+                  state.editBill.data?.confirm = value;
+                  _confirm.value = value;
+                },
+                secondary: const Icon(Icons.verified),
+                contentPadding: EdgeInsets.zero,
+              );
+            }),
+        ValueListenableBuilder(
+            valueListenable: _include,
+            builder: (_, include, __) {
+              return SwitchListTile(
+                title: const Text('是否统计'),
+                subtitle: const Text('纳入统计的账单会在报表中显示'),
+                value: include ?? true,
+                onChanged: (value) {
+                  state.editBill.data?.include = value;
+                  _include.value = value;
+                },
+                secondary: const Icon(Icons.bar_chart),
+                contentPadding: EdgeInsets.zero,
+              );
+            }),
 
         const SizedBox(height: 16),
 
@@ -946,7 +967,7 @@ class _EditBillViewState extends State<EditBillView> {
 
     if (!(billItemAdd.data?.categoryAmountPair?.isNotEmpty == true)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入金额')),
+        const SnackBar(content: Text('请填入费用')),
       );
       return;
     }
