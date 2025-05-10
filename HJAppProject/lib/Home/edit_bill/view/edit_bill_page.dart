@@ -400,6 +400,9 @@ class _EditBillViewState extends State<EditBillView> {
         // 标题输入
         TextField(
           controller: _titleController,
+          onChanged: (value) {
+            state.editBill.data?.title = value;
+          },
           decoration: InputDecoration(
             hintText: '请输入标题',
             labelText: '标题',
@@ -964,7 +967,9 @@ class _EditBillViewState extends State<EditBillView> {
   // 提交账单
   void _submitBill(BillItemAdd billItemAdd) {
     // 验证必填字段
-
+    if (!(billItemAdd.data!.title?.isNotEmpty == true)) {
+      billItemAdd.data!.title = '未命名账单';
+    }
     if (!(billItemAdd.data?.categoryAmountPair?.isNotEmpty == true)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('请填入费用')),

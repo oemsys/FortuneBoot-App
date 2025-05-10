@@ -93,12 +93,12 @@ class BillItemAddData {
       this.toAccountId,
       this.remark,
       this.tagIdList,
+      this.title,
       this.fileList}) {
     tradeTime = DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now());
     confirm = true;
     include = true;
     billType = BillType.expenditure.value;
-    title = '未命名账单';
   }
 
   BillItemAddData(
