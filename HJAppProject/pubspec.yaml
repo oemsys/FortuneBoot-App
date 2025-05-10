@@ -45,7 +45,7 @@ dev_dependencies:
   
 # flutter pub run flutter_launcher_icons
 flutter_icons:
-  image_path: "assets/icon.png"  # 源图标路径（建议 1024x1024）
+  image_path: "assets/logo.png"  # 源图标路径（建议 1024x1024）
   remove_alpha_ios: true
   android: true
   ios: true
