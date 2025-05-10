@@ -754,6 +754,7 @@ class _EditBillViewState extends State<EditBillView> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: CategoryTreeWidget(
+                    key: Key('${billType}_category'),
                     categoryAmountPairs: categoryAmountPair,
                     categories: state.categoryList,
                     billType: billType,
@@ -885,6 +886,7 @@ class _EditBillViewState extends State<EditBillView> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: TagTreeSelection(
+                        key: Key('${curBillType()}_tag'),
                         selectedTagIds: state.editBill.data?.tagIdList ?? [],
                         tags: state.tagList,
                         onTagSelected: (tags) {
