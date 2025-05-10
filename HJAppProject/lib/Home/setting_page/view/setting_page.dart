@@ -316,6 +316,7 @@ class _MineViewState extends State<MineView> {
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               // 跳转到意见反馈页面
+              emptyPage();
             },
           ),
           const Divider(height: 1, indent: 16, endIndent: 16),
@@ -325,6 +326,7 @@ class _MineViewState extends State<MineView> {
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               // 跳转到应用商店评分
+              emptyPage();
             },
           ),
           const Divider(height: 1, indent: 16, endIndent: 16),
@@ -569,6 +571,8 @@ class _MineViewState extends State<MineView> {
 
   void _showThemeSelectionDialog(BuildContext context) {
     final themes = ['跟随系统', '浅色模式', '深色模式'];
+    emptyPage();
+    return;
 
     showModalBottomSheet(
       context: context,
@@ -611,6 +615,8 @@ class _MineViewState extends State<MineView> {
 
   void _showLanguageSelectionDialog(BuildContext context) {
     final languages = ['🇨🇳 简体中文', '🇺🇸 English'];
+    emptyPage();
+    return;
 
     showModalBottomSheet(
       context: context,
@@ -710,6 +716,8 @@ class _MineViewState extends State<MineView> {
   }
 
   void _showQRCode(BuildContext context) {
+    emptyPage();
+    return;
     showDialog(
       context: context,
       builder: (context) {
@@ -774,6 +782,12 @@ class _MineViewState extends State<MineView> {
           ],
         );
       },
+    );
+  }
+
+  void emptyPage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('敬请期待...')),
     );
   }
 
