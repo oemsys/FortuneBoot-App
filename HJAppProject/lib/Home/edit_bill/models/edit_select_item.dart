@@ -29,7 +29,7 @@ abstract class BaseTreeSelectItem<T extends BaseTreeSelectItem<T>> {
 
   // 检查是否有子项
   bool get hasChildren => children != null && children!.isNotEmpty;
-  
+
   // 获取所有子项（包括子项的子项）
   List<T> getAllChildren() {
     List<T> allChildren = [];
@@ -43,7 +43,7 @@ abstract class BaseTreeSelectItem<T extends BaseTreeSelectItem<T>> {
     }
     return allChildren;
   }
-  
+
   // 根据ID查找项（包括子项）
   T? findById(int searchId) {
     if (id == searchId) return this as T;
@@ -78,20 +78,23 @@ class CategorySelectItem extends BaseTreeSelectItem<CategorySelectItem> {
   String getFullPath({String separator = ' > '}) {
     return title;
   }
-  
+
   // 获取分类的完整路径（包括父分类）
-  static String getFullPathById(List<CategorySelectItem> allCategories, int categoryId, {String separator = ' > '}) {
+  static String getFullPathById(
+      List<CategorySelectItem> allCategories, int categoryId,
+      {String separator = ' > '}) {
+    print('lxjtodo: getFullPathById: $categoryId $allCategories');
     for (var category in allCategories) {
       if (category.id == categoryId) {
         return category.title;
       }
-      
+
       if (category.hasChildren) {
         for (var subCategory in category.children!) {
           if (subCategory.id == categoryId) {
             return '${category.title}$separator${subCategory.title}';
           }
-          
+
           if (subCategory.hasChildren) {
             for (var thirdCategory in subCategory.children!) {
               if (thirdCategory.id == categoryId) {
@@ -126,18 +129,19 @@ class TagSelectItem extends BaseTreeSelectItem<TagSelectItem> {
   Map<String, dynamic> toJson() => _$TagSelectItemToJson(this);
 
   // 获取标签的完整路径（包括父标签）
-  static String getFullPathById(List<TagSelectItem> allTags, int tagId, {String separator = ' > '}) {
+  static String getFullPathById(List<TagSelectItem> allTags, int tagId,
+      {String separator = ' > '}) {
     for (var tag in allTags) {
       if (tag.id == tagId) {
         return tag.title;
       }
-      
+
       if (tag.hasChildren) {
         for (var subTag in tag.children!) {
           if (subTag.id == tagId) {
             return '${tag.title}$separator${subTag.title}';
           }
-          
+
           if (subTag.hasChildren) {
             for (var thirdTag in subTag.children!) {
               if (thirdTag.id == tagId) {

@@ -23,7 +23,9 @@ class EditBillPage extends StatelessWidget {
         create: (context) => EditBillBloc(
           billRepository: context.read<BillsRepository>(),
           initialBill: initialBill,
-        )..add(EditBillInitialized(BillType.expenditure)),
+        )..add(EditBillInitialized(
+            BillType.fromValue(initialBill?.data?.billType ?? 1) ??
+                BillType.expenditure)),
         child: const EditBillPage(),
       ),
     );
