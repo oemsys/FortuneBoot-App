@@ -8,7 +8,8 @@ class BillsRepository {
   }) : _billsApi = billsApi;
 
   static String version = '1.0.0';
-  static String maxApiVersion = '1.1.0';
+  static String minApiVersion = '1.1.0';
+  static String maxApiVersion = '2.0.0';
 
   final BillsApi _billsApi;
 

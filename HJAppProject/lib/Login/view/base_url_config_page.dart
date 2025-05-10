@@ -223,9 +223,13 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
     if (apiResponse.code == 0) {
       var curVerionString = apiResponse.data as String? ?? '';
       if (curVerionString.isNotEmpty) {
-        int res =
+        int maxRes =
             compareVersion(curVerionString, BillsRepository.maxApiVersion);
-        return res <= 0;
+        int minRes =
+            compareVersion(BillsRepository.minApiVersion, curVerionString);
+        // 左闭右开
+        print('lxjtodo: $maxRes $minRes');
+        return maxRes < 0 && minRes >= 0;
       } else {
         return false;
       }
