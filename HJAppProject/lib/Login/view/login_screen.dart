@@ -247,7 +247,7 @@ class LoginScreen extends StatelessWidget {
           id: 'general-term',
           mandatory: true,
           text: S.of(context).term_of_services,
-          linkUrl: 'https://www.baidu.com',
+          linkUrl: 'https://privacy-policy.fortuneboot.com/privacy.html',
           validationErrorMessage: S.of(context).service_required,
         ),
       ],
