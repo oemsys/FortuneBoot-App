@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_login_example/login/model/login_model.dart';
-import 'package:flutter_login_example/request/base_request.dart';
-import 'package:flutter_login_example/util/dio_client.dart';
+import 'package:HJProject/login/model/login_model.dart';
+import 'package:HJProject/request/base_request.dart';
+import 'package:HJProject/util/dio_client.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'include_request.g.dart'; // 代码生成文件

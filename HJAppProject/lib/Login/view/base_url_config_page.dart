@@ -1,11 +1,15 @@
+import 'dart:math';
+
+import 'package:HJProject/repository/repository/bills_repository.dart';
+import 'package:HJProject/request/login_request.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_login_example/home/home/view/home_page.dart';
-import 'package:flutter_login_example/login/model/users.dart';
-import 'package:flutter_login_example/login/view/login_screen.dart';
-import 'package:flutter_login_example/generated/l10n.dart';
-import 'package:flutter_login_example/theme/app_theme.dart';
+import 'package:HJProject/home/home/view/home_page.dart';
+import 'package:HJProject/login/model/users.dart';
+import 'package:HJProject/login/view/login_screen.dart';
+import 'package:HJProject/generated/l10n.dart';
+import 'package:HJProject/theme/app_theme.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_login_example/util/dio_client.dart';
+import 'package:HJProject/util/dio_client.dart';
 
 enum AuthMode {
   loading,
@@ -54,13 +58,18 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
         (userToken?.isNotEmpty == true) &&
         (baseUrlDomain?.isNotEmpty == true) &&
         (baseUrlPort?.isNotEmpty == true)) {
-      DioClient().refreshToken(userToken!);
       // 跳登录页
       var baseUrl = '$_protocol://${_domainController.text}';
       if (_portController.text.isNotEmpty) {
         baseUrl += ':${_portController.text}';
       }
       DioClient().updateBaseUrl('$baseUrl/prod-api');
+      if (!(await checkApiVersion())) {
+        _showErrorDialog(S.current.serverConnectionFailed);
+        _authMode.value = AuthMode.signIn;
+        return;
+      }
+      DioClient().refreshToken(userToken!);
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (context) => const HomePage(),
@@ -189,25 +198,16 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
       }
       DioClient().updateBaseUrl('$baseUrl/prod-api');
       try {
-        final dio = Dio();
-        final response = await dio.get('$baseUrl/prod-api/getApiVersion');
-        if (response.statusCode == 200) {
-          final responseData = response.data;
-          if (responseData is Map<String, dynamic> &&
-              responseData['code'] == 0) {
-            final apiVersion = responseData['data'] as String;
-            UserDataSingleton().setStr(
-                UserDataSingleton.baseUrlDomain, _domainController.text);
-            UserDataSingleton()
-                .setStr(UserDataSingleton.baseUrlPort, _portController.text);
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (context) => LoginScreen(),
-              ),
-            );
-          } else {
-            _showErrorDialog(S.current.serverConnectionFailed);
-          }
+        if (await checkApiVersion()) {
+          UserDataSingleton()
+              .setStr(UserDataSingleton.baseUrlDomain, _domainController.text);
+          UserDataSingleton()
+              .setStr(UserDataSingleton.baseUrlPort, _portController.text);
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => LoginScreen(),
+            ),
+          );
         } else {
           _showErrorDialog(S.current.serverConnectionFailed);
         }
@@ -215,6 +215,39 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
         _showErrorDialog(S.current.serverConnectionFailed);
       }
     }
+  }
+
+  Future<bool> checkApiVersion() async {
+    LoginService loginService = LoginService();
+    var apiResponse = await loginService.apiVersion();
+    if (apiResponse.code == 0) {
+      var curVerionString = apiResponse.data as String? ?? '';
+      if (curVerionString.isNotEmpty) {
+        int res =
+            compareVersion(curVerionString, BillsRepository.maxApiVersion);
+        return res <= 0;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  int compareVersion(String version1, String version2) {
+    List<String> v1 = version1.split('.');
+    List<String> v2 = version2.split('.');
+
+    int maxLength = max(v1.length, v2.length);
+    for (int i = 0; i < maxLength; i++) {
+      int num1 = (i < v1.length) ? int.parse(v1[i]) : 0;
+      int num2 = (i < v2.length) ? int.parse(v2[i]) : 0;
+
+      if (num1 < num2)
+        return -1;
+      else if (num1 > num2) return 1;
+    }
+    return 0;
   }
 
   void _showErrorDialog(String message) {

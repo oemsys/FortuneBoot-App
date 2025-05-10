@@ -80,7 +80,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "register": MessageLookupByLibrary.simpleMessage("注册"),
         "registration_failed": MessageLookupByLibrary.simpleMessage("注册失败"),
         "serverConnectionFailed":
-            MessageLookupByLibrary.simpleMessage("服务器连接失败"),
+            MessageLookupByLibrary.simpleMessage("服务器连接失败 or 客户端版本过低"),
         "service_required": MessageLookupByLibrary.simpleMessage("同意以继续"),
         "sex": MessageLookupByLibrary.simpleMessage("性别"),
         "sex_valid":

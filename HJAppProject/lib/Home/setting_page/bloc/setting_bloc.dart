@@ -1,18 +1,19 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_login_example/home/setting_page/models/mine_setting.dart';
-import 'package:flutter_login_example/login/model/login_model.dart';
-import 'package:flutter_login_example/login/model/users.dart';
-import 'package:flutter_login_example/request/book_request.dart';
-import 'package:flutter_login_example/request/group_request.dart';
-import 'package:flutter_login_example/request/include_request.dart';
-import 'package:flutter_login_example/request/login_request.dart';
-import 'package:flutter_login_example/repository/repository/bills_repository.dart';
-import 'package:flutter_login_example/util/dio_client.dart';
+import 'package:HJProject/home/setting_page/models/mine_setting.dart';
+import 'package:HJProject/login/model/login_model.dart';
+import 'package:HJProject/login/model/users.dart';
+import 'package:HJProject/request/book_request.dart';
+import 'package:HJProject/request/group_request.dart';
+import 'package:HJProject/request/include_request.dart';
+import 'package:HJProject/request/login_request.dart';
+import 'package:HJProject/repository/repository/bills_repository.dart';
+import 'package:HJProject/util/dio_client.dart';
 import 'package:intl/intl.dart';
 import 'package:stream_transform/stream_transform.dart';
 
@@ -94,7 +95,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
         detail: DioClient().dio.options.baseUrl,
         leadingWidget: const Icon(Icons.edit_note)));
     elements.add(Setting(SettingType.currentVersion,
-        content: _billsRepository.version, leadingWidget: Icon(Icons.abc)));
+        content: BillsRepository.version, leadingWidget: Icon(Icons.abc)));
     return elements;
   }
 

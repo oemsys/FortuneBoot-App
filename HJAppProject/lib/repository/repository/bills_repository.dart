@@ -1,13 +1,14 @@
-import 'package:flutter_login_example/home/todos_overview/models/bill_item.dart';
-import 'package:flutter_login_example/home/todos_overview/models/bill_statistics.dart';
-import 'package:flutter_login_example/repository/api/bills_api.dart';
+import 'package:HJProject/home/todos_overview/models/bill_item.dart';
+import 'package:HJProject/home/todos_overview/models/bill_statistics.dart';
+import 'package:HJProject/repository/api/bills_api.dart';
 
 class BillsRepository {
   BillsRepository({
     required BillsApi billsApi,
   }) : _billsApi = billsApi;
 
-  String version = '1.0.0';
+  static String version = '1.0.0';
+  static String maxApiVersion = '1.1.0';
 
   final BillsApi _billsApi;
 

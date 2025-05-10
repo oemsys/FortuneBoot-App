@@ -8,7 +8,7 @@
   "pleaseEnterPort": "请输入端口",
   "invalidPort": "无效的端口号",
   "confirm": "确认",
-  "serverConnectionFailed": "服务器连接失败",
+  "serverConnectionFailed": "服务器连接失败 or 客户端版本过低",
   "error": "错误",
   "ok": "确定",
   "nickname_required": "昵称不能为空",

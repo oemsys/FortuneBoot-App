@@ -1,5 +1,5 @@
-import 'package:flutter_login_example/home/todos_overview/models/bill_item.dart';
-import 'package:flutter_login_example/home/todos_overview/models/bill_statistics.dart';
+import 'package:HJProject/home/todos_overview/models/bill_item.dart';
+import 'package:HJProject/home/todos_overview/models/bill_statistics.dart';
 
 abstract class BillsApi {
   bool hasMore = true;

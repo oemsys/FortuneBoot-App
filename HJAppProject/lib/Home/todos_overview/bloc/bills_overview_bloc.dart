@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter_login_example/home/todos_overview/models/bill_item.dart';
-import 'package:flutter_login_example/home/todos_overview/models/bill_statistics.dart';
-import 'package:flutter_login_example/request/bill_request.dart';
-import 'package:flutter_login_example/repository/repository/bills_repository.dart';
+import 'package:HJProject/home/todos_overview/models/bill_item.dart';
+import 'package:HJProject/home/todos_overview/models/bill_statistics.dart';
+import 'package:HJProject/request/bill_request.dart';
+import 'package:HJProject/repository/repository/bills_repository.dart';
 
 part 'bills_overview_event.dart';
 part 'bills_overview_state.dart';

@@ -1,6 +1,6 @@
-name: flutter_login_example
-description: "Example of flutter_login package."
-version: 1.0.0+1
+name: HJProject
+description: "Hao Ji"
+version: 1.0.0
 publish_to: 'none'
 
 environment:
@@ -43,8 +43,10 @@ dev_dependencies:
   retrofit_generator: ^9.1.9
   flutter_launcher_icons: ^0.13.1
   
+# flutter pub run flutter_launcher_icons
 flutter_icons:
   image_path: "assets/icon.png"  # 源图标路径（建议 1024x1024）
+  remove_alpha_ios: true
   android: true
   ios: true
 
