@@ -118,9 +118,14 @@ class LocalStorageBillsApi extends BillsApi {
       DateFormat('yyyy-MM-dd').format(endTime),
     );
     if (billStatisticsResponse.code == 0) {
-      BillStatistics statistics = BillStatistics.fromJson(
-          Map<String, dynamic>.from(billStatisticsResponse.data as Map? ?? {}));
-      billStatistics = statistics;
+      if (billStatisticsResponse.data == null) {
+        billStatistics = BillStatistics(income: 0, expense: 0, surplus: 0);
+      } else {
+        BillStatistics statistics = BillStatistics.fromJson(
+            Map<String, dynamic>.from(
+                billStatisticsResponse.data as Map? ?? {}));
+        billStatistics = statistics;
+      }
     }
     if (billResponse.code == 0) {
       var billList = billResponse.data['rows'] as List? ?? [];
