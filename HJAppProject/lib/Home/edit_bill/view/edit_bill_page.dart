@@ -950,6 +950,9 @@ class _EditBillViewState extends State<EditBillView> {
           textInputAction: TextInputAction.done,
           keyboardType: TextInputType.multiline,
           controller: _remarkController,
+          onChanged: (value) {
+            state.editBill.data?.remark = value;
+          },
           decoration: InputDecoration(
             labelText: '备注',
             prefixIcon: const Icon(Icons.note),
