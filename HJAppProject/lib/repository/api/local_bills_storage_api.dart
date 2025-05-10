@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
-import 'package:flutter_login_example/Home/todos_overview/models/bill_statistics.dart';
+import 'package:flutter_login_example/home/todos_overview/models/bill_item.dart';
+import 'package:flutter_login_example/home/todos_overview/models/bill_statistics.dart';
 import 'package:flutter_login_example/request/bill_request.dart';
 import 'package:flutter_login_example/request/book_request.dart';
 import 'package:flutter_login_example/repository/api/bills_api.dart';

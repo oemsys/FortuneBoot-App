@@ -3,11 +3,11 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_login_example/Login/view/base_url_config_page.dart';
+import 'package:flutter_login_example/login/view/base_url_config_page.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 import 'package:flutter_login_example/generated/l10n.dart';
-import 'package:flutter_login_example/Login/view/login_screen.dart';
-import 'package:flutter_login_example/Home/theme/theme.dart';
+import 'package:flutter_login_example/login/view/login_screen.dart';
+import 'package:flutter_login_example/home/theme/theme.dart';
 
 class App extends StatelessWidget {
   const App(

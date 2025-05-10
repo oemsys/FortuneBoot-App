@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:retrofit/retrofit.dart';
-import '../Login/model/login_model.dart'; // 导入数据模型
+import '../login/model/login_model.dart'; // 导入数据模型
 
 part 'login_request.g.dart'; // 代码生成文件
 

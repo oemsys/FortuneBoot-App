@@ -41,6 +41,12 @@ dev_dependencies:
   json_serializable: ^6.9.4
   lint: ^2.1.2
   retrofit_generator: ^9.1.9
+  flutter_launcher_icons: ^0.13.1
+  
+flutter_icons:
+  image_path: "assets/icon.png"  # 源图标路径（建议 1024x1024）
+  android: true
+  ios: true
 
 flutter_intl:
     enabled: true

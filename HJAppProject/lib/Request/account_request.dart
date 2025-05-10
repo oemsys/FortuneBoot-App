@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_login_example/Login/model/login_model.dart';
+import 'package:flutter_login_example/login/model/login_model.dart';
 import 'package:flutter_login_example/request/base_request.dart';
 import 'package:flutter_login_example/util/dio_client.dart';
 import 'package:retrofit/retrofit.dart';

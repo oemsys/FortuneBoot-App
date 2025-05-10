@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_login_example/Home/edit_bill/models/edit_select_item.dart';
-import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
+import 'package:flutter_login_example/home/edit_bill/models/edit_select_item.dart';
+import 'package:flutter_login_example/home/todos_overview/models/bill_item.dart';
 import 'package:flutter_login_example/request/category_request.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 

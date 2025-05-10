@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_login_example/Home/home/view/home_page.dart';
-import 'package:flutter_login_example/Login/model/users.dart';
-import 'package:flutter_login_example/Login/view/login_screen.dart';
+import 'package:flutter_login_example/home/home/view/home_page.dart';
+import 'package:flutter_login_example/login/model/users.dart';
+import 'package:flutter_login_example/login/view/login_screen.dart';
 import 'package:flutter_login_example/generated/l10n.dart';
 import 'package:flutter_login_example/theme/app_theme.dart';
 import 'package:dio/dio.dart';
