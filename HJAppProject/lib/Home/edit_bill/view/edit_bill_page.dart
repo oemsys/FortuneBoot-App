@@ -664,7 +664,7 @@ class _EditBillViewState extends State<EditBillView> {
               color: Colors.grey.shade700,
               fontSize: 16,
             ),
-            prefixIcon: const Icon(Icons.title),
+            prefixIcon: const Icon(Icons.monetization_on_outlined),
             // 统一所有状态下的边框样式
             enabledBorder: OutlineInputBorder(
               borderSide: BorderSide(color: Colors.grey.shade400),
