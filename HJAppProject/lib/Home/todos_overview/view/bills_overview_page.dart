@@ -1021,7 +1021,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                   children: [
                     _buildDetailItem(
                       context,
-                      '账户',
+                      bill.billType == BillType.transfer ? '转出账户' : '账户',
                       bill.accountName ?? '未知',
                       icon: Icons.account_balance_wallet,
                     ),

@@ -31,8 +31,8 @@ BillItemAddData _$BillItemAddDataFromJson(Map<String, dynamic> json) =>
       categoryAmountPair: (json['categoryAmountPair'] as List<dynamic>?)
           ?.map((e) => Map<String, num>.from(e as Map))
           .toList(),
-      amount: (json['amount'] as num?)?.toInt(),
-      convertedAmount: (json['convertedAmount'] as num?)?.toInt(),
+      amount: (json['amount'] as num?)?.toDouble(),
+      convertedAmount: (json['convertedAmount'] as num?)?.toDouble(),
       payeeId: (json['payeeId'] as num?)?.toInt(),
       billType: (json['billType'] as num?)?.toInt(),
       toAccountId: (json['toAccountId'] as num?)?.toInt(),

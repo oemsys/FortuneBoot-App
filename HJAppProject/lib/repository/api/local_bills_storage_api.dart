@@ -81,10 +81,12 @@ class LocalStorageBillsApi extends BillsApi {
   Future<void> deleteBill(int billId) async {
     final bills = [..._billStreamController.value];
     final billIndex = bills.indexWhere((t) => t.billId == billId);
+    await refreshStatic();
     if (billIndex == -1) {
     } else {
       bills.removeAt(billIndex);
       _billStreamController.add(bills);
+      // 统计
       return _setValue(kBillsCollectionKey, json.encode(bills));
     }
   }
@@ -108,25 +110,7 @@ class LocalStorageBillsApi extends BillsApi {
       pageSize: pageSize,
       bookId: '$bookId',
     );
-    var endTime = DateTime.now();
-    // 当前月的第一天
-    var startTime = DateTime(endTime.year, endTime.month, 1);
-    ;
-    var billStatisticsResponse = await _includeService.getBillStatistics(
-      bookId ?? 0,
-      DateFormat('yyyy-MM-dd').format(startTime),
-      DateFormat('yyyy-MM-dd').format(endTime),
-    );
-    if (billStatisticsResponse.code == 0) {
-      if (billStatisticsResponse.data == null) {
-        billStatistics = BillStatistics(income: 0, expense: 0, surplus: 0);
-      } else {
-        BillStatistics statistics = BillStatistics.fromJson(
-            Map<String, dynamic>.from(
-                billStatisticsResponse.data as Map? ?? {}));
-        billStatistics = statistics;
-      }
-    }
+    await refreshStatic();
     if (billResponse.code == 0) {
       var billList = billResponse.data['rows'] as List? ?? [];
       List<BillItem> remoteItems = billList.map((ele) {
@@ -158,6 +142,27 @@ class LocalStorageBillsApi extends BillsApi {
       _billStreamController.add([]);
       // await _setValue(kBillsCollectionKey, json.encode([]));
       queryNewBills();
+    }
+  }
+
+  Future<void> refreshStatic() async {
+    var endTime = DateTime.now();
+    // 当前月的第一天
+    var startTime = DateTime(endTime.year, endTime.month, 1);
+    var billStatisticsResponse = await _includeService.getBillStatistics(
+      bookId ?? 0,
+      DateFormat('yyyy-MM-dd').format(startTime),
+      DateFormat('yyyy-MM-dd').format(endTime),
+    );
+    if (billStatisticsResponse.code == 0) {
+      if (billStatisticsResponse.data == null) {
+        billStatistics = BillStatistics(income: 0, expense: 0, surplus: 0);
+      } else {
+        BillStatistics statistics = BillStatistics.fromJson(
+            Map<String, dynamic>.from(
+                billStatisticsResponse.data as Map? ?? {}));
+        billStatistics = statistics;
+      }
     }
   }
 

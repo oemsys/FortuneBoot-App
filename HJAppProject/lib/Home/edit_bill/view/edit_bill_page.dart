@@ -309,74 +309,74 @@ class _EditBillViewState extends State<EditBillView> {
   }
 
   // 金额输入区域
-  Widget _buildAmountSection() {
-    var billType = curBillType();
-    final (amountColor, amountIcon) = switch (billType) {
-      BillType.expenditure => (
-          Colors.red.shade700,
-          Icons.remove_circle_outline
-        ),
-      BillType.income => (Colors.green.shade700, Icons.add_circle_outline),
-      BillType.transfer => (Colors.blue.shade700, Icons.swap_horiz),
-      _ => (Colors.grey.shade700, Icons.attach_money),
-    };
+  // Widget _buildAmountSection() {
+  //   var billType = curBillType();
+  //   final (amountColor, amountIcon) = switch (billType) {
+  //     BillType.expenditure => (
+  //         Colors.red.shade700,
+  //         Icons.remove_circle_outline
+  //       ),
+  //     BillType.income => (Colors.green.shade700, Icons.add_circle_outline),
+  //     BillType.transfer => (Colors.blue.shade700, Icons.swap_horiz),
+  //     _ => (Colors.grey.shade700, Icons.attach_money),
+  //   };
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            amountColor.withOpacity(0.1),
-            amountColor.withOpacity(0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Icon(amountIcon, size: 28, color: amountColor),
-          const SizedBox(width: 16),
-          Expanded(
-            child: TextField(
-              controller: _amountController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              textAlign: TextAlign.end,
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: amountColor,
-              ),
-              decoration: InputDecoration(
-                hintText: '0.00',
-                hintStyle: TextStyle(
-                  color: amountColor.withOpacity(0.5),
-                  fontSize: 32,
-                ),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            '¥',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: amountColor,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  //   return Container(
+  //     margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+  //     decoration: BoxDecoration(
+  //       gradient: LinearGradient(
+  //         colors: [
+  //           amountColor.withOpacity(0.1),
+  //           amountColor.withOpacity(0.05),
+  //         ],
+  //         begin: Alignment.topLeft,
+  //         end: Alignment.bottomRight,
+  //       ),
+  //       borderRadius: BorderRadius.circular(16),
+  //     ),
+  //     child: Row(
+  //       children: [
+  //         Icon(amountIcon, size: 28, color: amountColor),
+  //         const SizedBox(width: 16),
+  //         Expanded(
+  //           child: TextField(
+  //             controller: _amountController,
+  //             keyboardType:
+  //                 const TextInputType.numberWithOptions(decimal: true),
+  //             textAlign: TextAlign.end,
+  //             style: TextStyle(
+  //               fontSize: 32,
+  //               fontWeight: FontWeight.bold,
+  //               color: amountColor,
+  //             ),
+  //             decoration: InputDecoration(
+  //               hintText: '0.00',
+  //               hintStyle: TextStyle(
+  //                 color: amountColor.withOpacity(0.5),
+  //                 fontSize: 32,
+  //               ),
+  //               border: InputBorder.none,
+  //               contentPadding: EdgeInsets.zero,
+  //             ),
+  //             inputFormatters: [
+  //               FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+  //             ],
+  //           ),
+  //         ),
+  //         const SizedBox(width: 8),
+  //         Text(
+  //           '¥',
+  //           style: TextStyle(
+  //             fontSize: 24,
+  //             fontWeight: FontWeight.bold,
+  //             color: amountColor,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   // 基本信息区域
   Widget _buildBasicInfoSection() {
@@ -614,17 +614,20 @@ class _EditBillViewState extends State<EditBillView> {
   // 转账账户选择
   Widget _buildTransferAccountSection() {
     var state = context.watch<EditBillBloc>().state;
+    if (state.editBill.data?.amount != null) {
+      _amountController.text = (state.editBill.data?.amount ?? 0).toString();
+    }
     final inItems = state.transferAccountList;
     final outItems = state.transferOutAccountList;
     AccountSelectItem? selectInItem;
-    for (final item in inItems) {
+    for (final item in outItems) {
       if (item.value.id == state.editBill.data?.accountId) {
         selectInItem = item.value;
         break;
       }
     }
     AccountSelectItem? selectOutItem;
-    for (final item in outItems) {
+    for (final item in inItems) {
       if (item.value.id == state.editBill.data?.toAccountId) {
         selectOutItem = item.value;
         break;
@@ -641,6 +644,48 @@ class _EditBillViewState extends State<EditBillView> {
           ),
         ),
         const SizedBox(height: 16),
+        TextField(
+          controller: _amountController,
+          onChanged: (value) {
+            state.editBill.data?.amount = double.tryParse(value) ?? 0;
+          },
+          keyboardType: TextInputType.numberWithOptions(
+            decimal: true,
+            signed: true,
+          ),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(
+                RegExp(r'^\d*\.?\d{0,5}')), // 允许数字和最多两位小数
+          ],
+          decoration: InputDecoration(
+            hintText: '请输入金额',
+            labelText: '金额',
+            labelStyle: TextStyle(
+              color: Colors.grey.shade700,
+              fontSize: 16,
+            ),
+            prefixIcon: const Icon(Icons.title),
+            // 统一所有状态下的边框样式
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey.shade400),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.blue), // 聚焦状态边框颜色
+              borderRadius: BorderRadius.circular(12),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.red), // 错误状态边框颜色
+              borderRadius: BorderRadius.circular(12),
+            ),
+            border: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey.shade400),
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          maxLength: 50,
+        ),
+        const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.only(right: 6, top: 2, bottom: 2),
           decoration: BoxDecoration(
@@ -651,19 +696,19 @@ class _EditBillViewState extends State<EditBillView> {
             key: Key('${curBillType()}_transfer'),
             value: selectOutItem,
             decoration: const InputDecoration(
-              labelText: '转出账户',
+              labelText: '转入账户',
               contentPadding: EdgeInsets.zero,
               prefixIcon: Icon(Icons.arrow_upward),
               border: InputBorder.none,
             ),
-            items: outItems.map((item) {
+            items: inItems.map((item) {
               return DropdownMenuItem<AccountSelectItem>(
                 value: item.value,
                 child: Text(item.label),
               );
             }).toList(),
             onChanged: (value) {
-              state.editBill.data?.accountToId = value?.id;
+              state.editBill.data?.toAccountId = value?.id;
             },
             isExpanded: true,
           ),
@@ -681,12 +726,12 @@ class _EditBillViewState extends State<EditBillView> {
             key: Key('${curBillType()}_transfer_in'),
             value: selectInItem,
             decoration: const InputDecoration(
-              labelText: '转入账户',
+              labelText: '转出账户',
               contentPadding: EdgeInsets.zero,
               prefixIcon: Icon(Icons.arrow_downward),
               border: InputBorder.none,
             ),
-            items: inItems.map((item) {
+            items: outItems.map((item) {
               return DropdownMenuItem<AccountSelectItem>(
                 value: item.value,
                 child: Text(item.label),
@@ -974,16 +1019,27 @@ class _EditBillViewState extends State<EditBillView> {
   // 提交账单
   void _submitBill(BillItemAdd billItemAdd) {
     // 验证必填字段
+    print('lxjtodo: _submitBill $billItemAdd');
     if (!(billItemAdd.data!.title?.isNotEmpty == true)) {
       billItemAdd.data!.title = '未命名账单';
     }
-    if (!(billItemAdd.data?.categoryAmountPair?.isNotEmpty == true)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请填入费用')),
-      );
-      return;
+    if (billItemAdd.data?.billType == BillType.transfer.value) {
+      if (billItemAdd.data!.amount == null || billItemAdd.data!.amount == 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('请填入费用')),
+        );
+        return;
+      }
+    } else {
+      if (!(billItemAdd.data?.categoryAmountPair?.isNotEmpty == true)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('请填入费用')),
+        );
+        return;
+      }
     }
-    if (billItemAdd.data?.billType == BillType.transfer) {
+
+    if (billItemAdd.data?.billType == BillType.transfer.value) {
       // 转账类型
       if (billItemAdd.data?.accountId == null ||
           billItemAdd.data?.toAccountId == null) {

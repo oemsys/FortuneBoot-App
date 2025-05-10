@@ -70,8 +70,8 @@ class BillItemAddData {
   int? accountId;
   int? accountToId;
   List<Map<String, num>>? categoryAmountPair;
-  int? amount;
-  int? convertedAmount;
+  double? amount;
+  double? convertedAmount;
   int? payeeId;
   int? billType;
   int? toAccountId;
@@ -147,8 +147,8 @@ class BillItemAddData {
     int? accountId,
     int? accountToId,
     List<Map<String, num>>? categoryAmountPair,
-    int? amount,
-    int? convertedAmount,
+    double? amount,
+    double? convertedAmount,
     int? payeeId,
     int? billType,
     int? toAccountId,
