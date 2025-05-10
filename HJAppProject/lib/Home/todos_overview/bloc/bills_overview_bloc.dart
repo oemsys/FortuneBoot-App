@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
+import 'package:flutter_login_example/Home/todos_overview/models/bill_statistics.dart';
 import 'package:flutter_login_example/request/bill_request.dart';
 import 'package:flutter_login_example/repository/repository/bills_repository.dart';
 
@@ -36,6 +37,7 @@ class BillsOverviewBloc extends Bloc<BillsOverviewEvent, BillsOverviewState> {
         bills: bills,
         hasMore: _billsRepository.hasMore(),
         isLoadingMore: _billsRepository.isLoadingMore(),
+        statistics: _billsRepository.getStatistics(),
       ),
       onError: (_, __) => state.copyWith(
         status: () => BillsOverviewStatus.failure,

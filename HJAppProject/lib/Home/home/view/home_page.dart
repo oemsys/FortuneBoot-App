@@ -28,7 +28,7 @@ class HomeView extends StatelessWidget {
     return Scaffold(
       body: IndexedStack(
         index: selectedTab.index,
-        children: const [BillsOverviewPage(), StatsPage(), MinePage()],
+        children: const [BillsOverviewPage() /**, StatsPage() */, MinePage()],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
@@ -51,14 +51,14 @@ class HomeView extends StatelessWidget {
                     value: HomeTab.todos,
                     icon: const Icon(Icons.list_rounded),
                   ),
-                  const SizedBox(
-                    width: 16,
-                  ),
-                  _HomeTabButton(
-                    groupValue: selectedTab,
-                    value: HomeTab.stats,
-                    icon: const Icon(Icons.show_chart_rounded),
-                  ),
+                  // const SizedBox(
+                  //   width: 16,
+                  // ),
+                  // _HomeTabButton(
+                  //   groupValue: selectedTab,
+                  //   value: HomeTab.stats,
+                  //   icon: const Icon(Icons.show_chart_rounded),
+                  // ),
                 ],
               ),
             ),

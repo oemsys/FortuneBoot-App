@@ -1,4 +1,5 @@
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
+import 'package:flutter_login_example/Home/todos_overview/models/bill_statistics.dart';
 import 'package:flutter_login_example/repository/api/bills_api.dart';
 
 class BillsRepository {
@@ -34,4 +35,6 @@ class BillsRepository {
   void refreshBills({bool clear = true}) => _billsApi.refreshBills(clear);
 
   void deleteBill(int billId) => _billsApi.deleteBill(billId);
+
+  BillStatistics? getStatistics() => _billsApi.billStatistics;
 }

@@ -1,4 +1,5 @@
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
+import 'package:flutter_login_example/Home/todos_overview/models/bill_statistics.dart';
 
 abstract class BillsApi {
   bool hasMore = true;
@@ -30,4 +31,6 @@ abstract class BillsApi {
   Future<void> close();
 
   Future<void> refreshBills(bool clear);
+
+  BillStatistics? billStatistics;
 }

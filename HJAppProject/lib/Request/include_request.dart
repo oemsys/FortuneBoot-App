@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_login_example/Login/model/login_model.dart';
 import 'package:flutter_login_example/request/base_request.dart';
 import 'package:flutter_login_example/util/dio_client.dart';
@@ -27,4 +26,11 @@ abstract class IncludeService {
 
   @GET('/fortune/include/{groupId}/getFortuneAssetsLiabilities')
   Future<HJResponse> getFortuneAssetsLiabilities(@Path('groupId') int groupId);
+
+  @GET('/fortune/include/getBillStatistics')
+  Future<HJResponse> getBillStatistics(
+    @Query('bookId') int bookId,
+    @Query('tradeTimeStartTime') String tradeTimeStartTime,
+    @Query('tradeTimeEndTime') String tradeTimeEndTime,
+  );
 }

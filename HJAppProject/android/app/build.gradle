@@ -35,7 +35,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.example.example"
+        applicationId "com.fortuneboot.HaoJiOpenSource"
         minSdkVersion 16
         targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
@@ -50,7 +50,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
-    namespace 'com.example.example'
+    namespace 'com.fortuneboot.HaoJiOpenSource'
     lint {
         disable 'InvalidPackage'
     }

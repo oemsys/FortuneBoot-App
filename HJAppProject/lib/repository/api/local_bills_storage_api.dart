@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_login_example/Home/todos_overview/models/bill_item.dart';
+import 'package:flutter_login_example/Home/todos_overview/models/bill_statistics.dart';
 import 'package:flutter_login_example/request/bill_request.dart';
 import 'package:flutter_login_example/request/book_request.dart';
 import 'package:flutter_login_example/repository/api/bills_api.dart';
+import 'package:flutter_login_example/request/include_request.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 /// {@template local_storage_todos_api}
 /// A Flutter implementation of the [TodosApi] that uses local storage.
@@ -23,6 +26,7 @@ class LocalStorageBillsApi extends BillsApi {
   final SharedPreferences _plugin;
   final BookService _bookService = BookService();
   final BillService _billService = BillService();
+  final IncludeService _includeService = IncludeService();
   int pageNum = 1;
   int pageSize = 20;
   late final _billStreamController = BehaviorSubject<List<BillItem>>.seeded(
@@ -104,6 +108,20 @@ class LocalStorageBillsApi extends BillsApi {
       pageSize: pageSize,
       bookId: '$bookId',
     );
+    var endTime = DateTime.now();
+    // 当前月的第一天
+    var startTime = DateTime(endTime.year, endTime.month, 1);
+    ;
+    var billStatisticsResponse = await _includeService.getBillStatistics(
+      bookId ?? 0,
+      DateFormat('yyyy-MM-dd').format(startTime),
+      DateFormat('yyyy-MM-dd').format(endTime),
+    );
+    if (billStatisticsResponse.code == 0) {
+      BillStatistics statistics = BillStatistics.fromJson(
+          Map<String, dynamic>.from(billStatisticsResponse.data as Map? ?? {}));
+      billStatistics = statistics;
+    }
     if (billResponse.code == 0) {
       var billList = billResponse.data['rows'] as List? ?? [];
       List<BillItem> remoteItems = billList.map((ele) {

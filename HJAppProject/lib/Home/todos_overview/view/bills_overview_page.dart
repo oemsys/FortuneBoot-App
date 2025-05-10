@@ -371,29 +371,9 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
 
         // 计算本月收支
         final now = DateTime.now();
-        final currentMonth = DateTime(now.year, now.month);
-        double monthIncome = 0;
-        double monthExpense = 0;
-
-        for (var bill in state.bills!) {
-          if (bill.tradeTime == null) continue;
-
-          final billMonth =
-              DateTime(bill.tradeTime!.year, bill.tradeTime!.month);
-          if (billMonth.isAtSameMomentAs(currentMonth)) {
-            if (bill.billType == BillType.income) {
-              monthIncome += bill.convertedAmount ?? 0;
-            } else if (bill.billType == BillType.expenditure) {
-              monthExpense += bill.convertedAmount ?? 0;
-            }
-          }
-        }
-
-        // 计算预算使用情况（假设每月预算为5000元）
-        const double monthlyBudget = 5000.0;
-        final double budgetUsedPercentage =
-            (monthExpense / monthlyBudget) * 100;
-        final bool isOverBudget = monthExpense > monthlyBudget;
+        // final currentMonth = DateTime(now.year, now.month);
+        double monthIncome = state.statistics?.income ?? 0;
+        double monthExpense = state.statistics?.expense ?? 0;
 
         return Column(
           children: [
@@ -419,13 +399,13 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        TextButton.icon(
-                          icon: const Icon(Icons.bar_chart, size: 16),
-                          label: const Text('查看报表'),
-                          onPressed: () {
-                            // 跳转到月度报表
-                          },
-                        ),
+                        // TextButton.icon(
+                        //   icon: const Icon(Icons.bar_chart, size: 16),
+                        //   label: const Text('查看报表'),
+                        //   onPressed: () {
+                        //     // 跳转到月度报表
+                        //   },
+                        // ),
                       ],
                     ),
                     const SizedBox(height: 12),

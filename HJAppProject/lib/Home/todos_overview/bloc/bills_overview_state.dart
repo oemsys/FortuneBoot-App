@@ -9,11 +9,13 @@ final class BillsOverviewState extends Equatable {
     this.bills = const [],
     this.hasMore = true,
     this.isLoadingMore = false,
+    this.statistics,
   });
 
   final BillsOverviewStatus status;
   final BillItem? lastDeletedBill;
   final List<BillItem>? bills;
+  final BillStatistics? statistics;
 
   // 分页相关
   final bool hasMore; // 是否还有更多数据
@@ -25,14 +27,16 @@ final class BillsOverviewState extends Equatable {
     BillItem? Function()? lastDeletedBill,
     bool? hasMore,
     bool? isLoadingMore,
+    BillStatistics? statistics,
   }) {
     return BillsOverviewState(
       status: status != null ? status() : this.status,
       bills: bills ?? this.bills,
       lastDeletedBill:
           lastDeletedBill != null ? lastDeletedBill() : this.lastDeletedBill,
-      hasMore: hasMore != null ? hasMore : this.hasMore,
-      isLoadingMore: isLoadingMore != null ? isLoadingMore : this.isLoadingMore,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      statistics: statistics ?? this.statistics,
     );
   }
 
@@ -44,5 +48,6 @@ final class BillsOverviewState extends Equatable {
         bills,
         hasMore,
         isLoadingMore,
+        statistics,
       ];
 }
