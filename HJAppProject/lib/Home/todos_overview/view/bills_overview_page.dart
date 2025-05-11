@@ -272,6 +272,21 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                                           // 点击账单项跳转到详情页
                                           _showBillDetails(context, bill);
                                         },
+                                        onCopy: () {
+                                          Navigator.pop(context);
+                                          ScaffoldMessenger.of(context)
+                                              .removeCurrentSnackBar();
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                                content: Text('账单已复制，请编辑后保存')),
+                                          );
+                                          Navigator.of(context).push(
+                                              EditBillPage.route(
+                                                  initialBill:
+                                                      BillItemAdd.fromBillItem(
+                                                          bill)));
+                                        },
                                         onDismissed: (direction) {
                                           // 实现左滑删除功能
                                           // 这里需要添加删除账单的逻辑

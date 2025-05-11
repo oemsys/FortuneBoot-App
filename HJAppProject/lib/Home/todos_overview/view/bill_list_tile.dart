@@ -9,12 +9,14 @@ class BillListTile extends StatelessWidget {
     super.key,
     this.onToggleCompleted,
     this.onDismissed,
+    this.onCopy,
     this.onTap,
   });
 
   final BillItem bill;
   final ValueChanged<bool>? onToggleCompleted;
   final DismissDirectionCallback? onDismissed;
+  final Function? onCopy;
   final VoidCallback? onTap;
 
   @override
@@ -228,33 +230,65 @@ class BillListTile extends StatelessWidget {
     return Dismissible(
       key: Key('billListTile_dismissible_${bill.billId}'),
       onDismissed: onDismissed,
-      direction: DismissDirection.endToStart,
+      direction: DismissDirection.horizontal,
       confirmDismiss: (direction) async {
         // 添加确认对话框，防止误删
-        if (onDismissed != null) {
-          return await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('确认删除'),
-                  content: const Text('确定要删除这条账单记录吗？'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text('取消'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(true),
-                      child:
-                          const Text('删除', style: TextStyle(color: Colors.red)),
-                    ),
-                  ],
+        if (direction == DismissDirection.endToStart) {
+          if (onDismissed != null) {
+            return await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('确认删除'),
+                    content: const Text('确定要删除这条账单记录吗？'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('取消'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text('删除',
+                            style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+                ) ??
+                false;
+          }
+        } else if (direction == DismissDirection.startToEnd) {
+          await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('是否复制'),
+              content: const Text('确定要复制这条账单记录吗？'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('取消'),
                 ),
-              ) ??
-              false;
+                TextButton(
+                  onPressed: () {
+                    onCopy?.call();
+                  },
+                  child: const Text('复制', style: TextStyle(color: Colors.blue)),
+                ),
+              ],
+            ),
+          );
+          return false;
         }
         return false;
       },
       background: Container(
+        alignment: Alignment.centerLeft,
+        color: theme.colorScheme.inversePrimary,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: const Icon(
+          Icons.copy,
+          color: Colors.white,
+        ),
+      ),
+      secondaryBackground: Container(
         alignment: Alignment.centerRight,
         color: theme.colorScheme.error,
         padding: const EdgeInsets.symmetric(horizontal: 16),
