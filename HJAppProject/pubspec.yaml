@@ -1,6 +1,6 @@
-name: hjProject
+name: hjproject
 description: "Hao Ji"
-version: 1.0.1 #同时修改 lib/repository/repository/bills_repository.dart文件
+version: 1.0.2 #同时修改 lib/repository/repository/bills_repository.dart文件
 publish_to: 'none'
 
 environment:

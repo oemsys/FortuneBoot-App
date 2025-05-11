@@ -1,15 +1,15 @@
 import 'dart:math';
 
-import 'package:hjProject/repository/repository/bills_repository.dart';
-import 'package:hjProject/request/login_request.dart';
+import 'package:hjproject/repository/repository/bills_repository.dart';
+import 'package:hjproject/request/login_request.dart';
 import 'package:flutter/material.dart';
-import 'package:hjProject/home/home/view/home_page.dart';
-import 'package:hjProject/login/model/users.dart';
-import 'package:hjProject/login/view/login_screen.dart';
-import 'package:hjProject/generated/l10n.dart';
-import 'package:hjProject/theme/app_theme.dart';
+import 'package:hjproject/home/home/view/home_page.dart';
+import 'package:hjproject/login/model/users.dart';
+import 'package:hjproject/login/view/login_screen.dart';
+import 'package:hjproject/generated/l10n.dart';
+import 'package:hjproject/theme/app_theme.dart';
 import 'package:dio/dio.dart';
-import 'package:hjProject/util/dio_client.dart';
+import 'package:hjproject/util/dio_client.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 enum AuthMode {

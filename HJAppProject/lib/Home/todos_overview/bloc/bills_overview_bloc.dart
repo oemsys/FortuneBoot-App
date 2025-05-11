@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:hjProject/home/todos_overview/models/bill_item.dart';
-import 'package:hjProject/home/todos_overview/models/bill_statistics.dart';
-import 'package:hjProject/request/bill_request.dart';
-import 'package:hjProject/repository/repository/bills_repository.dart';
+import 'package:hjproject/home/todos_overview/models/bill_item.dart';
+import 'package:hjproject/home/todos_overview/models/bill_statistics.dart';
+import 'package:hjproject/request/bill_request.dart';
+import 'package:hjproject/repository/repository/bills_repository.dart';
 
 part 'bills_overview_event.dart';
 part 'bills_overview_state.dart';

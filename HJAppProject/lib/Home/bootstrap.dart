@@ -3,10 +3,10 @@ import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:hjProject/home/app/app.dart';
-import 'package:hjProject/home/app/app_bloc_observer.dart';
-import 'package:hjProject/repository/api/bills_api.dart';
-import 'package:hjProject/repository/repository/bills_repository.dart';
+import 'package:hjproject/home/app/app.dart';
+import 'package:hjproject/home/app/app_bloc_observer.dart';
+import 'package:hjproject/repository/api/bills_api.dart';
+import 'package:hjproject/repository/repository/bills_repository.dart';
 
 void bootstrap({required BillsApi billsApi}) {
   FlutterError.onError = (details) {

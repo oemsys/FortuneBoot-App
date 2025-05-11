@@ -3,11 +3,11 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:hjProject/login/view/base_url_config_page.dart';
-import 'package:hjProject/repository/repository/bills_repository.dart';
-import 'package:hjProject/generated/l10n.dart';
-import 'package:hjProject/login/view/login_screen.dart';
-import 'package:hjProject/home/theme/theme.dart';
+import 'package:hjproject/login/view/base_url_config_page.dart';
+import 'package:hjproject/repository/repository/bills_repository.dart';
+import 'package:hjproject/generated/l10n.dart';
+import 'package:hjproject/login/view/login_screen.dart';
+import 'package:hjproject/home/theme/theme.dart';
 
 class App extends StatelessWidget {
   const App(

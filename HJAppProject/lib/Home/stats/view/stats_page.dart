@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hjProject/home/setting_page/bloc/setting_bloc.dart';
-import 'package:hjProject/repository/repository/bills_repository.dart';
+import 'package:hjproject/home/setting_page/bloc/setting_bloc.dart';
+import 'package:hjproject/repository/repository/bills_repository.dart';
 import '../../../generated/l10n.dart';
 import 'package:intl/intl.dart';
 

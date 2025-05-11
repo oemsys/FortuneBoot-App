@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hjProject/home/todos_overview/models/bill_item.dart';
+import 'package:hjproject/home/todos_overview/models/bill_item.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:intl/intl.dart';
 
