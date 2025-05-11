@@ -14,6 +14,7 @@ class UserDataSingleton {
   static const String userToken = 'userToken';
   static const String baseUrlDomain = 'baseUrlDomain';
   static const String baseUrlPort = 'baseUrlPort';
+  static const String baseUrlProtocol = 'baseUrlProtocol';
   // 私有静态实例
   static final UserDataSingleton _instance = UserDataSingleton._internal();
 
@@ -59,8 +60,8 @@ class UserDataSingleton {
     }
     prefs ??= await SharedPreferences.getInstance();
     String? localValue = prefs!.getString(key);
-    var localData = Map<String, dynamic>.from(
-        jsonDecode(localValue ?? '{}') as Map? ?? {});
+    var localData =
+        Map<String, dynamic>.from(jsonDecode(localValue ?? '{}') as Map? ?? {});
     if (localData.isNotEmpty) {
       _userData[key] = localData;
     }

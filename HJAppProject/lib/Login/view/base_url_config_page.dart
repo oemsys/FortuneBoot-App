@@ -10,6 +10,7 @@ import 'package:hjProject/generated/l10n.dart';
 import 'package:hjProject/theme/app_theme.dart';
 import 'package:dio/dio.dart';
 import 'package:hjProject/util/dio_client.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 enum AuthMode {
   loading,
@@ -43,43 +44,49 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
   }
 
   Future<void> _checkTokenValid() async {
-    // if (await Permission.storage.request().isGranted) {
-    //   // 执行 SharedPreferences 操作
-// }
-    var baseUrlDomain =
-        await UserDataSingleton().getStr(UserDataSingleton.baseUrlDomain);
-    var baseUrlPort =
-        await UserDataSingleton().getStr(UserDataSingleton.baseUrlPort);
-    if (baseUrlDomain?.isNotEmpty == true && baseUrlPort?.isNotEmpty == true) {
-      _domainController.text = baseUrlDomain!;
-      _portController.text = baseUrlPort!;
-    }
-    var userInfo = await UserDataSingleton().getMap(UserDataSingleton.userInfo);
-    var userToken =
-        await UserDataSingleton().getMap(UserDataSingleton.userToken);
-    if ((userInfo?.isNotEmpty == true) &&
-        (userToken?.isNotEmpty == true) &&
-        (baseUrlDomain?.isNotEmpty == true) &&
-        (baseUrlPort?.isNotEmpty == true)) {
-      // 跳登录页
-      var baseUrl = '$_protocol://${_domainController.text}';
-      if (_portController.text.isNotEmpty) {
-        baseUrl += ':${_portController.text}';
+    if (await Permission.storage.request().isGranted) {
+      var baseUrlDomain =
+          await UserDataSingleton().getStr(UserDataSingleton.baseUrlDomain);
+      var baseUrlPort =
+          await UserDataSingleton().getStr(UserDataSingleton.baseUrlPort);
+      var baseProtocol =
+          await UserDataSingleton().getStr(UserDataSingleton.baseUrlProtocol);
+      if (baseUrlDomain?.isNotEmpty == true &&
+          baseUrlPort?.isNotEmpty == true &&
+          baseProtocol?.isNotEmpty == true) {
+        _domainController.text = baseUrlDomain!;
+        _portController.text = baseUrlPort!;
+        _protocol = baseProtocol!;
       }
-      DioClient().updateBaseUrl('$baseUrl/prod-api');
-      if (!(await checkApiVersion())) {
-        _showErrorDialog(S.current.serverConnectionFailed);
+      var userInfo =
+          await UserDataSingleton().getMap(UserDataSingleton.userInfo);
+      var userToken =
+          await UserDataSingleton().getMap(UserDataSingleton.userToken);
+      if ((userInfo?.isNotEmpty == true) &&
+          (userToken?.isNotEmpty == true) &&
+          (baseUrlDomain?.isNotEmpty == true) &&
+          (baseUrlPort?.isNotEmpty == true) &&
+          (baseProtocol?.isNotEmpty == true)) {
+        // 跳登录页
+        final baseUrl = '$baseProtocol://$baseUrlDomain:$baseUrlPort';
+        DioClient().updateBaseUrl('$baseUrl/prod-api');
+        if (!(await checkApiVersion())) {
+          _showErrorDialog(S.current.serverConnectionFailed);
+          _authMode.value = AuthMode.signIn;
+          return;
+        }
+        DioClient().refreshToken(userToken!);
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => const HomePage(),
+          ),
+          (route) => false,
+        );
+      } else {
         _authMode.value = AuthMode.signIn;
-        return;
       }
-      DioClient().refreshToken(userToken!);
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => const HomePage(),
-        ),
-        (route) => false,
-      );
     } else {
+      _showErrorDialog('权限请求失败');
       _authMode.value = AuthMode.signIn;
     }
   }
@@ -206,6 +213,8 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
               .setStr(UserDataSingleton.baseUrlDomain, _domainController.text);
           UserDataSingleton()
               .setStr(UserDataSingleton.baseUrlPort, _portController.text);
+          UserDataSingleton()
+              .setStr(UserDataSingleton.baseUrlProtocol, _protocol);
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
               builder: (context) => LoginScreen(),
