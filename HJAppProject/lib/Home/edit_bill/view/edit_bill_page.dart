@@ -130,8 +130,6 @@ class _EditBillViewState extends State<EditBillView> {
     final isNewBill = context.select(
       (EditBillBloc bloc) => bloc.state.isNewBill,
     );
-
-    final theme = Theme.of(context);
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         tooltip: S.current.editTodoSaveButtonTooltip,
@@ -172,7 +170,7 @@ class _EditBillViewState extends State<EditBillView> {
             children: [
               // 账单类型选择器
               _buildBillTypeSelector(),
-              // 主要信息区域
+              // 基本信息
               wrapCard(
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,41 +192,20 @@ class _EditBillViewState extends State<EditBillView> {
               ),
               // 分类选择区域
               // 附加信息区域
-              Card(
-                margin: const EdgeInsets.all(8),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.grey.shade300),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildTagSection(),
-                    ],
-                  ),
+              wrapCard(Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTagSection(),
+                ],
+              )),
+              wrapCard(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildAdditionalOptionsSection(),
+                  ],
                 ),
               ),
-              Card(
-                margin: const EdgeInsets.all(8),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.grey.shade300),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildAdditionalOptionsSection(),
-                    ],
-                  ),
-                ),
-              ),
-
               const SizedBox(height: 24),
             ],
           ),
