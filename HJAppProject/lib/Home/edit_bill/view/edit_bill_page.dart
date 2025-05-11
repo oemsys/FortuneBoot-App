@@ -371,6 +371,7 @@ class _EditBillViewState extends State<EditBillView> {
         break;
       }
     }
+    state.editBill.data?.accountId = selectItem?.id;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -472,6 +473,8 @@ class _EditBillViewState extends State<EditBillView> {
     }
     print(
         'lxjtodo: _buildTransferAccountSection $outItems \n $inItems\n $selectInItem\n $selectOutItem\n $selectAccountId $selectOutAccountId');
+    state.editBill.data?.accountId = selectInItem?.id;
+    state.editBill.data?.toAccountId = selectOutItem?.id;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
