@@ -1,15 +1,15 @@
 import 'dart:math';
 
-import 'package:HJProject/repository/repository/bills_repository.dart';
-import 'package:HJProject/request/login_request.dart';
+import 'package:hjProject/repository/repository/bills_repository.dart';
+import 'package:hjProject/request/login_request.dart';
 import 'package:flutter/material.dart';
-import 'package:HJProject/home/home/view/home_page.dart';
-import 'package:HJProject/login/model/users.dart';
-import 'package:HJProject/login/view/login_screen.dart';
-import 'package:HJProject/generated/l10n.dart';
-import 'package:HJProject/theme/app_theme.dart';
+import 'package:hjProject/home/home/view/home_page.dart';
+import 'package:hjProject/login/model/users.dart';
+import 'package:hjProject/login/view/login_screen.dart';
+import 'package:hjProject/generated/l10n.dart';
+import 'package:hjProject/theme/app_theme.dart';
 import 'package:dio/dio.dart';
-import 'package:HJProject/util/dio_client.dart';
+import 'package:hjProject/util/dio_client.dart';
 
 enum AuthMode {
   loading,
@@ -43,6 +43,9 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
   }
 
   Future<void> _checkTokenValid() async {
+    // if (await Permission.storage.request().isGranted) {
+    //   // 执行 SharedPreferences 操作
+// }
     var baseUrlDomain =
         await UserDataSingleton().getStr(UserDataSingleton.baseUrlDomain);
     var baseUrlPort =
@@ -219,21 +222,26 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
 
   Future<bool> checkApiVersion() async {
     LoginService loginService = LoginService();
-    var apiResponse = await loginService.apiVersion();
-    if (apiResponse.code == 0) {
-      var curVerionString = apiResponse.data as String? ?? '';
-      if (curVerionString.isNotEmpty) {
-        int maxRes =
-            compareVersion(curVerionString, BillsRepository.maxApiVersion);
-        int minRes =
-            compareVersion(BillsRepository.minApiVersion, curVerionString);
-        // 左闭右开
-        print('lxjtodo: $maxRes $minRes');
-        return maxRes < 0 && minRes >= 0;
+    try {
+      var apiResponse = await loginService.apiVersion();
+      if (apiResponse.code == 0) {
+        var curVerionString = apiResponse.data as String? ?? '';
+        if (curVerionString.isNotEmpty) {
+          int maxRes =
+              compareVersion(curVerionString, BillsRepository.maxApiVersion);
+          int minRes =
+              compareVersion(BillsRepository.minApiVersion, curVerionString);
+          // 左闭右开
+          print('lxjtodo: $maxRes $minRes');
+          return maxRes < 0 && minRes >= 0;
+        } else {
+          return false;
+        }
       } else {
         return false;
       }
-    } else {
+    } catch (e) {
+      _showErrorDialog(e.toString());
       return false;
     }
   }

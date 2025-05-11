@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:HJProject/home/theme/theme.dart';
-import 'package:HJProject/home/todos_overview/models/bill_item.dart';
+import 'package:hjProject/home/theme/theme.dart';
+import 'package:hjProject/home/todos_overview/models/bill_item.dart';
 import 'package:intl/intl.dart';
 
 class BillListTile extends StatelessWidget {

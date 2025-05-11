@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:HJProject/home/todos_overview/models/bill_item.dart';
-import 'package:HJProject/home/todos_overview/models/bill_statistics.dart';
-import 'package:HJProject/request/bill_request.dart';
-import 'package:HJProject/request/book_request.dart';
-import 'package:HJProject/repository/api/bills_api.dart';
-import 'package:HJProject/request/include_request.dart';
+import 'package:hjProject/home/todos_overview/models/bill_item.dart';
+import 'package:hjProject/home/todos_overview/models/bill_statistics.dart';
+import 'package:hjProject/request/bill_request.dart';
+import 'package:hjProject/request/book_request.dart';
+import 'package:hjProject/repository/api/bills_api.dart';
+import 'package:hjProject/request/include_request.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:shared_preferences/shared_preferences.dart';

@@ -1,6 +1,6 @@
-import 'package:HJProject/home/todos_overview/models/bill_item.dart';
-import 'package:HJProject/home/todos_overview/models/bill_statistics.dart';
-import 'package:HJProject/repository/api/bills_api.dart';
+import 'package:hjProject/home/todos_overview/models/bill_item.dart';
+import 'package:hjProject/home/todos_overview/models/bill_statistics.dart';
+import 'package:hjProject/repository/api/bills_api.dart';
 
 class BillsRepository {
   BillsRepository({

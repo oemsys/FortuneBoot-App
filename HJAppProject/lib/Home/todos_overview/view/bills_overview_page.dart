@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:HJProject/home/edit_bill/view/edit_bill_page.dart';
-import 'package:HJProject/home/theme/theme.dart';
-import 'package:HJProject/home/todos_overview/bloc/bills_overview_bloc.dart';
-import 'package:HJProject/home/todos_overview/models/bill_item.dart';
-import 'package:HJProject/home/todos_overview/models/bill_item_add.dart';
-import 'package:HJProject/home/todos_overview/view/bill_list_tile.dart';
-import 'package:HJProject/repository/repository/bills_repository.dart';
+import 'package:hjProject/home/edit_bill/view/edit_bill_page.dart';
+import 'package:hjProject/home/theme/theme.dart';
+import 'package:hjProject/home/todos_overview/bloc/bills_overview_bloc.dart';
+import 'package:hjProject/home/todos_overview/models/bill_item.dart';
+import 'package:hjProject/home/todos_overview/models/bill_item_add.dart';
+import 'package:hjProject/home/todos_overview/view/bill_list_tile.dart';
+import 'package:hjProject/repository/repository/bills_repository.dart';
 import 'package:intl/intl.dart';
 
 import '../../../generated/l10n.dart';

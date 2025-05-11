@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
-import 'package:HJProject/login/model/login_model.dart';
-import 'package:HJProject/request/base_request.dart';
-import 'package:HJProject/util/dio_client.dart';
+import 'package:hjProject/login/model/login_model.dart';
+import 'package:hjProject/request/base_request.dart';
+import 'package:hjProject/util/dio_client.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'book_request.g.dart'; // 代码生成文件

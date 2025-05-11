@@ -1,4 +1,4 @@
-import 'package:HJProject/home/todos_overview/models/bill_item.dart';
+import 'package:hjProject/home/todos_overview/models/bill_item.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'login_model.g.dart';

@@ -2,14 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:HJProject/home/edit_bill/bloc/edit_bill_bloc.dart';
-import 'package:HJProject/home/edit_bill/models/edit_select_item.dart';
-import 'package:HJProject/home/edit_bill/view/select_field/category_select_field.dart';
-import 'package:HJProject/home/edit_bill/view/select_field/tag_select_field.dart';
-import 'package:HJProject/home/todos_overview/models/bill_item.dart';
-import 'package:HJProject/home/todos_overview/models/bill_item_add.dart';
-import 'package:HJProject/generated/l10n.dart';
-import 'package:HJProject/repository/repository/bills_repository.dart';
+import 'package:hjProject/home/edit_bill/bloc/edit_bill_bloc.dart';
+import 'package:hjProject/home/edit_bill/models/edit_select_item.dart';
+import 'package:hjProject/home/edit_bill/view/select_field/category_select_field.dart';
+import 'package:hjProject/home/edit_bill/view/select_field/tag_select_field.dart';
+import 'package:hjProject/home/todos_overview/models/bill_item.dart';
+import 'package:hjProject/home/todos_overview/models/bill_item_add.dart';
+import 'package:hjProject/generated/l10n.dart';
+import 'package:hjProject/repository/repository/bills_repository.dart';
 import 'package:intl/intl.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
@@ -108,6 +108,7 @@ class _EditBillViewState extends State<EditBillView> {
   ValueNotifier<bool> _isTagExpanded = ValueNotifier(true);
   ValueNotifier<bool?> _confirm = ValueNotifier(null);
   ValueNotifier<bool?> _include = ValueNotifier(null);
+  ValueNotifier<String?> _tradeTimeStr = ValueNotifier(null);
 
   @override
   void dispose() {
@@ -436,74 +437,83 @@ class _EditBillViewState extends State<EditBillView> {
         const SizedBox(height: 8),
 
         // 日期时间选择
-        InkWell(
-          onTap: () async {
-            final DateTime? dateTime = await showOmniDateTimePicker(
-              context: context,
-              initialDate: initDate,
-              firstDate: DateTime(2000),
-              lastDate: DateTime.now().add(const Duration(days: 3650)),
-              is24HourMode: true,
-              isShowSeconds: false,
-              minutesInterval: 1,
-              secondsInterval: 1,
-              borderRadius: const BorderRadius.all(Radius.circular(16)),
-              constraints: const BoxConstraints(
-                maxWidth: 350,
-                maxHeight: 650,
-              ),
-              transitionBuilder: (context, anim1, anim2, child) {
-                return FadeTransition(
-                  opacity: anim1.drive(
-                    Tween(
-                      begin: 0,
-                      end: 1,
+        ValueListenableBuilder(
+            valueListenable: _tradeTimeStr,
+            builder: (_, value, __) {
+              return InkWell(
+                onTap: () async {
+                  final DateTime? dateTime = await showOmniDateTimePicker(
+                    context: context,
+                    initialDate: value != null
+                        ? DateFormat('yyyy-MM-dd HH:mm').parse(value)
+                        : DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime.now(),
+                    is24HourMode: true,
+                    isShowSeconds: false,
+                    minutesInterval: 1,
+                    secondsInterval: 1,
+                    borderRadius: const BorderRadius.all(Radius.circular(16)),
+                    constraints: const BoxConstraints(
+                      maxWidth: 350,
+                      maxHeight: 650,
                     ),
-                  ),
-                  child: child,
-                );
-              },
-              transitionDuration: const Duration(milliseconds: 200),
-              barrierDismissible: true,
-            );
+                    transitionBuilder: (context, anim1, anim2, child) {
+                      return FadeTransition(
+                        opacity: anim1.drive(
+                          Tween(
+                            begin: 0,
+                            end: 1,
+                          ),
+                        ),
+                        child: child,
+                      );
+                    },
+                    transitionDuration: const Duration(milliseconds: 200),
+                    barrierDismissible: true,
+                  );
 
-            if (dateTime != null) {
-              state.editBill.data?.tradeTime =
-                  DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade400),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.calendar_today, color: Colors.grey.shade700),
-                const SizedBox(width: 12),
-                Text(
-                  '日期时间',
-                  style: TextStyle(
-                    color: Colors.grey.shade700,
-                    fontSize: 16,
+                  if (dateTime != null) {
+                    _tradeTimeStr.value =
+                        DateFormat('yyyy-MM-dd HH:mm').format(dateTime);
+                    state.editBill.data?.tradeTime = _tradeTimeStr.value;
+                  }
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade400),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today, color: Colors.grey.shade700),
+                      const SizedBox(width: 12),
+                      Text(
+                        '日期时间',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        state.editBill.data?.tradeTime ??
+                            DateFormat('yyyy-MM-dd HH:mm:ss')
+                                .format(DateTime.now()),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_ios,
+                          size: 16, color: Colors.grey),
+                    ],
                   ),
                 ),
-                const Spacer(),
-                Text(
-                  state.editBill.data?.tradeTime ??
-                      DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now()),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Icon(Icons.arrow_forward_ios,
-                    size: 16, color: Colors.grey),
-              ],
-            ),
-          ),
-        ),
+              );
+            }),
       ],
     );
   }
