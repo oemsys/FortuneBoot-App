@@ -19,10 +19,10 @@ class CategoryTreeWidget extends StatefulWidget {
   BillType billType;
 
   @override
-  State<CategoryTreeWidget> createState() => _CategoryTreeWidgetState();
+  State<CategoryTreeWidget> createState() => CategoryTreeWidgetState();
 }
 
-class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
+class CategoryTreeWidgetState extends State<CategoryTreeWidget> {
   CategorySelectItem? _selectedMainCategory;
   CategorySelectItem? _selectedSubCategory;
   CategorySelectItem? _selectedThirdCategory;
@@ -41,12 +41,113 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
     return Column(
       children: [
         // 已选择的分类和金额
+        Card(
+          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          elevation: 0,
+          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '分类: ${_getSelectedCategoryPath()}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _amountController,
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
+                          signed: true,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d{0,5}')), // 允许数字和最多两位小数
+                        ],
+                        decoration: InputDecoration(
+                          labelText: '金额',
+                          hintText: '请输入金额',
+                          prefixIcon: Icon(Icons.attach_money),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        final amount = double.tryParse(_amountController.text);
+                        if (amount != null && amount > 0) {
+                          if (_selectedMainCategory == null) {
+                            ScaffoldMessenger.of(context)
+                                .removeCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('请选择当前费用所属分类')),
+                            );
+                            return;
+                          }
+                          setState(() {
+                            // 优先使用三级分类，其次二级分类，最后一级分类
+                            categorys();
+                            _amountController.clear();
+                            // 收起键盘
+                            FocusScope.of(context).unfocus();
+                          });
+                        } else {
+                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('请输入有效金额')),
+                          );
+                        }
+                      },
+                      child: Text('添加'),
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
         if (widget.categoryAmountPairs.isNotEmpty) _buildSelectedCategories(),
 
         // 分类选择器
         _buildCategorySelector(widget.categories),
       ],
     );
+  }
+
+  Map<int, double> categorys() {
+    final amount = double.tryParse(_amountController.text);
+    if (amount != null && amount > 0) {
+      if (_selectedMainCategory == null) {
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('请选择当前费用所属分类')),
+        );
+      } else {
+        final categoryId = _selectedThirdCategory?.id ??
+            _selectedSubCategory?.id ??
+            _selectedMainCategory!.id;
+        widget.categoryAmountPairs[categoryId] = amount;
+      }
+    }
+    return widget.categoryAmountPairs;
   }
 
   // 已选择的分类和金额
@@ -66,6 +167,7 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
           ),
         ),
         ListView.builder(
+          padding: EdgeInsets.zero,
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
           itemCount: widget.categoryAmountPairs.length,
@@ -128,7 +230,6 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
             );
           },
         ),
-        SizedBox(height: 16),
         Divider(),
       ],
     );
@@ -337,86 +438,6 @@ class _CategoryTreeWidgetState extends State<CategoryTreeWidget> {
                         ],
                       );
                     }).toList(),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-        // 金额输入和添加按钮
-        if (_selectedMainCategory != null)
-          Card(
-            margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            elevation: 0,
-            color:
-                Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '已选择分类: ${_getSelectedCategoryPath()}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _amountController,
-                          keyboardType: TextInputType.numberWithOptions(
-                            decimal: true,
-                            signed: true,
-                          ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                                RegExp(r'^\d*\.?\d{0,5}')), // 允许数字和最多两位小数
-                          ],
-                          decoration: InputDecoration(
-                            labelText: '分类金额',
-                            hintText: '请输入金额',
-                            prefixIcon: Icon(Icons.attach_money),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          final amount =
-                              double.tryParse(_amountController.text);
-                          if (amount != null && amount > 0) {
-                            setState(() {
-                              // 优先使用三级分类，其次二级分类，最后一级分类
-                              final categoryId = _selectedThirdCategory?.id ??
-                                  _selectedSubCategory?.id ??
-                                  _selectedMainCategory!.id;
-                              widget.categoryAmountPairs[categoryId] = amount;
-                              _amountController.clear();
-                            });
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('请输入有效金额')),
-                            );
-                          }
-                        },
-                        child: Text('添加'),
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),

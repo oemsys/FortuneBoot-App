@@ -176,6 +176,7 @@ class _MineViewState extends State<MineView> {
                 InkWell(
                   onTap: () {
                     // 跳转到个人资料页面
+                    ScaffoldMessenger.of(context).removeCurrentSnackBar();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('敬请期待...')),
                     );
@@ -510,6 +511,7 @@ class _MineViewState extends State<MineView> {
     }
 
     if (items.isEmpty) {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('暂无可选项')),
       );
@@ -602,6 +604,7 @@ class _MineViewState extends State<MineView> {
                   onTap: () {
                     Navigator.pop(context);
                     // 应用主题
+                    ScaffoldMessenger.of(context).removeCurrentSnackBar();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('已切换到$theme')),
                     );
@@ -646,6 +649,7 @@ class _MineViewState extends State<MineView> {
                   onTap: () {
                     Navigator.pop(context);
                     // 应用语言
+                    ScaffoldMessenger.of(context).removeCurrentSnackBar();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('已切换到$language')),
                     );
@@ -675,6 +679,7 @@ class _MineViewState extends State<MineView> {
                 Clipboard.setData(ClipboardData(text: element.detail ?? ''));
                 Navigator.pop(context);
                 // 显示复制成功的提示
+                ScaffoldMessenger.of(context).removeCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('已复制到剪贴板')),
                 );
@@ -786,6 +791,7 @@ class _MineViewState extends State<MineView> {
   }
 
   void emptyPage() {
+    ScaffoldMessenger.of(context).removeCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('敬请期待...')),
     );
@@ -807,6 +813,7 @@ class _MineViewState extends State<MineView> {
               onPressed: () {
                 Navigator.pop(context);
                 // 执行退出登录操作
+                ScaffoldMessenger.of(context).removeCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('已退出登录')),
                 );

@@ -1095,6 +1095,8 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                           onPressed: () {
                             // 复制账单
                             Navigator.pop(context);
+                            ScaffoldMessenger.of(context)
+                                .removeCurrentSnackBar();
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('账单已复制，请编辑后保存')),
                             );

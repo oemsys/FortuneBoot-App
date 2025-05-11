@@ -6,6 +6,10 @@ abstract class BaseSelectItem {
   String title;
   int id;
   BaseSelectItem(this.title, this.id);
+  @override
+  String toString() {
+    return '$title $id';
+  }
 }
 
 class AccountSelectItem extends BaseSelectItem {

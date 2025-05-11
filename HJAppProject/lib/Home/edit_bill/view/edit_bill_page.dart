@@ -109,6 +109,7 @@ class _EditBillViewState extends State<EditBillView> {
   ValueNotifier<bool?> _confirm = ValueNotifier(null);
   ValueNotifier<bool?> _include = ValueNotifier(null);
   ValueNotifier<String?> _tradeTimeStr = ValueNotifier(null);
+  GlobalKey<CategoryTreeWidgetState>? curCategoryKey;
 
   @override
   void dispose() {
@@ -171,34 +172,27 @@ class _EditBillViewState extends State<EditBillView> {
             children: [
               // 账单类型选择器
               _buildBillTypeSelector(),
-
-              // 金额输入区域 - 突出显示
-              // _buildAmountSection(),
-
               // 主要信息区域
-              Card(
-                margin: const EdgeInsets.all(8),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.grey.shade300),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildBasicInfoSection(),
-                      const SizedBox(height: 16),
-                      _buildAccountSection(),
-                    ],
-                  ),
+              wrapCard(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildBasicInfoSection(),
+                    const SizedBox(height: 16),
+                    _buildCategorySection(),
+                    const SizedBox(height: 8),
+                    // 日期时间选择
+                    TimeSelector(
+                        tradeTimeStr: _tradeTimeStr,
+                        context: context,
+                        state: state),
+                  ],
                 ),
               ),
-
+              wrapCard(
+                _buildAccountSection(),
+              ),
               // 分类选择区域
-              _buildCategorySection(),
-
               // 附加信息区域
               Card(
                 margin: const EdgeInsets.all(8),
@@ -241,6 +235,20 @@ class _EditBillViewState extends State<EditBillView> {
         ),
       ),
     );
+  }
+
+  Widget wrapCard(Widget child) {
+    return Card(
+        margin: const EdgeInsets.all(8),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.grey.shade300),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: child,
+        ));
   }
 
   BillType curBillType() {
@@ -309,80 +317,9 @@ class _EditBillViewState extends State<EditBillView> {
     );
   }
 
-  // 金额输入区域
-  // Widget _buildAmountSection() {
-  //   var billType = curBillType();
-  //   final (amountColor, amountIcon) = switch (billType) {
-  //     BillType.expenditure => (
-  //         Colors.red.shade700,
-  //         Icons.remove_circle_outline
-  //       ),
-  //     BillType.income => (Colors.green.shade700, Icons.add_circle_outline),
-  //     BillType.transfer => (Colors.blue.shade700, Icons.swap_horiz),
-  //     _ => (Colors.grey.shade700, Icons.attach_money),
-  //   };
-
-  //   return Container(
-  //     margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-  //     decoration: BoxDecoration(
-  //       gradient: LinearGradient(
-  //         colors: [
-  //           amountColor.withOpacity(0.1),
-  //           amountColor.withOpacity(0.05),
-  //         ],
-  //         begin: Alignment.topLeft,
-  //         end: Alignment.bottomRight,
-  //       ),
-  //       borderRadius: BorderRadius.circular(16),
-  //     ),
-  //     child: Row(
-  //       children: [
-  //         Icon(amountIcon, size: 28, color: amountColor),
-  //         const SizedBox(width: 16),
-  //         Expanded(
-  //           child: TextField(
-  //             controller: _amountController,
-  //             keyboardType:
-  //                 const TextInputType.numberWithOptions(decimal: true),
-  //             textAlign: TextAlign.end,
-  //             style: TextStyle(
-  //               fontSize: 32,
-  //               fontWeight: FontWeight.bold,
-  //               color: amountColor,
-  //             ),
-  //             decoration: InputDecoration(
-  //               hintText: '0.00',
-  //               hintStyle: TextStyle(
-  //                 color: amountColor.withOpacity(0.5),
-  //                 fontSize: 32,
-  //               ),
-  //               border: InputBorder.none,
-  //               contentPadding: EdgeInsets.zero,
-  //             ),
-  //             inputFormatters: [
-  //               FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-  //             ],
-  //           ),
-  //         ),
-  //         const SizedBox(width: 8),
-  //         Text(
-  //           '¥',
-  //           style: TextStyle(
-  //             fontSize: 24,
-  //             fontWeight: FontWeight.bold,
-  //             color: amountColor,
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   // 基本信息区域
   Widget _buildBasicInfoSection() {
     var state = context.watch<EditBillBloc>().state;
-    var initDate = state.editBill.data!.tradeDate;
     _titleController.text = state.editBill.data?.title ?? '';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,125 +332,8 @@ class _EditBillViewState extends State<EditBillView> {
           ),
         ),
         const SizedBox(height: 16),
-
-        // 账本选择
-        // _buildBookSelector(),
-        // const SizedBox(height: 16),
-
         // 标题输入
-        TextField(
-          controller: _titleController,
-          onChanged: (value) {
-            state.editBill.data?.title = value;
-          },
-          decoration: InputDecoration(
-            hintText: '请输入标题',
-            labelText: '标题',
-            labelStyle: TextStyle(
-              color: Colors.grey.shade700,
-              fontSize: 16,
-            ),
-            prefixIcon: const Icon(Icons.title),
-            // 统一所有状态下的边框样式
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey.shade400),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.blue), // 聚焦状态边框颜色
-              borderRadius: BorderRadius.circular(12),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.red), // 错误状态边框颜色
-              borderRadius: BorderRadius.circular(12),
-            ),
-            border: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey.shade400),
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          maxLength: 50,
-        ),
-        const SizedBox(height: 8),
-
-        // 日期时间选择
-        ValueListenableBuilder(
-            valueListenable: _tradeTimeStr,
-            builder: (_, value, __) {
-              return InkWell(
-                onTap: () async {
-                  final DateTime? dateTime = await showOmniDateTimePicker(
-                    context: context,
-                    initialDate: value != null
-                        ? DateFormat('yyyy-MM-dd HH:mm').parse(value)
-                        : DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime.now(),
-                    is24HourMode: true,
-                    isShowSeconds: false,
-                    minutesInterval: 1,
-                    secondsInterval: 1,
-                    borderRadius: const BorderRadius.all(Radius.circular(16)),
-                    constraints: const BoxConstraints(
-                      maxWidth: 350,
-                      maxHeight: 650,
-                    ),
-                    transitionBuilder: (context, anim1, anim2, child) {
-                      return FadeTransition(
-                        opacity: anim1.drive(
-                          Tween(
-                            begin: 0,
-                            end: 1,
-                          ),
-                        ),
-                        child: child,
-                      );
-                    },
-                    transitionDuration: const Duration(milliseconds: 200),
-                    barrierDismissible: true,
-                  );
-
-                  if (dateTime != null) {
-                    _tradeTimeStr.value =
-                        DateFormat('yyyy-MM-dd HH:mm').format(dateTime);
-                    state.editBill.data?.tradeTime = _tradeTimeStr.value;
-                  }
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey.shade400),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.calendar_today, color: Colors.grey.shade700),
-                      const SizedBox(width: 12),
-                      Text(
-                        '日期时间',
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        state.editBill.data?.tradeTime ??
-                            DateFormat('yyyy-MM-dd HH:mm:ss')
-                                .format(DateTime.now()),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.arrow_forward_ios,
-                          size: 16, color: Colors.grey),
-                    ],
-                  ),
-                ),
-              );
-            }),
+        TitleField(titleController: _titleController, state: state),
       ],
     );
   }
@@ -534,9 +354,12 @@ class _EditBillViewState extends State<EditBillView> {
         ? state.incomeAccountList
         : state.expenseAccountList;
     var payeeItems = state.payeeList;
+    int? selecId = curBillType() == BillType.income
+        ? state.defaultIncomeAccountId
+        : state.defaultExpenseAccountId;
     AccountSelectItem? selectItem;
     for (final item in items) {
-      if (item.value.id == state.editBill.data?.accountId) {
+      if (item.value.id == selecId) {
         selectItem = item.value;
         break;
       }
@@ -630,19 +453,25 @@ class _EditBillViewState extends State<EditBillView> {
     final inItems = state.transferAccountList;
     final outItems = state.transferOutAccountList;
     AccountSelectItem? selectInItem;
+    int? selectAccountId =
+        state.editBill.data?.accountId ?? state.defaultTransferInAccountId;
+    int? selectOutAccountId =
+        state.editBill.data?.toAccountId ?? state.defaultTransferOutAccountId;
     for (final item in outItems) {
-      if (item.value.id == state.editBill.data?.accountId) {
+      if (item.value.id == selectAccountId) {
         selectInItem = item.value;
         break;
       }
     }
     AccountSelectItem? selectOutItem;
     for (final item in inItems) {
-      if (item.value.id == state.editBill.data?.toAccountId) {
+      if (item.value.id == selectOutAccountId) {
         selectOutItem = item.value;
         break;
       }
     }
+    print(
+        'lxjtodo: _buildTransferAccountSection $outItems \n $inItems\n $selectInItem\n $selectOutItem\n $selectAccountId $selectOutAccountId');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -774,62 +603,53 @@ class _EditBillViewState extends State<EditBillView> {
 
       categoryAmountPair[categoryId.toInt()] = amount.toDouble();
     });
-
-    return Card(
-      margin: const EdgeInsets.all(8),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade300),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              '费用',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // 快速选择常用分类
-            // _buildQuickCategorySelector(),
-            const SizedBox(height: 16),
-
-            // 分类选择器
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: CategoryTreeWidget(
-                    key: Key('${billType}_category'),
-                    categoryAmountPairs: categoryAmountPair,
-                    categories: state.categoryList,
-                    billType: billType,
-                    onCategorySelected: (categorys) {
-                      List<Map<String, num>> categoryAmountPairList = [];
-                      categorys.forEach((categoryId, categoryAmount) {
-                        categoryAmountPairList.add({
-                          "categoryId": categoryId,
-                          "amount": categoryAmount
-                        });
-                      });
-                      state.editBill.data?.categoryAmountPair =
-                          categoryAmountPairList;
-                    }),
-              ),
-            ),
-          ],
+    var curCategoryKeyWithBillType =
+        GlobalKey<CategoryTreeWidgetState>(debugLabel: '${billType}_category');
+    curCategoryKey = curCategoryKeyWithBillType;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '费用',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ),
+        const SizedBox(height: 16),
+
+        // 分类选择器
+        Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: CategoryTreeWidget(
+                key: curCategoryKeyWithBillType,
+                categoryAmountPairs: categoryAmountPair,
+                categories: state.categoryList,
+                billType: billType,
+                onCategorySelected: (categorys) {
+                  fetchAmountList(categorys, state.editBill);
+                }),
+          ),
+        ),
+      ],
     );
+  }
+
+  void fetchAmountList(Map<int, double>? categorys, BillItemAdd editBill) {
+    if (categorys == null || categorys.isEmpty) {
+      return;
+    }
+    List<Map<String, num>> categoryAmountPairList = [];
+    categorys.forEach((categoryId, categoryAmount) {
+      categoryAmountPairList
+          .add({"categoryId": categoryId, "amount": categoryAmount});
+    });
+    editBill.data?.categoryAmountPair = categoryAmountPairList;
   }
 
   // 快速选择常用分类
@@ -1035,6 +855,7 @@ class _EditBillViewState extends State<EditBillView> {
     }
     if (billItemAdd.data?.billType == BillType.transfer.value) {
       if (billItemAdd.data!.amount == null || billItemAdd.data!.amount == 0) {
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('请填入费用')),
         );
@@ -1042,10 +863,14 @@ class _EditBillViewState extends State<EditBillView> {
       }
     } else {
       if (!(billItemAdd.data?.categoryAmountPair?.isNotEmpty == true)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('请填入费用')),
-        );
-        return;
+        fetchAmountList(curCategoryKey?.currentState?.categorys(), billItemAdd);
+        if (!(billItemAdd.data?.categoryAmountPair?.isNotEmpty == true)) {
+          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('请填入费用或类型')),
+          );
+          return;
+        }
       }
     }
 
@@ -1053,6 +878,7 @@ class _EditBillViewState extends State<EditBillView> {
       // 转账类型
       if (billItemAdd.data?.accountId == null ||
           billItemAdd.data?.toAccountId == null) {
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('请选择转账账户')),
         );
@@ -1060,5 +886,161 @@ class _EditBillViewState extends State<EditBillView> {
       }
     }
     context.read<EditBillBloc>().add(EditBillSubmitted());
+  }
+}
+
+class TimeSelector extends StatelessWidget {
+  const TimeSelector({
+    super.key,
+    required ValueNotifier<String?> tradeTimeStr,
+    required this.context,
+    required this.state,
+  }) : _tradeTimeStr = tradeTimeStr;
+
+  final ValueNotifier<String?> _tradeTimeStr;
+  final BuildContext context;
+  final EditBillState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+        valueListenable: _tradeTimeStr,
+        builder: (_, value, __) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '时间',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              InkWell(
+                onTap: () async {
+                  final DateTime? dateTime = await showOmniDateTimePicker(
+                    context: context,
+                    initialDate: value != null
+                        ? DateFormat('yyyy-MM-dd HH:mm').parse(value)
+                        : DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime.now(),
+                    is24HourMode: true,
+                    isShowSeconds: false,
+                    minutesInterval: 1,
+                    secondsInterval: 1,
+                    borderRadius: const BorderRadius.all(Radius.circular(16)),
+                    constraints: const BoxConstraints(
+                      maxWidth: 350,
+                      maxHeight: 650,
+                    ),
+                    transitionBuilder: (context, anim1, anim2, child) {
+                      return FadeTransition(
+                        opacity: anim1.drive(
+                          Tween(
+                            begin: 0,
+                            end: 1,
+                          ),
+                        ),
+                        child: child,
+                      );
+                    },
+                    transitionDuration: const Duration(milliseconds: 200),
+                    barrierDismissible: true,
+                  );
+
+                  if (dateTime != null) {
+                    _tradeTimeStr.value =
+                        DateFormat('yyyy-MM-dd HH:mm').format(dateTime);
+                    state.editBill.data?.tradeTime = _tradeTimeStr.value;
+                  }
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade400),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today, color: Colors.grey.shade700),
+                      const SizedBox(width: 12),
+                      Text(
+                        '日期时间',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        state.editBill.data?.tradeTime ??
+                            DateFormat('yyyy-MM-dd HH:mm:ss')
+                                .format(DateTime.now()),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_ios,
+                          size: 16, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        });
+  }
+}
+
+class TitleField extends StatelessWidget {
+  const TitleField({
+    super.key,
+    required TextEditingController titleController,
+    required this.state,
+  }) : _titleController = titleController;
+
+  final TextEditingController _titleController;
+  final EditBillState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      // lxjtodo:
+      controller: _titleController,
+      onChanged: (value) {
+        state.editBill.data?.title = value;
+      },
+      decoration: InputDecoration(
+        hintText: '请输入标题',
+        labelText: '标题',
+        labelStyle: TextStyle(
+          color: Colors.grey.shade700,
+          fontSize: 16,
+        ),
+        prefixIcon: const Icon(Icons.title),
+        // 统一所有状态下的边框样式
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey.shade400),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.blue), // 聚焦状态边框颜色
+          borderRadius: BorderRadius.circular(12),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.red), // 错误状态边框颜色
+          borderRadius: BorderRadius.circular(12),
+        ),
+        border: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey.shade400),
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      maxLength: 50,
+    );
   }
 }

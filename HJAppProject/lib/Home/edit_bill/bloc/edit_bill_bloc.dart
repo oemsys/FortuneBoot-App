@@ -70,7 +70,34 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
     var groupId = _billRepository.groupId();
     var bookId = _billRepository.bookId();
     var billType = type.value;
-    var books = await bookItems(BookService(), id: groupId, type: billType);
+    BookService bookService = BookService();
+    var bookResponse =
+        await bookService.getEnableList(groupId ?? 1, type: type.value);
+    List<DropdownItem<BookSelectItem>>? books;
+    int? defaultExpenseAccountId;
+    int? defaultIncomeAccountId;
+    int? defaultTransferOutAccountId;
+    int? defaultTransferInAccountId;
+    if (bookResponse.code == 0) {
+      books = (bookResponse.data as List? ?? []).map((element) {
+        final name = element['bookName'] as String? ?? '';
+        final id = element['bookId'] as int? ?? 0;
+        if (id == bookId) {
+          defaultExpenseAccountId =
+              element['defaultExpenseAccountId'] as int? ?? 0;
+          defaultIncomeAccountId =
+              element['defaultIncomeAccountId'] as int? ?? 0;
+          defaultTransferOutAccountId =
+              element['defaultTransferOutAccountId'] as int? ?? 0;
+          defaultTransferInAccountId =
+              element['defaultTransferInAccountId'] as int? ?? 0;
+        }
+        return DropdownItem<BookSelectItem>(
+          label: name,
+          value: BookSelectItem(name, id),
+        );
+      }).toList();
+    }
     AccountService service = AccountService();
     var accountRes = await service.getEnableList(groupId ?? 0);
     List<DropdownItem<AccountSelectItem>> expenseAccountList = [];
@@ -108,6 +135,10 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
       incomeAccountList: incomeAccountList,
       transferAccountList: transferAccountList,
       transferOutAccountList: transferOutAccountList,
+      defaultExpenseAccountId: defaultExpenseAccountId,
+      defaultIncomeAccountId: defaultIncomeAccountId,
+      defaultTransferOutAccountId: defaultTransferOutAccountId,
+      defaultTransferInAccountId: defaultTransferInAccountId,
       categoryList: categroies,
       tagList: tags,
       status: EditBillStatus.success,

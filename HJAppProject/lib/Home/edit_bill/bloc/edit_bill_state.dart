@@ -23,6 +23,10 @@ final class EditBillState extends Equatable {
     this.categoryList = const [],
     this.isNewBill = true,
     required this.editBill,
+    this.defaultExpenseAccountId,
+    this.defaultIncomeAccountId,
+    this.defaultTransferOutAccountId,
+    this.defaultTransferInAccountId,
   });
 
   EditBillState.init({
@@ -66,6 +70,11 @@ final class EditBillState extends Equatable {
   // 类别
   List<CategorySelectItem> categoryList;
 
+  int? defaultExpenseAccountId;
+  int? defaultIncomeAccountId;
+  int? defaultTransferOutAccountId;
+  int? defaultTransferInAccountId;
+
   bool isNewBill;
 
   EditBillState copyWith({
@@ -80,6 +89,10 @@ final class EditBillState extends Equatable {
     List<TagSelectItem>? tagList,
     List<CategorySelectItem>? categoryList,
     BillItemAdd? editBill,
+    int? defaultExpenseAccountId,
+    int? defaultIncomeAccountId,
+    int? defaultTransferOutAccountId,
+    int? defaultTransferInAccountId,
   }) {
     return EditBillState(
       status: status ?? this.status,
@@ -94,6 +107,14 @@ final class EditBillState extends Equatable {
       tagList: tagList ?? this.tagList,
       categoryList: categoryList ?? this.categoryList,
       editBill: editBill ?? this.editBill,
+      defaultExpenseAccountId:
+          defaultExpenseAccountId ?? this.defaultExpenseAccountId,
+      defaultIncomeAccountId:
+          defaultIncomeAccountId ?? this.defaultIncomeAccountId,
+      defaultTransferOutAccountId:
+          defaultTransferOutAccountId ?? this.defaultTransferOutAccountId,
+      defaultTransferInAccountId:
+          defaultTransferInAccountId ?? this.defaultTransferInAccountId,
     );
   }
 
