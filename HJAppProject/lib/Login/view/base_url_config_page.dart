@@ -44,49 +44,43 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
   }
 
   Future<void> _checkTokenValid() async {
-    if (await Permission.storage.request().isGranted) {
-      var baseUrlDomain =
-          await UserDataSingleton().getStr(UserDataSingleton.baseUrlDomain);
-      var baseUrlPort =
-          await UserDataSingleton().getStr(UserDataSingleton.baseUrlPort);
-      var baseProtocol =
-          await UserDataSingleton().getStr(UserDataSingleton.baseUrlProtocol);
-      if (baseUrlDomain?.isNotEmpty == true &&
-          baseUrlPort?.isNotEmpty == true &&
-          baseProtocol?.isNotEmpty == true) {
-        _domainController.text = baseUrlDomain!;
-        _portController.text = baseUrlPort!;
-        _protocol = baseProtocol!;
-      }
-      var userInfo =
-          await UserDataSingleton().getMap(UserDataSingleton.userInfo);
-      var userToken =
-          await UserDataSingleton().getMap(UserDataSingleton.userToken);
-      if ((userInfo?.isNotEmpty == true) &&
-          (userToken?.isNotEmpty == true) &&
-          (baseUrlDomain?.isNotEmpty == true) &&
-          (baseUrlPort?.isNotEmpty == true) &&
-          (baseProtocol?.isNotEmpty == true)) {
-        // 跳登录页
-        final baseUrl = '$baseProtocol://$baseUrlDomain:$baseUrlPort';
-        DioClient().updateBaseUrl('$baseUrl/prod-api');
-        if (!(await checkApiVersion())) {
-          _showErrorDialog(S.current.serverConnectionFailed);
-          _authMode.value = AuthMode.signIn;
-          return;
-        }
-        DioClient().refreshToken(userToken!);
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) => const HomePage(),
-          ),
-          (route) => false,
-        );
-      } else {
+    var baseUrlDomain =
+        await UserDataSingleton().getStr(UserDataSingleton.baseUrlDomain);
+    var baseUrlPort =
+        await UserDataSingleton().getStr(UserDataSingleton.baseUrlPort);
+    var baseProtocol =
+        await UserDataSingleton().getStr(UserDataSingleton.baseUrlProtocol);
+    if (baseUrlDomain?.isNotEmpty == true &&
+        baseUrlPort?.isNotEmpty == true &&
+        baseProtocol?.isNotEmpty == true) {
+      _domainController.text = baseUrlDomain!;
+      _portController.text = baseUrlPort!;
+      _protocol = baseProtocol!;
+    }
+    var userInfo = await UserDataSingleton().getMap(UserDataSingleton.userInfo);
+    var userToken =
+        await UserDataSingleton().getMap(UserDataSingleton.userToken);
+    if ((userInfo?.isNotEmpty == true) &&
+        (userToken?.isNotEmpty == true) &&
+        (baseUrlDomain?.isNotEmpty == true) &&
+        (baseUrlPort?.isNotEmpty == true) &&
+        (baseProtocol?.isNotEmpty == true)) {
+      // 跳登录页
+      final baseUrl = '$baseProtocol://$baseUrlDomain:$baseUrlPort';
+      DioClient().updateBaseUrl('$baseUrl/prod-api');
+      if (!(await checkApiVersion())) {
+        _showErrorDialog(S.current.serverConnectionFailed);
         _authMode.value = AuthMode.signIn;
+        return;
       }
+      DioClient().refreshToken(userToken!);
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => const HomePage(),
+        ),
+        (route) => false,
+      );
     } else {
-      _showErrorDialog('权限请求失败');
       _authMode.value = AuthMode.signIn;
     }
   }

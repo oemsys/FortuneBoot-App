@@ -902,7 +902,7 @@ class TimeSelector extends StatelessWidget {
                   final DateTime? dateTime = await showOmniDateTimePicker(
                     context: context,
                     initialDate: value != null
-                        ? DateFormat('yyyy-MM-dd HH:mm').parse(value)
+                        ? DateFormat('yyyy-MM-dd HH:mm:ss').parse(value)
                         : DateTime.now(),
                     firstDate: DateTime(2000),
                     lastDate: DateTime.now(),
@@ -932,7 +932,7 @@ class TimeSelector extends StatelessWidget {
 
                   if (dateTime != null) {
                     _tradeTimeStr.value =
-                        DateFormat('yyyy-MM-dd HH:mm').format(dateTime);
+                        DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
                     state.editBill.data?.tradeTime = _tradeTimeStr.value;
                   }
                 },

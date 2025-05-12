@@ -15,6 +15,7 @@ import 'package:hjproject/request/login_request.dart';
 import 'package:hjproject/repository/repository/bills_repository.dart';
 import 'package:hjproject/util/dio_client.dart';
 import 'package:intl/intl.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 part 'setting_event.dart';
@@ -95,8 +96,13 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
         detail: DioClient().dio.options.baseUrl,
         leadingWidget: const Icon(Icons.edit_note)));
     elements.add(Setting(SettingType.currentVersion,
-        content: BillsRepository.version, leadingWidget: Icon(Icons.abc)));
+        content: await getBuildVersion(), leadingWidget: Icon(Icons.abc)));
     return elements;
+  }
+
+  Future<String> getBuildVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.version; // 格式与 pubspec.yaml 的 version 一致[3,4](@ref)
   }
 
   Future<void> _onFetchedGroup(

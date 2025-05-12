@@ -43,6 +43,7 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
 
   FutureOr<void> _onBillSubmitted(
       EditBillSubmitted event, Emitter<EditBillState> emit) async {
+    emit(state.copyWith(status: EditBillStatus.loading));
     BillItemAddData data = state.editBill.data!;
     print('lxjtodo: _onBillSubmitted request: ${data.toJson()}');
     FromBillAddRequest request = FromBillAddRequest();
