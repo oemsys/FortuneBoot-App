@@ -102,7 +102,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
 
   Future<String> getBuildVersion() async {
     final packageInfo = await PackageInfo.fromPlatform();
-    return packageInfo.version; // 格式与 pubspec.yaml 的 version 一致[3,4](@ref)
+    return '${packageInfo.version}(${packageInfo.buildNumber})'; // 格式与 pubspec.yaml 的 version 一致[3,4](@ref)
   }
 
   Future<void> _onFetchedGroup(
