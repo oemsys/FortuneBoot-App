@@ -122,7 +122,7 @@ class BillItem extends Equatable {
 class CategoryAmountPair {
   int? categoryId;
   String? categoryName;
-  int? amount;
+  double? amount;
 
   CategoryAmountPair({this.categoryId, this.categoryName, this.amount});
 

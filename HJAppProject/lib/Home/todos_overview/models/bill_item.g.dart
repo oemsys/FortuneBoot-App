@@ -69,7 +69,7 @@ CategoryAmountPair _$CategoryAmountPairFromJson(Map<String, dynamic> json) =>
     CategoryAmountPair(
       categoryId: (json['categoryId'] as num?)?.toInt(),
       categoryName: json['categoryName'] as String?,
-      amount: (json['amount'] as num?)?.toInt(),
+      amount: (json['amount'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$CategoryAmountPairToJson(CategoryAmountPair instance) =>

@@ -16,7 +16,7 @@ echo "✅ 版本号已更新为: ${MAJOR_VERSION}+${BUILD_NUMBER}"
 
 if [[ $buildPlatform == "android" ]]; then
     echo "✅ 构建 Android 版本"
-    flutter build apk --release --target-platform android-arm64
+    flutter build apk --release --target-platform android-arm64 -v
 elif [[ $buildPlatform == "ios" ]]; then
     echo "✅ 构建 iOS 版本"
     flutter build ios --release --no-codesign
