@@ -5,7 +5,7 @@ echo build $buildPlatform
 MAJOR_VERSION="1.0.5"
 
 # 动态生成构建号（日期+时间戳）
-BUILD_NUMBER=$(date +%Y%m%d%H%M)
+BUILD_NUMBER=$(date +%Y%m%d%H)
 
 line=$( cat pubspec.yaml | grep -Eo "version: .*#😁😈")
 echo $line
