@@ -226,14 +226,14 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
   Future<bool> checkApiVersion() async {
     LoginService loginService = LoginService();
     try {
-      var apiResponse = await loginService.apiVersion();
+      final apiResponse = await loginService.apiVersion();
       if (apiResponse.code == 0) {
-        var curVerionString = apiResponse.data as String? ?? '';
-        if (curVerionString.isNotEmpty) {
-          int maxRes =
-              compareVersion(curVerionString, BillsRepository.maxApiVersion);
-          int minRes =
-              compareVersion(BillsRepository.minApiVersion, curVerionString);
+        final curVersionString = apiResponse.data as String? ?? '';
+        if (curVersionString.isNotEmpty) {
+          final int maxRes =
+              compareVersion(curVersionString, BillsRepository.maxApiVersion);
+          final int minRes =
+              compareVersion(curVersionString, BillsRepository.minApiVersion);
           // 左闭右开
           print('lxjtodo: $maxRes $minRes');
           return maxRes < 0 && minRes >= 0;
