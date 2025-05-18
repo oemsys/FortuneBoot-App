@@ -110,11 +110,11 @@ class BillListTile extends StatelessWidget {
 
     // 格式化金额，确保显示两位小数
     String amountText = '¥${(bill.convertedAmount ?? 0).toStringAsFixed(2)}';
-    if (bill.billType == BillType.expenditure) {
-      amountText = '-$amountText';
-    } else if (bill.billType == BillType.income) {
-      amountText = '+$amountText';
-    }
+    // if (bill.billType == BillType.expenditure) {
+    //   amountText = '-$amountText';
+    // } else if (bill.billType == BillType.income) {
+    //   amountText = '+$amountText';
+    // }
 
     // 构建卡片
     var card = Card(
