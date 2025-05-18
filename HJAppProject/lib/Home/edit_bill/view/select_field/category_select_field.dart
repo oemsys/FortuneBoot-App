@@ -72,7 +72,7 @@ class CategoryTreeWidgetState extends State<CategoryTreeWidget> {
                         ),
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(
-                              RegExp(r'^\d*\.?\d{0,5}')), // 允许数字和最多两位小数
+                              RegExp(r'^-?\d*\.?\d{0,5}')), // 允许负号、数字和最多5位小数
                         ],
                         decoration: InputDecoration(
                           labelText: '金额',
@@ -88,7 +88,7 @@ class CategoryTreeWidgetState extends State<CategoryTreeWidget> {
                     ElevatedButton(
                       onPressed: () {
                         final amount = double.tryParse(_amountController.text);
-                        if (amount != null && amount > 0) {
+                        if (amount != null && amount != 0) {
                           if (_selectedMainCategory == null) {
                             ScaffoldMessenger.of(context)
                                 .removeCurrentSnackBar();
@@ -107,7 +107,7 @@ class CategoryTreeWidgetState extends State<CategoryTreeWidget> {
                         } else {
                           ScaffoldMessenger.of(context).removeCurrentSnackBar();
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('请输入有效金额')),
+                            SnackBar(content: Text('请输入非零金额')),
                           );
                         }
                       },
@@ -134,7 +134,7 @@ class CategoryTreeWidgetState extends State<CategoryTreeWidget> {
 
   Map<int, double> categorys() {
     final amount = double.tryParse(_amountController.text);
-    if (amount != null && amount > 0) {
+    if (amount != null && amount != 0) {
       if (_selectedMainCategory == null) {
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(

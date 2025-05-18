@@ -474,7 +474,7 @@ class _EditBillViewState extends State<EditBillView> {
           ),
           inputFormatters: [
             FilteringTextInputFormatter.allow(
-                RegExp(r'^\d*\.?\d{0,5}')), // 允许数字和最多两位小数
+                RegExp(r'^-?\d*\.?\d{0,5}')), // 允许负号、数字和最多5位小数
           ],
           decoration: InputDecoration(
             hintText: '请输入金额',
@@ -837,7 +837,7 @@ class _EditBillViewState extends State<EditBillView> {
       if (billItemAdd.data!.amount == null || billItemAdd.data!.amount == 0) {
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('请填入费用')),
+          const SnackBar(content: Text('请填入非零金额')),
         );
         return;
       }
