@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -127,6 +129,10 @@ class _EditBillViewState extends State<EditBillView> {
     if (_confirm.value == null || _include.value == null) {
       _confirm.value = state.editBill.data!.confirm;
       _include.value = state.editBill.data!.include;
+    }
+    // 初始化备注控制器
+    if (state.editBill.data?.remark != null && _remarkController.text.isEmpty) {
+      _remarkController.text = state.editBill.data!.remark!;
     }
     final isNewBill = context.select(
       (EditBillBloc bloc) => bloc.state.isNewBill,
@@ -327,17 +333,21 @@ class _EditBillViewState extends State<EditBillView> {
 
   // 普通账户选择（支出/收入）
   Widget _buildNormalAccountSection() {
-    var state = context.watch<EditBillBloc>().state;
-    var items = curBillType() == BillType.income
+    final state = context.watch<EditBillBloc>().state;
+    final items = curBillType() == BillType.income
         ? state.incomeAccountList
         : state.expenseAccountList;
-    var payeeItems = state.payeeList;
-    int? selecId = curBillType() == BillType.income
-        ? state.defaultIncomeAccountId
-        : state.defaultExpenseAccountId;
+    final payeeItems = state.payeeList;
+    // 优先使用账单中的账户ID，如果没有则使用默认账户ID
+    final int? accountSelectId = state.editBill.data?.accountId ??
+        (curBillType() == BillType.income
+            ? state.defaultIncomeAccountId
+            : state.defaultExpenseAccountId);
+    print('zctodo 111 = ${state.editBill.data?.accountId}');
     AccountSelectItem? selectItem;
     for (final item in items) {
-      if (item.value.id == selecId) {
+      if (item.value.id == accountSelectId) {
+        print('zctodo 222 = ${item.value.id}');
         selectItem = item.value;
         break;
       }
@@ -349,7 +359,10 @@ class _EditBillViewState extends State<EditBillView> {
         break;
       }
     }
-    state.editBill.data?.accountId = selectItem?.id;
+    // 只在原始账户ID为null时设置默认账户ID
+    if (state.editBill.data?.accountId == null && selectItem != null) {
+      state.editBill.data?.accountId = selectItem.id;
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -425,16 +438,17 @@ class _EditBillViewState extends State<EditBillView> {
 
   // 转账账户选择
   Widget _buildTransferAccountSection() {
-    var state = context.watch<EditBillBloc>().state;
+    final state = context.watch<EditBillBloc>().state;
     if (state.editBill.data?.amount != null) {
       _amountController.text = (state.editBill.data?.amount ?? 0).toString();
     }
     final inItems = state.transferAccountList;
     final outItems = state.transferOutAccountList;
     AccountSelectItem? selectInItem;
-    int? selectAccountId =
+    // 优先使用账单中的账户ID，如果没有则使用默认账户ID
+    final int? selectAccountId =
         state.editBill.data?.accountId ?? state.defaultTransferInAccountId;
-    int? selectOutAccountId =
+    final int? selectOutAccountId =
         state.editBill.data?.toAccountId ?? state.defaultTransferOutAccountId;
     for (final item in outItems) {
       if (item.value.id == selectAccountId) {
@@ -469,7 +483,7 @@ class _EditBillViewState extends State<EditBillView> {
           onChanged: (value) {
             state.editBill.data?.amount = double.tryParse(value) ?? 0;
           },
-          keyboardType: TextInputType.numberWithOptions(
+          keyboardType: const TextInputType.numberWithOptions(
             decimal: true,
             signed: true,
           ),
@@ -570,21 +584,21 @@ class _EditBillViewState extends State<EditBillView> {
   // 分类选择区域
   Widget _buildCategorySection() {
     // 转账类型不需要分类
-    var billType = curBillType();
+    final billType = curBillType();
     if (billType == BillType.transfer) {
       return const SizedBox.shrink();
     }
-    var state = context.watch<EditBillBloc>().state;
-    List<Map<String, num>> curCategroy =
+    final state = context.watch<EditBillBloc>().state;
+    final List<Map<String, num>> curCategroy =
         state.editBill.data?.categoryAmountPair ?? [];
-    Map<int, double> categoryAmountPair = {};
-    curCategroy.forEach((Map<String, num> category) {
-      var amount = category["amount"] as num? ?? 0.0;
-      var categoryId = category["categoryId"] as num? ?? 0;
+    final Map<int, double> categoryAmountPair = {};
+    for (final category in curCategroy) {
+      final amount = category["amount"] ?? 0.0;
+      final categoryId = category["categoryId"] ?? 0;
 
       categoryAmountPair[categoryId.toInt()] = amount.toDouble();
-    });
-    var curCategoryKeyWithBillType =
+    }
+    final curCategoryKeyWithBillType =
         GlobalKey<CategoryTreeWidgetState>(debugLabel: '${billType}_category');
     curCategoryKey = curCategoryKeyWithBillType;
     return Column(
@@ -625,7 +639,7 @@ class _EditBillViewState extends State<EditBillView> {
     if (categorys == null || categorys.isEmpty) {
       return;
     }
-    List<Map<String, num>> categoryAmountPairList = [];
+    final List<Map<String, num>> categoryAmountPairList = [];
     categorys.forEach((categoryId, categoryAmount) {
       categoryAmountPairList
           .add({"categoryId": categoryId, "amount": categoryAmount});
