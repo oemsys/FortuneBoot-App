@@ -124,8 +124,23 @@ class _EditBillViewState extends State<EditBillView> {
     final status = context.select((EditBillBloc bloc) => bloc.state.status);
     final state = context.select((EditBillBloc bloc) => bloc.state);
     if (_confirm.value == null || _include.value == null) {
-      _confirm.value = state.editBill.data!.confirm;
-      _include.value = state.editBill.data!.include;
+      // 如果是转账类型，则强制设置为 true
+      if (curBillType() == BillType.transfer) {
+        _confirm.value = true;
+        _include.value = true;
+        // 同时更新账单数据
+        state.editBill.data!.confirm = true;
+        state.editBill.data!.include = true;
+      } else {
+        _confirm.value = state.editBill.data!.confirm;
+        _include.value = state.editBill.data!.include;
+      }
+    } else if (curBillType() == BillType.transfer) {
+      // 如果已经初始化过，但当前是转账类型，也要确保值为 true
+      _confirm.value = true;
+      _include.value = true;
+      state.editBill.data!.confirm = true;
+      state.editBill.data!.include = true;
     }
     // 初始化备注控制器
     if (state.editBill.data?.remark != null && _remarkController.text.isEmpty) {
@@ -281,6 +296,13 @@ class _EditBillViewState extends State<EditBillView> {
         ],
         selected: {billType},
         onSelectionChanged: (Set<BillType> newSelection) {
+          // 如果切换到转账类型，确保"是否确认"和"是否统计"为 true
+          if (newSelection.first == BillType.transfer) {
+            _confirm.value = true;
+            _include.value = true;
+            context.read<EditBillBloc>().state.editBill.data?.confirm = true;
+            context.read<EditBillBloc>().state.editBill.data?.include = true;
+          }
           context
               .read<EditBillBloc>()
               .add(EditBillTypeChange(newSelection.first));
@@ -789,11 +811,13 @@ class _EditBillViewState extends State<EditBillView> {
         ValueListenableBuilder(
             valueListenable: _confirm,
             builder: (_, confirm, __) {
+              // 转账类型时，"是否确认"开关不可修改且保持开启状态
+              final isTransfer = curBillType() == BillType.transfer;
               return SwitchListTile(
                 title: const Text('是否确认'),
                 subtitle: const Text('确认后将会扣除对应账户金额'),
-                value: confirm ?? true,
-                onChanged: (value) {
+                value: isTransfer ? true : (confirm ?? true),
+                onChanged: isTransfer ? null : (value) {
                   state.editBill.data?.confirm = value;
                   _confirm.value = value;
                 },
@@ -804,11 +828,13 @@ class _EditBillViewState extends State<EditBillView> {
         ValueListenableBuilder(
             valueListenable: _include,
             builder: (_, include, __) {
+              // 转账类型时，"是否统计"开关不可修改且保持开启状态
+              final isTransfer = curBillType() == BillType.transfer;
               return SwitchListTile(
                 title: const Text('是否统计'),
                 subtitle: const Text('纳入统计的账单会在报表中显示'),
-                value: include ?? true,
-                onChanged: (value) {
+                value: isTransfer ? true : (include ?? true),
+                onChanged: isTransfer ? null : (value) {
                   state.editBill.data?.include = value;
                   _include.value = value;
                 },
