@@ -93,6 +93,7 @@ final class EditBillState extends Equatable {
     int? defaultIncomeAccountId,
     int? defaultTransferOutAccountId,
     int? defaultTransferInAccountId,
+    bool? isNewBill,
   }) {
     return EditBillState(
       status: status ?? this.status,
@@ -115,6 +116,7 @@ final class EditBillState extends Equatable {
           defaultTransferOutAccountId ?? this.defaultTransferOutAccountId,
       defaultTransferInAccountId:
           defaultTransferInAccountId ?? this.defaultTransferInAccountId,
+      isNewBill: isNewBill ?? this.isNewBill,
     );
   }
 

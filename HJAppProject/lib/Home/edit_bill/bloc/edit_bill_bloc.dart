@@ -43,7 +43,7 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
 
   FutureOr<void> _onBillSubmitted(
       EditBillSubmitted event, Emitter<EditBillState> emit) async {
-    emit(state.copyWith(status: EditBillStatus.loading));
+    emit(state.copyWith(status: EditBillStatus.loading, isNewBill: state.isNewBill));
     BillItemAddData data = state.editBill.data!;
     print('lxjtodo: _onBillSubmitted request: ${data.toJson()}');
     FromBillAddRequest request = FromBillAddRequest();
@@ -55,9 +55,9 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
           Map<String, dynamic>.from(response?.data as Map? ?? {}));
       if (hjResponse.code == 0) {
         _billRepository.refreshBills();
-        emit(state.copyWith(status: EditBillStatus.closed));
+        emit(state.copyWith(status: EditBillStatus.closed, isNewBill: state.isNewBill));
       } else {
-        emit(state.copyWith(status: EditBillStatus.submitFailed));
+        emit(state.copyWith(status: EditBillStatus.submitFailed, isNewBill: state.isNewBill));
       }
     }
   }
@@ -143,6 +143,7 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
       categoryList: categroies,
       tagList: tags,
       status: EditBillStatus.success,
+      isNewBill: state.isNewBill,
     ));
   }
 
@@ -161,6 +162,7 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
     emit(state.copyWith(
       editBill: editedBill,
       status: EditBillStatus.loading,
+      isNewBill: state.isNewBill,
     ));
     await refreshData(event.type, emit);
   }
