@@ -57,6 +57,7 @@ class BillItemAdd {
       confirm: billItem.confirm,
       include: billItem.include,
       toAccountId: billItem.toAccountId,
+      amount: billItem.amount,
     );
   }
 }

@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -40,7 +38,7 @@ class EditBillPage extends StatelessWidget {
         listeners: [
           BlocListener<EditBillBloc, EditBillState>(
             listenWhen: (previous, current) =>
-                previous.status != current.status,
+            previous.status != current.status,
             listener: (context, state) {
               if (state.status == EditBillStatus.failure) {
                 ScaffoldMessenger.of(context)
@@ -55,7 +53,7 @@ class EditBillPage extends StatelessWidget {
           ),
           BlocListener<EditBillBloc, EditBillState>(
             listenWhen: (previous, current) =>
-                previous.status != current.status,
+            previous.status != current.status,
             listener: (context, state) {
               if (state.status == EditBillStatus.closed) {
                 ScaffoldMessenger.of(context)
@@ -71,13 +69,13 @@ class EditBillPage extends StatelessWidget {
           ),
           BlocListener<EditBillBloc, EditBillState>(
             listenWhen: (previous, current) =>
-                previous.status != current.status,
+            previous.status != current.status,
             listener: (context, state) {
               if (state.status == EditBillStatus.submitFailed) {
                 ScaffoldMessenger.of(context)
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('添加失败'),
                     ),
                   );
@@ -87,7 +85,7 @@ class EditBillPage extends StatelessWidget {
         ],
         child: BlocListener<EditBillBloc, EditBillState>(
           listenWhen: (previous, current) =>
-              previous.status != current.status &&
+          previous.status != current.status &&
               current.status == EditBillStatus.success,
           listener: (context, state) => (),
           child: EditBillView(),
@@ -107,11 +105,10 @@ class _EditBillViewState extends State<EditBillView> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _remarkController = TextEditingController();
 
-  ValueNotifier<bool> _isCategoryExpanded = ValueNotifier(true);
-  ValueNotifier<bool> _isTagExpanded = ValueNotifier(true);
-  ValueNotifier<bool?> _confirm = ValueNotifier(null);
-  ValueNotifier<bool?> _include = ValueNotifier(null);
-  ValueNotifier<String?> _tradeTimeStr = ValueNotifier(null);
+  final ValueNotifier<bool> _isTagExpanded = ValueNotifier(true);
+  final ValueNotifier<bool?> _confirm = ValueNotifier(null);
+  final ValueNotifier<bool?> _include = ValueNotifier(null);
+  final ValueNotifier<String?> _tradeTimeStr = ValueNotifier(null);
   GlobalKey<CategoryTreeWidgetState>? curCategoryKey;
 
   @override
@@ -134,8 +131,9 @@ class _EditBillViewState extends State<EditBillView> {
     if (state.editBill.data?.remark != null && _remarkController.text.isEmpty) {
       _remarkController.text = state.editBill.data!.remark!;
     }
+    print('zctodo 222 = ${state.editBill.data}');
     final isNewBill = context.select(
-      (EditBillBloc bloc) => bloc.state.isNewBill,
+          (EditBillBloc bloc) => bloc.state.isNewBill,
     );
     return Scaffold(
       floatingActionButton: FloatingActionButton(
@@ -144,7 +142,7 @@ class _EditBillViewState extends State<EditBillView> {
           borderRadius: BorderRadius.all(Radius.circular(32)),
         ),
         onPressed:
-            status.isLoadingOrInit ? null : () => _submitBill(state.editBill),
+        status.isLoadingOrInit ? null : () => _submitBill(state.editBill),
         child: status.isLoadingOrInit
             ? const CupertinoActivityIndicator()
             : const Icon(Icons.check_rounded),
@@ -236,16 +234,16 @@ class _EditBillViewState extends State<EditBillView> {
   }
 
   BillType curBillType() {
-    var state = context.watch<EditBillBloc>().state;
+    final state = context.watch<EditBillBloc>().state;
     return BillType.fromValue(state.editBill.data?.billType ?? 1) ??
         BillType.expenditure;
   }
 
   // 账单类型选择器
   Widget _buildBillTypeSelector() {
-    var enable =
+    final enable =
         context.watch<EditBillBloc>().state.status != EditBillStatus.loading;
-    var billType = curBillType();
+    final billType = curBillType();
     return Container(
       margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -265,20 +263,20 @@ class _EditBillViewState extends State<EditBillView> {
           ButtonSegment(
             enabled: enable,
             value: BillType.expenditure,
-            label: Text('支出'),
-            icon: Icon(Icons.arrow_upward),
+            label: const Text('支出'),
+            icon: const Icon(Icons.arrow_upward),
           ),
           ButtonSegment(
             enabled: enable,
             value: BillType.income,
-            label: Text('收入'),
-            icon: Icon(Icons.arrow_downward),
+            label: const Text('收入'),
+            icon: const Icon(Icons.arrow_downward),
           ),
           ButtonSegment(
             enabled: enable,
             value: BillType.transfer,
-            label: Text('转账'),
-            icon: Icon(Icons.swap_horiz),
+            label: const Text('转账'),
+            icon: const Icon(Icons.swap_horiz),
           ),
         ],
         selected: {billType},
@@ -289,7 +287,7 @@ class _EditBillViewState extends State<EditBillView> {
         },
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.resolveWith<Color>(
-            (Set<WidgetState> states) {
+                (Set<WidgetState> states) {
               if (states.contains(WidgetState.selected)) {
                 return Theme.of(context).colorScheme.primaryContainer;
               }
@@ -343,11 +341,9 @@ class _EditBillViewState extends State<EditBillView> {
         (curBillType() == BillType.income
             ? state.defaultIncomeAccountId
             : state.defaultExpenseAccountId);
-    print('zctodo 111 = ${state.editBill.data?.accountId}');
     AccountSelectItem? selectItem;
     for (final item in items) {
       if (item.value.id == accountSelectId) {
-        print('zctodo 222 = ${item.value.id}');
         selectItem = item.value;
         break;
       }
@@ -465,8 +461,12 @@ class _EditBillViewState extends State<EditBillView> {
     }
     print(
         'lxjtodo: _buildTransferAccountSection $outItems \n $inItems\n $selectInItem\n $selectOutItem\n $selectAccountId $selectOutAccountId');
-    state.editBill.data?.accountId = selectInItem?.id;
-    state.editBill.data?.toAccountId = selectOutItem?.id;
+    if (state.editBill.data?.accountId == null && selectInItem != null) {
+      state.editBill.data?.accountId = selectInItem.id;
+    }
+    if(state.editBill.data?.toAccountId == null && selectOutItem != null) {
+      state.editBill.data?.toAccountId = selectOutItem.id;
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -505,11 +505,11 @@ class _EditBillViewState extends State<EditBillView> {
               borderRadius: BorderRadius.circular(12),
             ),
             focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.blue), // 聚焦状态边框颜色
+              borderSide: const BorderSide(color: Colors.blue), // 聚焦状态边框颜色
               borderRadius: BorderRadius.circular(12),
             ),
             errorBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.red), // 错误状态边框颜色
+              borderSide: const BorderSide(color: Colors.red), // 错误状态边框颜色
               borderRadius: BorderRadius.circular(12),
             ),
             border: OutlineInputBorder(
@@ -599,7 +599,7 @@ class _EditBillViewState extends State<EditBillView> {
       categoryAmountPair[categoryId.toInt()] = amount.toDouble();
     }
     final curCategoryKeyWithBillType =
-        GlobalKey<CategoryTreeWidgetState>(debugLabel: '${billType}_category');
+    GlobalKey<CategoryTreeWidgetState>(debugLabel: '${billType}_category');
     curCategoryKey = curCategoryKeyWithBillType;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -953,7 +953,7 @@ class TimeSelector extends StatelessWidget {
                 },
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey.shade400),
                     borderRadius: BorderRadius.circular(12),

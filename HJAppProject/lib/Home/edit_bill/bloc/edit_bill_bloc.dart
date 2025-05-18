@@ -44,14 +44,14 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
   FutureOr<void> _onBillSubmitted(
       EditBillSubmitted event, Emitter<EditBillState> emit) async {
     emit(state.copyWith(status: EditBillStatus.loading, isNewBill: state.isNewBill));
-    BillItemAddData data = state.editBill.data!;
+    final BillItemAddData data = state.editBill.data!;
     print('lxjtodo: _onBillSubmitted request: ${data.toJson()}');
-    FromBillAddRequest request = FromBillAddRequest();
+    final FromBillAddRequest request = FromBillAddRequest();
     Response? response =
         await request.submitBill(data.toJson(), modify: !state.isNewBill);
     if (response?.statusCode == 200) {
       print('lxjtodo _onBillSubmitte response: ${response?.data} ');
-      var hjResponse = HJResponse.fromJson(
+      final hjResponse = HJResponse.fromJson(
           Map<String, dynamic>.from(response?.data as Map? ?? {}));
       if (hjResponse.code == 0) {
         _billRepository.refreshBills();
@@ -68,11 +68,11 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
   }
 
   FutureOr<void> refreshData(BillType type, Emitter<EditBillState> emit) async {
-    var groupId = _billRepository.groupId();
-    var bookId = _billRepository.bookId();
-    var billType = type.value;
+    final groupId = _billRepository.groupId();
+    final bookId = _billRepository.bookId();
+    final billType = type.value;
     BookService bookService = BookService();
-    var bookResponse =
+    final bookResponse =
         await bookService.getEnableList(groupId ?? 1, type: type.value);
     List<DropdownItem<BookSelectItem>>? books;
     int? defaultExpenseAccountId;
@@ -99,16 +99,16 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
         );
       }).toList();
     }
-    AccountService service = AccountService();
-    var accountRes = await service.getEnableList(groupId ?? 0);
-    List<DropdownItem<AccountSelectItem>> expenseAccountList = [];
-    List<DropdownItem<AccountSelectItem>> incomeAccountList = [];
-    List<DropdownItem<AccountSelectItem>> transferAccountList = [];
-    List<DropdownItem<AccountSelectItem>> transferOutAccountList = [];
+    final AccountService service = AccountService();
+    final accountRes = await service.getEnableList(groupId ?? 0);
+    final List<DropdownItem<AccountSelectItem>> expenseAccountList = [];
+    final List<DropdownItem<AccountSelectItem>> incomeAccountList = [];
+    final List<DropdownItem<AccountSelectItem>> transferAccountList = [];
+    final List<DropdownItem<AccountSelectItem>> transferOutAccountList = [];
     if (accountRes.code == 0) {
       accountRes.data?.forEach((element) {
-        String accountName = element['accountName'] as String? ?? '';
-        DropdownItem<AccountSelectItem> account = DropdownItem(
+        final String accountName = element['accountName'] as String? ?? '';
+        final DropdownItem<AccountSelectItem> account = DropdownItem(
             label: accountName,
             value: AccountSelectItem(
                 accountName, element['accountId'] as int? ?? 0));
@@ -126,9 +126,9 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
         }
       });
     }
-    var payees = await payeeItems(PayeeService(), id: bookId, type: billType);
-    var categroies = await categroyFutureItems(type, bookId ?? 1);
-    var tags = await tagFutureItems(type, bookId ?? 1);
+    final payees = await payeeItems(PayeeService(), id: bookId, type: billType);
+    final categories = await categoryFutureItems(type, bookId ?? 1);
+    final tags = await tagFutureItems(type, bookId ?? 1);
     emit(state.copyWith(
       bookList: books,
       payeeList: payees,
@@ -140,7 +140,7 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
       defaultIncomeAccountId: defaultIncomeAccountId,
       defaultTransferOutAccountId: defaultTransferOutAccountId,
       defaultTransferInAccountId: defaultTransferInAccountId,
-      categoryList: categroies,
+      categoryList: categories,
       tagList: tags,
       status: EditBillStatus.success,
       isNewBill: state.isNewBill,
@@ -149,7 +149,7 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
 
   FutureOr<void> _onBillTypeChange(
       EditBillTypeChange event, Emitter<EditBillState> emit) async {
-    var editedBill = state.editBill.copyWith(
+    final editedBill = state.editBill.copyWith(
         data: state.editBill.data?.copyWith(
       billType: event.type.value,
       categoryAmountPair: [],
@@ -168,29 +168,29 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
   }
 }
 
-Future<List<CategorySelectItem>> categroyFutureItems(
+Future<List<CategorySelectItem>> categoryFutureItems(
     BillType billType, int bookId) async {
-  CategoryService categoryService = CategoryService();
-  var response =
+  final CategoryService categoryService = CategoryService();
+  final response =
       await categoryService.getEnableList(bookId, type: billType.value);
-  List<CategorySelectItem> categroyItems = [];
+  final List<CategorySelectItem> categoryItems = [];
   if (response.code == 0) {
-    var list = response.data as List? ?? [];
+    final list = response.data as List? ?? [];
     for (final item in list) {
-      categroyItems.add(CategorySelectItem.fromJson(
+      categoryItems.add(CategorySelectItem.fromJson(
           Map<String, dynamic>.from(item as Map? ?? {})));
     }
   }
-  return categroyItems;
+  return categoryItems;
 }
 
 Future<List<TagSelectItem>> tagFutureItems(
     BillType billType, int bookId) async {
-  TagService tagService = TagService();
-  var response = await tagService.getEnableList(bookId, type: billType.value);
-  List<TagSelectItem> tagItems = [];
+  final TagService tagService = TagService();
+  final response = await tagService.getEnableList(bookId, type: billType.value);
+  final List<TagSelectItem> tagItems = [];
   if (response.code == 0) {
-    var list = response.data as List? ?? [];
+    final list = response.data as List? ?? [];
     for (final item in list) {
       tagItems.add(TagSelectItem.fromJson(
           Map<String, dynamic>.from(item as Map? ?? {})));
