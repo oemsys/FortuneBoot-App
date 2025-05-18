@@ -16,13 +16,14 @@ import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 class EditBillPage extends StatelessWidget {
   const EditBillPage({super.key});
 
-  static Route<void> route({BillItemAdd? initialBill}) {
+  static Route<void> route({BillItemAdd? initialBill, bool isCopyBill = false}) {
     return MaterialPageRoute(
       fullscreenDialog: true,
       builder: (context) => BlocProvider(
         create: (context) => EditBillBloc(
           billRepository: context.read<BillsRepository>(),
           initialBill: initialBill,
+          isCopyBill: isCopyBill,
         )..add(EditBillInitialized(
             BillType.fromValue(initialBill?.data?.billType ?? 1) ??
                 BillType.expenditure)),

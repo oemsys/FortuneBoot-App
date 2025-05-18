@@ -285,7 +285,8 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                                               EditBillPage.route(
                                                   initialBill:
                                                       BillItemAdd.fromBillItem(
-                                                          bill)));
+                                                          bill),
+                                                  isCopyBill: true));
                                         },
                                         onDismissed: (direction) {
                                           // 实现左滑删除功能
@@ -1116,7 +1117,8 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                               const SnackBar(content: Text('账单已复制，请编辑后保存')),
                             );
                             Navigator.of(context).push(EditBillPage.route(
-                                initialBill: BillItemAdd.fromBillItem(bill)));
+                                initialBill: BillItemAdd.fromBillItem(bill),
+                                isCopyBill: true));
                           },
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 12),
