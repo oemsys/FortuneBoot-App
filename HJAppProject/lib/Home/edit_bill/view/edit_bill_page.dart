@@ -6,6 +6,7 @@ import 'package:hjproject/home/edit_bill/bloc/edit_bill_bloc.dart';
 import 'package:hjproject/home/edit_bill/models/edit_select_item.dart';
 import 'package:hjproject/home/edit_bill/view/select_field/category_select_field.dart';
 import 'package:hjproject/home/edit_bill/view/select_field/tag_select_field.dart';
+import 'package:hjproject/home/edit_bill/widgets/attachment_upload_widget.dart';
 import 'package:hjproject/home/todos_overview/models/bill_item.dart';
 import 'package:hjproject/home/todos_overview/models/bill_item_add.dart';
 import 'package:hjproject/generated/l10n.dart';
@@ -862,6 +863,24 @@ class _EditBillViewState extends State<EditBillView> {
           ),
           maxLines: 2,
           maxLength: 300,
+        ),
+
+        const SizedBox(height: 24),
+
+        // 附件上传
+        const Text(
+          '附件',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        AttachmentUploadWidget(
+          initialAttachments: state.attachments,
+          onAttachmentsChanged: (attachments) {
+            context.read<EditBillBloc>().add(EditBillAttachmentsChanged(attachments));
+          },
         ),
       ],
     );

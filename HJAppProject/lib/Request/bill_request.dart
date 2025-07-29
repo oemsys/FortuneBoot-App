@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:hjproject/login/model/login_model.dart';
@@ -83,7 +84,7 @@ abstract class BillService {
 
 class FromBillAddRequest {
   Future<Response?>? submitBill(Map<String, dynamic> data,
-      {bool modify = false}) async {
+      {bool modify = false, List<dynamic>? attachmentFiles}) async {
     try {
       // 2. 构建 FormData
       final formData = FormData();
@@ -97,20 +98,30 @@ class FromBillAddRequest {
         ),
       ));
 
-      // // 3. 处理文件列表
-      // if (_selectedFiles.isNotEmpty) {
-      //   for (final file in _selectedFiles) {
-      //     formData.files.add(MapEntry(
-      //       'files', // 字段名需与后端一致
-      //       await MultipartFile.fromFile(
-      //         file.path,
-      //         filename:
-      //             'upload_${DateTime.now().millisecondsSinceEpoch}.${file.extension}',
-      //         contentType: MediaType('image', file.extension), // 自动推断类型
-      //       ),
-      //     ));
-      //   }
-      // }
+      // 3. 处理文件列表
+      if (attachmentFiles != null && attachmentFiles.isNotEmpty) {
+        for (final file in attachmentFiles) {
+          if (file is File) {
+            // 移动端文件处理
+            formData.files.add(MapEntry(
+              'files', // 字段名需与后端一致
+              await MultipartFile.fromFile(
+                file.path,
+                filename: 'upload_${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}',
+              ),
+            ));
+          } else if (file is Map && file.containsKey('bytes') && file.containsKey('name')) {
+            // Web端文件处理
+            formData.files.add(MapEntry(
+              'files',
+              MultipartFile.fromBytes(
+                file['bytes'] as List<int>,
+                filename: file['name'] as String,
+              ),
+            ));
+          }
+        }
+      }
       // https://fortuneboot.com/prod-api/fortune/bill/add
       // 4. 发送请求
       if (!modify) {

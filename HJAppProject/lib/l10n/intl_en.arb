@@ -17,7 +17,7 @@
   "registration_failed": "Registration failed",
   "main_logo": "Easy Money",
   "login_message": "You are trying to login/sign up on server hosted on",
-  "login_host": "fortuneboot.com",
+  "login_host": "demo.fortuneboot.com",
   "login_button_text": "LOGIN",
   "register": "REGISTER",
   "or_login_with": "or login with",

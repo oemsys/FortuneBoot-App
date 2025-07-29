@@ -31,7 +31,7 @@ class _BaseUrlConfigPageState extends State<BaseUrlConfigPage> {
   ValueNotifier<AuthMode> _authMode = ValueNotifier<AuthMode>(AuthMode.loading);
   String _protocol = 'https';
   final TextEditingController _domainController =
-      TextEditingController(text: 'fortuneboot.com');
+      TextEditingController(text: 'demo.fortuneboot.com');
   final TextEditingController _portController =
       TextEditingController(text: '443');
 

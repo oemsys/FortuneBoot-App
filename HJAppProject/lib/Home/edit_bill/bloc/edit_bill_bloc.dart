@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:hjproject/home/edit_bill/models/edit_select_item.dart';
+import 'package:hjproject/home/edit_bill/models/attachment_item.dart';
 import 'package:hjproject/home/edit_bill/viewmodel/edit_field_cell_viewmodel.dart';
 import 'package:hjproject/home/todos_overview/models/bill_item.dart';
 import 'package:hjproject/home/todos_overview/models/bill_item_add.dart';
@@ -16,9 +17,9 @@ import 'package:hjproject/request/tag_request.dart';
 import 'package:hjproject/repository/repository/bills_repository.dart';
 import 'package:dio/dio.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
-import 'package:intl/intl.dart';
 
 part 'edit_bill_event.dart';
+
 part 'edit_bill_state.dart';
 
 class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
@@ -37,27 +38,49 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
     on<EditBillSubmitted>(_onBillSubmitted);
     on<EditBillInitialized>(_onBillInitialized);
     on<EditBillTypeChange>(_onBillTypeChange);
+    on<EditBillAttachmentsChanged>(_onAttachmentsChanged);
   }
 
   final BillsRepository _billRepository;
 
   FutureOr<void> _onBillSubmitted(
       EditBillSubmitted event, Emitter<EditBillState> emit) async {
-    emit(state.copyWith(status: EditBillStatus.loading, isNewBill: state.isNewBill));
+    emit(state.copyWith(
+        status: EditBillStatus.loading, isNewBill: state.isNewBill));
     final BillItemAddData data = state.editBill.data!;
     print('lxjtodo: _onBillSubmitted request: ${data.toJson()}');
+    // 准备附件文件
+    List<dynamic> attachmentFiles = [];
+    for (final attachment in state.attachments) {
+      if (attachment.file != null) {
+        // 移动端文件
+        attachmentFiles.add(attachment.file!);
+      } else if (attachment.bytes != null) {
+        // Web端文件
+        attachmentFiles.add({
+          'bytes': attachment.bytes!,
+          'name': attachment.name,
+        });
+      }
+    }
+    
     final FromBillAddRequest request = FromBillAddRequest();
-    Response? response =
-        await request.submitBill(data.toJson(), modify: !state.isNewBill);
+    Response? response = await request.submitBill(
+      data.toJson(), 
+      modify: !state.isNewBill,
+      attachmentFiles: attachmentFiles.isNotEmpty ? attachmentFiles : null,
+    );
     if (response?.statusCode == 200) {
       print('lxjtodo _onBillSubmitte response: ${response?.data} ');
       final hjResponse = HJResponse.fromJson(
           Map<String, dynamic>.from(response?.data as Map? ?? {}));
       if (hjResponse.code == 0) {
         _billRepository.refreshBills();
-        emit(state.copyWith(status: EditBillStatus.closed, isNewBill: state.isNewBill));
+        emit(state.copyWith(
+            status: EditBillStatus.closed, isNewBill: state.isNewBill));
       } else {
-        emit(state.copyWith(status: EditBillStatus.submitFailed, isNewBill: state.isNewBill));
+        emit(state.copyWith(
+            status: EditBillStatus.submitFailed, isNewBill: state.isNewBill));
       }
     }
   }
@@ -165,6 +188,13 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
       isNewBill: state.isNewBill,
     ));
     await refreshData(event.type, emit);
+  }
+
+  FutureOr<void> _onAttachmentsChanged(
+      EditBillAttachmentsChanged event, Emitter<EditBillState> emit) async {
+    emit(state.copyWith(
+      attachments: event.attachments,
+    ));
   }
 }
 

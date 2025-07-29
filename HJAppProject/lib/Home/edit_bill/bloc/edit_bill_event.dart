@@ -25,3 +25,12 @@ final class EditBillTypeChange extends EditBillEvent {
 final class EditBillSubmitted extends EditBillEvent {
   const EditBillSubmitted();
 }
+
+final class EditBillAttachmentsChanged extends EditBillEvent {
+  final List<AttachmentItem> attachments;
+  
+  const EditBillAttachmentsChanged(this.attachments);
+  
+  @override
+  List<Object> get props => [attachments];
+}
