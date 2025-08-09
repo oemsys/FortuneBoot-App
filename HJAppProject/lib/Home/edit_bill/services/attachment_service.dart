@@ -8,6 +8,12 @@ import 'package:path/path.dart' as path;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:hjproject/home/edit_bill/models/attachment_item.dart';
 
+enum PermissionType {
+  image,
+  photo,
+  file,
+}
+
 /// 附件上传服务
 class AttachmentService {
   static const int maxFileSize = 5 * 1024 * 1024; // 5MB
@@ -17,29 +23,30 @@ class AttachmentService {
   final ImagePicker _imagePicker = ImagePicker();
 
   /// 检查权限
-  Future<bool> _checkPermissions() async {
+  Future<bool> _checkPermissions({PermissionType? type}) async {
     if (kIsWeb) return true; // Web平台不需要权限检查
-
-    // 检查相机权限
-    var cameraStatus = await Permission.camera.status;
-    if (cameraStatus.isDenied) {
-      cameraStatus = await Permission.camera.request();
+    switch (type) {
+      case PermissionType.file:
+        // 检查存储权限
+        var storageStatus = await Permission.storage.status;
+        if (storageStatus.isDenied) {
+          return Permission.storage.request().isGranted;
+        }
+      case PermissionType.image:
+        // 检查相机权限
+        var cameraStatus = await Permission.camera.status;
+        if (cameraStatus.isDenied) {
+          return await Permission.camera.request().isGranted;
+        }
+    case PermissionType.photo:
+        // 检查照片权限（iOS）
+        var photosStatus = await Permission.photos.status;
+        if (photosStatus.isDenied) {
+          return await Permission.photos.request().isGranted;
+        }
+      default:
     }
-
-    // 检查存储权限
-    var storageStatus = await Permission.storage.status;
-    if (storageStatus.isDenied) {
-      storageStatus = await Permission.storage.request();
-    }
-
-    // 检查照片权限（iOS）
-    var photosStatus = await Permission.photos.status;
-    if (photosStatus.isDenied) {
-      photosStatus = await Permission.photos.request();
-    }
-
-    return cameraStatus.isGranted && 
-           (storageStatus.isGranted || photosStatus.isGranted);
+    return false;
   }
 
   /// 从相册选择图片
@@ -117,14 +124,12 @@ class AttachmentService {
     for (final xFile in xFiles) {
       try {
         // Web平台处理文件名
-        final String fileName = kIsWeb 
-            ? xFile.name 
-            : path.basename(xFile.path);
-        
+        final String fileName = kIsWeb ? xFile.name : path.basename(xFile.path);
+
         final int fileSize = await xFile.length();
-        
+
         // Web平台处理MIME类型
-        final String mimeType = kIsWeb 
+        final String mimeType = kIsWeb
             ? (xFile.mimeType ?? 'application/octet-stream')
             : (lookupMimeType(xFile.path) ?? 'application/octet-stream');
 
@@ -146,7 +151,7 @@ class AttachmentService {
         }
 
         final attachment = AttachmentItem(
-          id: DateTime.now().millisecondsSinceEpoch.toString() + 
+          id: DateTime.now().millisecondsSinceEpoch.toString() +
               attachments.length.toString(),
           name: fileName,
           path: filePath,
@@ -177,11 +182,12 @@ class AttachmentService {
       try {
         final String fileName = platformFile.name;
         final int fileSize = platformFile.size;
-        
+
         // Web平台和移动平台的MIME类型处理
         final String mimeType = kIsWeb
             ? (platformFile.extension != null
-                ? lookupMimeType('file.${platformFile.extension}') ?? 'application/octet-stream'
+                ? lookupMimeType('file.${platformFile.extension}') ??
+                    'application/octet-stream'
                 : 'application/octet-stream')
             : (lookupMimeType(fileName) ?? 'application/octet-stream');
 

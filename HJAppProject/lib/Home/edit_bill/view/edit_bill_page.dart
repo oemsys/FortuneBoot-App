@@ -867,14 +867,6 @@ class _EditBillViewState extends State<EditBillView> {
 
         const SizedBox(height: 24),
 
-        // 附件上传
-        const Text(
-          '附件',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
         const SizedBox(height: 16),
         AttachmentUploadWidget(
           initialAttachments: state.attachments,
