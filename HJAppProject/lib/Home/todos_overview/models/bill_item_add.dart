@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hjproject/home/todos_overview/models/bill_file_item.dart';
 import 'package:hjproject/home/todos_overview/models/bill_item.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:intl/intl.dart';
@@ -10,7 +11,7 @@ part 'bill_item_add.g.dart';
 @JsonSerializable()
 class BillItemAdd {
   BillItemAddData? data;
-  List<String>? files;
+  List<BillFileItem>? files;
 
   BillItemAdd({this.data, this.files});
   factory BillItemAdd.fromJson(Map<String, dynamic> json) =>
@@ -20,7 +21,7 @@ class BillItemAdd {
   // copyWith
   BillItemAdd copyWith({
     BillItemAddData? data,
-    List<String>? files,
+    List<BillFileItem>? files,
   }) {
     return BillItemAdd(
       data: data ?? this.data!.copyWith(),
@@ -59,6 +60,7 @@ class BillItemAdd {
       toAccountId: billItem.toAccountId,
       amount: billItem.amount,
     );
+    files = billItem.fileList;
   }
 }
 

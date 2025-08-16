@@ -29,16 +29,28 @@ class BillDetailBloc extends Bloc<BillDetailEvent, BillDetailState> {
       BillLoadFile event, Emitter<BillDetailState> emit) async {
     HJResponse response = await _billService.getByBillFileId(event.billId);
     if (response.code == 0) {
-      print('lxjtodo _onLoadFileData response: $response');
       final list = response.data as List? ?? [];
       List<BillFileItem> files = [];
       for (final item in list) {
         files.add(BillFileItem.fromJson(
             Map<String, dynamic>.from(item as Map? ?? {})));
       }
-      print('lxjtodo: files: $files');
-      state.initialBill.fileList = files;
-      emit(state.copyWith(initialBill: state.initialBill));
+      if (!fileEqual(files, state.initialBill.fileList)) {
+        state.initialBill.fileList = files;
+        emit(state.copyWith(initialBill: state.initialBill));
+      }
     }
+  }
+
+  bool fileEqual(List<BillFileItem>? filesA, List<BillFileItem>? filesB) {
+    if (filesA == null || filesB == null) {
+      return false;
+    }
+    if (filesA.length != filesB.length) {
+      return false;
+    }
+    return !filesA.any((ele) {
+      return !filesB.contains(ele);
+    });
   }
 }

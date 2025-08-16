@@ -30,6 +30,23 @@ class BillFileItem extends Equatable {
       _$BillFileItemFromJson(json);
   Map<String, dynamic> toJson() => _$BillFileItemToJson(this);
 
+  // 重写 ==
+  @override
+  bool operator ==(Object other) {
+    // 同一对象实例 => 直接返回 true
+    if (identical(this, other)) return true;
+
+    // 类型不同 => 返回 false
+    if (other.runtimeType != runtimeType) return false;
+
+    // 类型安全转换并比较字段
+    return other is BillFileItem && other.fileId == fileId;
+  }
+
+  // 必须同时重写 hashCode（一致性原则）
+  @override
+  int get hashCode => fileId.hashCode ^ billId.hashCode;
+
   // String calculateStringMD5(String input) {
   //   // 将字符串转为 UTF-8 字节流
   //   List<int> bytes = utf8.encode(input);

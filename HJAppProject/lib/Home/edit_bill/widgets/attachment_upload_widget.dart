@@ -370,7 +370,7 @@ class _AttachmentUploadWidgetState extends State<AttachmentUploadWidget> {
 
   /// 构建图片缩略图
   Widget _buildImageThumbnail(AttachmentItem attachment) {
-    if (kIsWeb && attachment.bytes != null) {
+    if (kIsWeb || attachment.bytes != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Image.memory(

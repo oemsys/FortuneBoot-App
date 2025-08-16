@@ -47,6 +47,18 @@ final class EditBillState extends Equatable {
   }) {
     if (initialBill != null) {
       editBill = initialBill!.copyWith();
+      if (initialBill!.files != null) {
+        attachments = initialBill!.files!.map((fileItem) {
+          return AttachmentItem(
+              id: fileItem.fileId.toString(),
+              name: fileItem.originalName ?? '',
+              path: '',
+              size: fileItem.size ?? 0,
+              mimeType: '',
+              type: AttachmentType.image,
+              bytes: fileItem.decodeBase64ToImage(fileItem.fileData!));
+        }).toList();
+      }
     } else {
       editBill = BillItemAdd(data: BillItemAddData.init(bookId: bookId));
     }
@@ -78,7 +90,7 @@ final class EditBillState extends Equatable {
   int? defaultTransferInAccountId;
 
   // 附件列表
-  final List<AttachmentItem> attachments;
+  List<AttachmentItem> attachments;
 
   bool isNewBill;
 

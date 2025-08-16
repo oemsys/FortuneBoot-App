@@ -10,8 +10,9 @@ BillItemAdd _$BillItemAddFromJson(Map<String, dynamic> json) => BillItemAdd(
       data: json['data'] == null
           ? null
           : BillItemAddData.fromJson(json['data'] as Map<String, dynamic>),
-      files:
-          (json['files'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      files: (json['files'] as List<dynamic>?)
+          ?.map((e) => BillFileItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$BillItemAddToJson(BillItemAdd instance) =>
