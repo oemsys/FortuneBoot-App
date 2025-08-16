@@ -8,8 +8,9 @@ import 'package:path/path.dart' as path;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:hjproject/home/edit_bill/models/attachment_item.dart';
 
+// https://pub.dev/packages/permission_handler
 enum PermissionType {
-  image,
+  camera,
   photo,
   file,
 }
@@ -28,22 +29,13 @@ class AttachmentService {
     switch (type) {
       case PermissionType.file:
         // 检查存储权限
-        var storageStatus = await Permission.storage.status;
-        if (storageStatus.isDenied) {
-          return Permission.storage.request().isGranted;
-        }
-      case PermissionType.image:
+        return Permission.storage.request().isGranted;
+      case PermissionType.camera:
         // 检查相机权限
-        var cameraStatus = await Permission.camera.status;
-        if (cameraStatus.isDenied) {
-          return await Permission.camera.request().isGranted;
-        }
-    case PermissionType.photo:
+        return await Permission.camera.request().isGranted;
+      case PermissionType.photo:
         // 检查照片权限（iOS）
-        var photosStatus = await Permission.photos.status;
-        if (photosStatus.isDenied) {
-          return await Permission.photos.request().isGranted;
-        }
+        return await Permission.photos.request().isGranted;
       default:
     }
     return false;
@@ -54,7 +46,7 @@ class AttachmentService {
     int maxImages = 9,
   }) async {
     try {
-      if (!await _checkPermissions()) {
+      if (!await _checkPermissions(type: PermissionType.photo)) {
         throw Exception('权限被拒绝，无法访问相册');
       }
 
@@ -73,7 +65,7 @@ class AttachmentService {
   /// 拍照
   Future<AttachmentItem?> takePhoto() async {
     try {
-      if (!await _checkPermissions()) {
+      if (!await _checkPermissions(type: PermissionType.camera)) {
         throw Exception('权限被拒绝，无法使用相机');
       }
 
@@ -125,7 +117,7 @@ class AttachmentService {
       try {
         // Web平台处理文件名
         final String fileName = kIsWeb ? xFile.name : path.basename(xFile.path);
-
+        print('lxjtodo: filePath: ${xFile.path}');
         final int fileSize = await xFile.length();
 
         // Web平台处理MIME类型

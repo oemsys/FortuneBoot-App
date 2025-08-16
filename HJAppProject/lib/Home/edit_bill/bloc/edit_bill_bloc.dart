@@ -63,10 +63,10 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
         });
       }
     }
-    
+
     final FromBillAddRequest request = FromBillAddRequest();
     Response? response = await request.submitBill(
-      data.toJson(), 
+      data.toJson(),
       modify: !state.isNewBill,
       attachmentFiles: attachmentFiles.isNotEmpty ? attachmentFiles : null,
     );
@@ -82,6 +82,10 @@ class EditBillBloc extends Bloc<EditBillEvent, EditBillState> {
         emit(state.copyWith(
             status: EditBillStatus.submitFailed, isNewBill: state.isNewBill));
       }
+    } else {
+      print('lxjtodo _onBillSubmitte response: $response ');
+      emit(state.copyWith(
+          status: EditBillStatus.submitFailed, isNewBill: state.isNewBill));
     }
   }
 

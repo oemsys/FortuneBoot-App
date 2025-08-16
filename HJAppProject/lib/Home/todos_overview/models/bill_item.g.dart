@@ -33,6 +33,9 @@ BillItem _$BillItemFromJson(Map<String, dynamic> json) => BillItem(
       tagList: (json['tagList'] as List<dynamic>?)
           ?.map((e) => TagList.fromJson(e as Map<String, dynamic>))
           .toList(),
+      fileList: (json['fileList'] as List<dynamic>?)
+          ?.map((e) => BillFileItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$BillItemToJson(BillItem instance) => <String, dynamic>{
@@ -56,6 +59,7 @@ Map<String, dynamic> _$BillItemToJson(BillItem instance) => <String, dynamic>{
       'remark': instance.remark,
       'categoryAmountPair': instance.categoryAmountPair,
       'tagList': instance.tagList,
+      'fileList': instance.fileList,
     };
 
 const _$BillTypeEnumMap = {

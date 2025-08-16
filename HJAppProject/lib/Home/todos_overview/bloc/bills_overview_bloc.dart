@@ -84,4 +84,9 @@ class BillsOverviewBloc extends Bloc<BillsOverviewEvent, BillsOverviewState> {
       BillsOverviewLoadLastRequested event, Emitter<BillsOverviewState> emit) {
     _billsRepository.refreshBills(clear: false);
   }
+
+  FutureOr<void> _onFetchDetailFileRequested(
+      BillsOverviewLoadLastRequested event, Emitter<BillsOverviewState> emit) {
+    _billsRepository.refreshBills(clear: false);
+  }
 }

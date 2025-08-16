@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hjproject/home/todos_overview/models/bill_file_item.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:equatable/equatable.dart';
 import 'package:intl/intl.dart';
@@ -54,6 +55,7 @@ class BillItem extends Equatable {
   String? remark;
   List<CategoryAmountPair>? categoryAmountPair;
   List<TagList>? tagList;
+  List<BillFileItem>? fileList;
 
   // 'yyyy-MM-dd HH:mm:ss'
   String get tradeTimeString {
@@ -81,7 +83,8 @@ class BillItem extends Equatable {
       this.include,
       this.remark,
       this.categoryAmountPair,
-      this.tagList});
+      this.tagList,
+      this.fileList});
 
   factory BillItem.fromJson(Map<String, dynamic> json) =>
       _$BillItemFromJson(json);
@@ -89,7 +92,7 @@ class BillItem extends Equatable {
 
   @override
   String toString() {
-    return 'BillItem{billId: $billId, bookId: $bookId, bookName: $bookName, title: $title, tradeTime: $tradeTime, accountId: $accountId, accountName: $accountName, amount: $amount, currencyCode: $currencyCode, convertedAmount: $convertedAmount, payeeId: $payeeId, payeeName: $payeeName, billType: $billType, toAccountId: $toAccountId, toAccountName: $toAccountName, confirm: $confirm, include: $include, remark: $remark, categoryAmountPair: $categoryAmountPair, tagList: $tagList}';
+    return 'BillItem{billId: $billId, bookId: $bookId, bookName: $bookName, title: $title, tradeTime: $tradeTime, accountId: $accountId, accountName: $accountName, amount: $amount, currencyCode: $currencyCode, convertedAmount: $convertedAmount, payeeId: $payeeId, payeeName: $payeeName, billType: $billType, toAccountId: $toAccountId, toAccountName: $toAccountName, confirm: $confirm, include: $include, remark: $remark, categoryAmountPair: $categoryAmountPair, tagList: $tagList, fileList: $fileList}';
   }
 
   @override
@@ -114,7 +117,8 @@ class BillItem extends Equatable {
         include,
         remark,
         categoryAmountPair,
-        tagList
+        tagList,
+        fileList
       ];
 }
 

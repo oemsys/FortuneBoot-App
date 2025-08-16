@@ -80,6 +80,9 @@ abstract class BillService {
   @DELETE('/fortune/bill/{bookId}/{billId}/remove')
   Future<HJResponse> removeBill(
       @Path('bookId') int bookId, @Path('billId') int billId);
+
+  @GET('/fortune/bill/file/{billId}/getByBillId')
+  Future<HJResponse> getByBillFileId(@Path('billId') int billId);
 }
 
 class FromBillAddRequest {
