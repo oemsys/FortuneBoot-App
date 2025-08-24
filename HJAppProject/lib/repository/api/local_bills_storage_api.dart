@@ -87,16 +87,21 @@ class LocalStorageBillsApi extends BillsApi {
     caculatorTime = time;
     DateTime newEndTime;
     DateTime newStartTime;
+    final timeLastDay = DateTime(time.year, time.month + 1, 0).day;
+
     final nextMonth = addOneMonth(time);
     final lastMonth = subtractMonth(time);
     bool needRefresh = false;
     if (time.day > billStatisticsDay) {
-      newStartTime = DateTime(time.year, time.month, billStatisticsDay);
-      newEndTime = DateTime(nextMonth.year, nextMonth.month, billStatisticsDay);
+      newStartTime = safeLastDayTime(
+          time, DateTime(time.year, time.month, billStatisticsDay));
+      newEndTime = safeLastDayTime(nextMonth,
+          DateTime(nextMonth.year, nextMonth.month, billStatisticsDay));
     } else {
-      newStartTime =
-          DateTime(lastMonth.year, lastMonth.month, billStatisticsDay);
-      newEndTime = DateTime(time.year, time.month, billStatisticsDay);
+      newStartTime = safeLastDayTime(lastMonth,
+          DateTime(lastMonth.year, lastMonth.month, billStatisticsDay));
+      newEndTime = safeLastDayTime(
+          time, DateTime(time.year, time.month, billStatisticsDay));
     }
     if (forceRefresh) {
       endTime = newEndTime;
@@ -111,6 +116,16 @@ class LocalStorageBillsApi extends BillsApi {
     print(
         'lxjtodo: refreshCaculatorStatisticsDuration $endTime $startTime $needRefresh');
     return needRefresh;
+  }
+
+  DateTime safeLastDayTime(DateTime originTime, DateTime targetTime) {
+    DateTime finalTime = targetTime;
+    if (targetTime.year > originTime.year ||
+        targetTime.month > originTime.month) {
+      // 设置为这个月最后一天
+      finalTime = DateTime(targetTime.year, targetTime.month, 0);
+    }
+    return finalTime;
   }
 
   void _init() {
@@ -221,12 +236,12 @@ class LocalStorageBillsApi extends BillsApi {
     if (billStatisticsResponse.code == 0) {
       if (billStatisticsResponse.data == null) {
         billStatistics = BillStatistics(
-            income: 0, expense: 0, surplus: 0, staticTime: startTime);
+            income: 0, expense: 0, surplus: 0, staticTime: caculatorTime);
       } else {
         BillStatistics statistics = BillStatistics.fromJson(
             Map<String, dynamic>.from(
                 billStatisticsResponse.data as Map? ?? {}));
-        statistics.staticTime = startTime;
+        statistics.staticTime = caculatorTime;
         print('lxjtodo: $statistics startTime:$startTime, endTime:$endTime');
         billStatistics = statistics;
       }
