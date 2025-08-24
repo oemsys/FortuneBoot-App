@@ -30,3 +30,17 @@ class BillsOverviewLoadMoreRequested extends BillsOverviewEvent {
 class BillsOverviewLoadLastRequested extends BillsOverviewEvent {
   const BillsOverviewLoadLastRequested();
 }
+
+class BillsOverviewRefreshStatisticsRequested extends BillsOverviewEvent {
+  DateTime refreshDate;
+  BillsOverviewRefreshStatisticsRequested(this.refreshDate);
+  @override
+  List<Object> get props => [refreshDate];
+}
+
+class BillsOverviewRefreshStatisticsDayChanged extends BillsOverviewEvent {
+  int day;
+  BillsOverviewRefreshStatisticsDayChanged(this.day);
+  @override
+  List<Object> get props => [day];
+}

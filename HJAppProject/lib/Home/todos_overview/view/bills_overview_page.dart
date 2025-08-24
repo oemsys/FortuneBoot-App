@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hjproject/home/edit_bill/view/edit_bill_page.dart';
 import 'package:hjproject/home/theme/theme.dart';
@@ -10,6 +11,7 @@ import 'package:hjproject/home/todos_overview/view/bill_detail_sheet.dart';
 import 'package:hjproject/home/todos_overview/view/bill_list_tile.dart';
 import 'package:hjproject/repository/repository/bills_repository.dart';
 import 'package:intl/intl.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../generated/l10n.dart';
 
@@ -387,7 +389,7 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
         }
 
         // 计算本月收支
-        final now = DateTime.now();
+        final now = state.statistics?.staticTime ?? DateTime.now();
         // final currentMonth = DateTime(now.year, now.month);
         double monthIncome = state.statistics?.income ?? 0;
         double monthExpense = state.statistics?.expense ?? 0;
@@ -416,13 +418,28 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        // TextButton.icon(
-                        //   icon: const Icon(Icons.bar_chart, size: 16),
-                        //   label: const Text('查看报表'),
-                        //   onPressed: () {
-                        //     // 跳转到月度报表
-                        //   },
-                        // ),
+                        TextButton.icon(
+                          icon: const Icon(Icons.bar_chart, size: 16),
+                          label: const Text('设置结算日'),
+                          onPressed: () async {
+                            // 跳转到月度报表
+                            final currentValue = context
+                                    .read<BillsRepository>()
+                                    .billStatisticsDay() ??
+                                1;
+                            final newValue = await showDialog<String>(
+                              context: context,
+                              builder: (context) => EditValueDialog(
+                                  currentValue: currentValue.toString()),
+                            );
+                            if (newValue != null) {
+                              context.read<BillsOverviewBloc>().add(
+                                  BillsOverviewRefreshStatisticsDayChanged(
+                                      int.parse(newValue)));
+                              print('lxjtodo 用户输入的新值: $newValue'); // 处理新值
+                            }
+                          },
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -608,108 +625,120 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
     // 计算日收支差额
     final double dayBalance = income - expense;
 
-    return Container(
-      key: key,
-      margin: const EdgeInsets.only(top: 8.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          left: BorderSide(
-            color: Theme.of(context).primaryColor,
-            width: 4.0,
-          ),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
-        child: Row(
-          children: [
-            // 日期部分
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(4.0),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    dateText,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    weekdayText,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
-                ],
+    return VisibilityDetector(
+        key: ValueKey(key),
+        onVisibilityChanged: (VisibilityInfo info) {
+          if (info.visibleFraction == 1.0) {
+            print('lxjtodo: $date');
+            context
+                .read<BillsOverviewBloc>()
+                .add(BillsOverviewRefreshStatisticsRequested(date));
+          }
+        },
+        child: Container(
+          key: key,
+          margin: const EdgeInsets.only(top: 8.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              left: BorderSide(
+                color: Theme.of(context).primaryColor,
+                width: 4.0,
               ),
             ),
-            const Spacer(),
-            // 收支信息
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+          ),
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    if (income > 0) ...[
-                      const Icon(
-                        Icons.arrow_downward,
-                        size: 12,
-                        color: Colors.green,
-                      ),
-                      const SizedBox(width: 2),
+                // 日期部分
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0, vertical: 4.0),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                  child: Row(
+                    children: [
                       Text(
-                        '¥${income.toStringAsFixed(2)}',
-                        style: const TextStyle(
+                        dateText,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        weekdayText,
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Colors.green,
+                          color: Theme.of(context).primaryColor,
                         ),
                       ),
                     ],
-                    if (income > 0 && expense > 0) const SizedBox(width: 12),
-                    if (expense > 0) ...[
-                      const Icon(
-                        Icons.arrow_upward,
-                        size: 12,
-                        color: Colors.red,
-                      ),
-                      const SizedBox(width: 2),
+                  ),
+                ),
+                const Spacer(),
+                // 收支信息
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Row(
+                      children: [
+                        if (income > 0) ...[
+                          const Icon(
+                            Icons.arrow_downward,
+                            size: 12,
+                            color: Colors.green,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            '¥${income.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.green,
+                            ),
+                          ),
+                        ],
+                        if (income > 0 && expense > 0)
+                          const SizedBox(width: 12),
+                        if (expense > 0) ...[
+                          const Icon(
+                            Icons.arrow_upward,
+                            size: 12,
+                            color: Colors.red,
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            '¥${expense.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (income > 0 || expense > 0) ...[
+                      const SizedBox(height: 2),
                       Text(
-                        '¥${expense.toStringAsFixed(2)}',
-                        style: const TextStyle(
+                        '结余: ${dayBalance >= 0 ? '+' : ''}¥${dayBalance.toStringAsFixed(2)}',
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          color: dayBalance >= 0 ? Colors.blue : Colors.red,
                         ),
                       ),
                     ],
                   ],
                 ),
-                if (income > 0 || expense > 0) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    '结余: ${dayBalance >= 0 ? '+' : ''}¥${dayBalance.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: dayBalance >= 0 ? Colors.blue : Colors.red,
-                    ),
-                  ),
-                ],
               ],
             ),
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 
   // 显示筛选选项
@@ -840,6 +869,106 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
           },
         );
       },
+    );
+  }
+}
+
+class EditValueDialog extends StatefulWidget {
+  final String currentValue; // 当前值
+
+  const EditValueDialog({super.key, required this.currentValue});
+
+  @override
+  State<EditValueDialog> createState() => _EditValueDialogState();
+}
+
+class _EditValueDialogState extends State<EditValueDialog> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // 初始化控制器，预填充当前值
+    _controller = TextEditingController(text: widget.currentValue);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose(); // 销毁控制器避免内存泄漏
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('每月结算日'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min, // 自适应高度
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('当前每月: ${widget.currentValue} 日'), // 展示当前值
+          const SizedBox(height: 16),
+          TextField(
+            controller: _controller,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly, // 只允许输入数字[4,7](@ref)
+              _IntegerRangeFormatter(min: 1, max: 31), // 自定义范围限制
+            ],
+            autofocus: true, // 自动聚焦到输入框
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: '输入新值',
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context), // 取消关闭弹窗
+          child: const Text('取消'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            if (_controller.text.isNotEmpty) {
+              Navigator.pop(context, _controller.text); // 确认并返回新值
+            }
+          },
+          child: const Text('确认'),
+        ),
+      ],
+    );
+  }
+}
+
+// 自定义范围过滤器（处理边界值）
+class _IntegerRangeFormatter extends TextInputFormatter {
+  final int min;
+  final int max;
+
+  _IntegerRangeFormatter({required this.min, required this.max});
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) return newValue;
+
+    // 处理非法输入（如非数字）
+    final num = int.tryParse(newValue.text);
+    if (num == null) return oldValue;
+
+    // 自动修正边界
+    int correctedValue = num;
+    if (num < min) correctedValue = min;
+    if (num > max) correctedValue = max;
+
+    // 返回修正后的值
+    return TextEditingValue(
+      text: correctedValue.toString(),
+      selection:
+          TextSelection.collapsed(offset: correctedValue.toString().length),
     );
   }
 }

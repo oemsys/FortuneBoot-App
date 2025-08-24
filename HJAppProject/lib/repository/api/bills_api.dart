@@ -6,6 +6,14 @@ abstract class BillsApi {
 
   bool isLoadingMore = false;
 
+  late DateTime endTime;
+
+  late DateTime caculatorTime;
+
+  late DateTime startTime;
+
+  late int billStatisticsDay;
+
   /// {@macro todos_api}
   BillsApi();
 
@@ -31,6 +39,10 @@ abstract class BillsApi {
   Future<void> close();
 
   Future<void> refreshBills(bool clear);
+
+  Future<void> refreshStatistics(DateTime time);
+
+  Future<void> statisticsDayChanged(int day);
 
   BillStatistics? billStatistics;
 }

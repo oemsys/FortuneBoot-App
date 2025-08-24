@@ -17,7 +17,7 @@ part 'bill_request.g.dart'; // 代码生成文件
 // 账单API账单相关的增删查改
 @RestApi()
 abstract class BillService {
-  factory BillService({
+factory BillService({
     String? baseUrl,
   }) {
     Dio dio = DioClient().dio;

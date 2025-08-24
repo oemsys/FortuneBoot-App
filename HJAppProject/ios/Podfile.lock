@@ -36,9 +36,14 @@ PODS:
   - Flutter (1.0.0)
   - image_picker_ios (0.0.1):
     - Flutter
+  - LEEAlert (1.8.2):
+    - LEEAlert/Privacy (= 1.8.2)
+  - LEEAlert/Privacy (1.8.2)
   - libphonenumber_plugin (0.0.1):
     - Flutter
     - PhoneNumberKit
+  - MBProgressHUD (1.2.0)
+  - OpenSSL-Universal (3.3.3001)
   - package_info_plus (0.4.5):
     - Flutter
   - path_provider_foundation (0.0.1):
@@ -66,7 +71,10 @@ DEPENDENCIES:
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - LEEAlert
   - libphonenumber_plugin (from `.symlinks/plugins/libphonenumber_plugin/ios`)
+  - MBProgressHUD
+  - OpenSSL-Universal
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
@@ -77,6 +85,9 @@ SPEC REPOS:
   trunk:
     - DKImagePickerController
     - DKPhotoGallery
+    - LEEAlert
+    - MBProgressHUD
+    - OpenSSL-Universal
     - PhoneNumberKit
     - SDWebImage
     - SwiftyGif
@@ -107,7 +118,10 @@ SPEC CHECKSUMS:
   file_picker: b159e0c068aef54932bb15dc9fd1571818edaf49
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
+  LEEAlert: b0bbaaa8fba0819247a02d3fbca2cb94bef741f2
   libphonenumber_plugin: 48bf4078546377eedaab4aa54978cd0f6fa23072
+  MBProgressHUD: 3ee5efcc380f6a79a7cc9b363dd669c5e1ae7406
+  OpenSSL-Universal: 6082b0bf950e5636fe0d78def171184e2b3899c2
   package_info_plus: c0502532a26c7662a62a356cebe2692ec5fe4ec4
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
@@ -117,6 +131,6 @@ SPEC CHECKSUMS:
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
   url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
 
-PODFILE CHECKSUM: d0a958b6647a79bd52c34b99575e7fc63c6cbd36
+PODFILE CHECKSUM: 6fdbe4675563f75a9c55d96b15dd01ab35e1fa9f
 
 COCOAPODS: 1.16.2

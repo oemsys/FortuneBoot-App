@@ -20,6 +20,8 @@ class BillsOverviewBloc extends Bloc<BillsOverviewEvent, BillsOverviewState> {
     on<BillsOverviewLoadMoreRequested>(_onLoadMoreRequested);
     on<BillsOverviewDeleteRequested>(_onDeleteRequested);
     on<BillsOverviewLoadLastRequested>(_onLoadLastRequested);
+    on<BillsOverviewRefreshStatisticsRequested>(_onLoadStatisticsRequested);
+    on<BillsOverviewRefreshStatisticsDayChanged>(_onStatisticsDayChanged);
   }
   final BillService _billService = BillService();
 
@@ -88,5 +90,19 @@ class BillsOverviewBloc extends Bloc<BillsOverviewEvent, BillsOverviewState> {
   FutureOr<void> _onFetchDetailFileRequested(
       BillsOverviewLoadLastRequested event, Emitter<BillsOverviewState> emit) {
     _billsRepository.refreshBills(clear: false);
+  }
+
+  FutureOr<void> _onLoadStatisticsRequested(
+      BillsOverviewRefreshStatisticsRequested event,
+      Emitter<BillsOverviewState> emit) async {
+    await _billsRepository.refreshStatistics(event.refreshDate);
+    emit(state.copyWith(statistics: _billsRepository.getStatistics()));
+  }
+
+  FutureOr<void> _onStatisticsDayChanged(
+      BillsOverviewRefreshStatisticsDayChanged event,
+      Emitter<BillsOverviewState> emit) async {
+    await _billsRepository.statisticsDayChanged(event.day);
+    emit(state.copyWith(statistics: _billsRepository.getStatistics()));
   }
 }

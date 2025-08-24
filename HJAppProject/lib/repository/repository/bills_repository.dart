@@ -16,6 +16,8 @@ class BillsRepository {
 
   int? bookId() => _billsApi.bookId;
 
+  int? billStatisticsDay() => _billsApi.billStatisticsDay;
+
   bool hasMore() => _billsApi.hasMore;
 
   bool isLoadingMore() => _billsApi.isLoadingMore;
@@ -38,4 +40,8 @@ class BillsRepository {
   void deleteBill(int billId) => _billsApi.deleteBill(billId);
 
   BillStatistics? getStatistics() => _billsApi.billStatistics;
+
+  Future<void> refreshStatistics(DateTime time) => _billsApi.refreshStatistics(time);
+
+  Future<void> statisticsDayChanged(int day) => _billsApi.statisticsDayChanged(day);
 }
