@@ -5,8 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as path;
-import 'package:permission_handler/permission_handler.dart';
 import 'package:hjproject/home/edit_bill/models/attachment_item.dart';
+import 'package:hjproject/home/edit_bill/services/permission_helper.dart';
 
 // https://pub.dev/packages/permission_handler
 enum PermissionType {
@@ -26,16 +26,17 @@ class AttachmentService {
   /// 检查权限
   Future<bool> _checkPermissions({PermissionType? type}) async {
     if (kIsWeb) return true; // Web平台不需要权限检查
+    
     switch (type) {
       case PermissionType.file:
-        // 检查存储权限
-        return Permission.storage.request().isGranted;
+        // 文件选择通常不需要特殊权限，FilePicker会处理
+        return true;
       case PermissionType.camera:
         // 检查相机权限
-        return await Permission.camera.request().isGranted;
+        return await PermissionHelper.requestCameraPermission();
       case PermissionType.photo:
-        // 检查照片权限（iOS）
-        return await Permission.photos.request().isGranted;
+        // 检查照片权限
+        return await PermissionHelper.requestPhotoPermission();
       default:
     }
     return false;
@@ -47,7 +48,7 @@ class AttachmentService {
   }) async {
     try {
       if (!await _checkPermissions(type: PermissionType.photo)) {
-        throw Exception('权限被拒绝，无法访问相册');
+        throw Exception(PermissionHelper.getPermissionDeniedMessage('照片'));
       }
 
       final List<XFile> images = await _imagePicker.pickMultiImage(
@@ -58,6 +59,9 @@ class AttachmentService {
 
       return await _convertXFilesToAttachments(images);
     } catch (e) {
+      if (e.toString().contains('权限') || e.toString().contains('permission')) {
+        rethrow;
+      }
       throw Exception('选择图片失败: $e');
     }
   }
@@ -66,7 +70,7 @@ class AttachmentService {
   Future<AttachmentItem?> takePhoto() async {
     try {
       if (!await _checkPermissions(type: PermissionType.camera)) {
-        throw Exception('权限被拒绝，无法使用相机');
+        throw Exception(PermissionHelper.getPermissionDeniedMessage('相机'));
       }
 
       final XFile? image = await _imagePicker.pickImage(
@@ -81,6 +85,9 @@ class AttachmentService {
       final attachments = await _convertXFilesToAttachments([image]);
       return attachments.isNotEmpty ? attachments.first : null;
     } catch (e) {
+      if (e.toString().contains('权限') || e.toString().contains('permission')) {
+        rethrow;
+      }
       throw Exception('拍照失败: $e');
     }
   }
