@@ -181,17 +181,17 @@ class _MineViewState extends State<MineView> {
                       const SnackBar(content: Text('敬请期待...')),
                     );
                   },
-                  child: Row(
+                  child: const Row(
                     children: [
-                      const Text(
+                      Text(
                         '查看个人资料',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white70,
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      const Icon(
+                      SizedBox(width: 4),
+                      Icon(
                         Icons.arrow_forward_ios,
                         size: 12,
                         color: Colors.white70,
@@ -488,14 +488,14 @@ class _MineViewState extends State<MineView> {
         }
       }
     } else if (element.type == SettingType.currentBook) {
-      BookService bookService = BookService();
-      var remoteBookResponse =
+      final BookService bookService = BookService();
+      final remoteBookResponse =
           await bookService.getByGroupId(element.data!['groupId'] as int? ?? 0);
       if (remoteBookResponse.code == 0) {
-        var remoteBookList = remoteBookResponse.data as List? ?? [];
+        final remoteBookList = remoteBookResponse.data as List? ?? [];
         for (final remoteBookItem in remoteBookList) {
-          var remoteBookName = remoteBookItem['bookName'] as String? ?? '';
-          bool selected = remoteBookName == element.content;
+          final remoteBookName = remoteBookItem['bookName'] as String? ?? '';
+          final bool selected = remoteBookName == element.content;
           items.add(
             DropdownItem(
               label: remoteBookName,
@@ -822,7 +822,7 @@ class _MineViewState extends State<MineView> {
                 DioClient().refreshToken({});
                 Navigator.of(context).pushReplacement(
                   MaterialPageRoute(
-                    builder: (context) => BaseUrlConfigPage(),
+                    builder: (context) => const BaseUrlConfigPage(),
                   ),
                 );
               },
