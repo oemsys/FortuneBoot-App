@@ -490,7 +490,7 @@ class _MineViewState extends State<MineView> {
     } else if (element.type == SettingType.currentBook) {
       final BookService bookService = BookService();
       final remoteBookResponse =
-          await bookService.getByGroupId(element.data!['groupId'] as int? ?? 0);
+          await bookService.getEnableList(element.data!['groupId'] as int? ?? 0);
       if (remoteBookResponse.code == 0) {
         final remoteBookList = remoteBookResponse.data as List? ?? [];
         for (final remoteBookItem in remoteBookList) {
