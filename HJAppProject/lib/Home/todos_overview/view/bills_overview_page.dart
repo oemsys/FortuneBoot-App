@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hjproject/home/edit_bill/view/edit_bill_page.dart';
+import 'package:hjproject/home/stats/view/stats_page.dart';
 import 'package:hjproject/home/theme/theme.dart';
 import 'package:hjproject/home/todos_overview/bloc/bills_overview_bloc.dart';
 import 'package:hjproject/home/todos_overview/models/bill_item.dart';
@@ -89,23 +90,30 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
         //     ),
         //   ),
         // ),
-        // actions: [
-        // IconButton( TODO：筛选
-        //   icon: const Icon(Icons.filter_list),
-        //   tooltip: S.current.todosOverviewFilterTooltip,
-        //   onPressed: () {
-        //     // 显示筛选选项
-        //     _showFilterOptions(context);
-        //   },
-        // ),
-        // IconButton( TODO：搜索
-        //   icon: const Icon(Icons.search),
-        //   onPressed: () {
-        //     // 实现搜索功能
-        //     _showSearchDialog(context);
-        //   },
-        // ),
-        // ],
+        actions: [
+          // IconButton(
+          //   icon: const Icon(Icons.filter_list),
+          //   tooltip: S.current.todosOverviewFilterTooltip,
+          //   onPressed: () {
+          //     // 显示筛选选项
+          //     _showFilterOptions(context);
+          //   },
+          // ),
+          // IconButton(
+          //   icon: const Icon(Icons.search),
+          //   onPressed: () {
+          //     // 实现搜索功能
+          //     _showSearchDialog(context);
+          //   },
+          // ),
+          IconButton(
+            icon: const Icon(Icons.add_chart_sharp),
+            onPressed: () {
+              // 实现搜索功能
+              Navigator.of(context).push(StatsPage.route());
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -790,6 +798,10 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
       onTap: () {
         Navigator.pop(context);
         // 应用筛选
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('敬请期待...')),
+        );
       },
     );
   }
@@ -808,6 +820,10 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
             ),
             onSubmitted: (value) {
               Navigator.pop(context);
+              ScaffoldMessenger.of(context).removeCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('敬请期待...')),
+              );
               // 执行搜索
             },
           ),
@@ -820,6 +836,10 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
               onPressed: () {
                 Navigator.pop(context);
                 // 执行搜索
+                ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('敬请期待...')),
+                );
               },
               child: const Text('搜索'),
             ),

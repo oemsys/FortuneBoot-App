@@ -7,12 +7,12 @@ part of 'bill_file_item.dart';
 // **************************************************************************
 
 BillFileItem _$BillFileItemFromJson(Map<String, dynamic> json) => BillFileItem(
-      fileId: (json['fileId'] as num?)?.toInt(),
+      fileId: json['fileId'] as int?,
       contentType: json['contentType'] as String?,
       fileData: json['fileData'] as String?,
-      size: (json['size'] as num?)?.toInt(),
+      size: json['size'] as int?,
       originalName: json['originalName'] as String?,
-      billId: (json['billId'] as num?)?.toInt(),
+      billId: json['billId'] as int?,
     );
 
 Map<String, dynamic> _$BillFileItemToJson(BillFileItem instance) =>
