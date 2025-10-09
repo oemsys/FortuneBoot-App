@@ -20,8 +20,8 @@ class TagTreeSelection extends StatefulWidget {
 }
 
 class _TagTreeSelectionState extends State<TagTreeSelection> {
-  // 展开的二级标签ID列表（用于控制UI展开/折叠）
-  List<int> _expandedSecondLevelIds = [];
+  // 展开的节点ID列表（用于控制逐级展开/折叠）
+  List<int> _expandedNodeIds = [];
 
   @override
   Widget build(BuildContext context) {
@@ -92,213 +92,107 @@ class _TagTreeSelectionState extends State<TagTreeSelection> {
     );
   }
 
-  // 标签选择器
+  // 标签选择器（统一递归渲染，逐级展开）
   Widget _buildTagSelector(List<TagSelectItem> tags) {
-    // 将标签分组显示
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: tags.map((tag) {
-          return Card(
-            margin: EdgeInsets.only(bottom: 16.0),
-            elevation: 0,
-            color:
-                Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        children: _buildNodes(tags, 0),
+      ),
+    );
+  }
+  
+  // 递归构建所有节点（类内私有方法）
+  List<Widget> _buildNodes(List<TagSelectItem> nodes, int depth) {
+    return nodes.map((node) => _buildNode(node, depth)).toList();
+  }
+  
+  // 构建单个节点（统一样式与选择逻辑，类内私有方法）
+  Widget _buildNode(TagSelectItem node, int depth) {
+    final hasChildren = node.children != null && node.children!.isNotEmpty;
+    final isExpanded = _expandedNodeIds.contains(node.id);
+  
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: hasChildren
+              ? () {
+                  setState(() {
+                    if (isExpanded) {
+                      _expandedNodeIds.remove(node.id);
+                    } else {
+                      _expandedNodeIds.add(node.id);
+                    }
+                  });
+                }
+              : null,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Row(
               children: [
-                // 一级标签（主标签）
-                ListTile(
-                  leading: Icon(Icons.label,
-                      color: Theme.of(context).colorScheme.primary),
-                  title: Text(
-                    tag.title,
+                SizedBox(width: 12.0 * depth),
+                Icon(
+                  hasChildren ? Icons.label : Icons.label_outline,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    node.title,
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontWeight: depth == 0 ? FontWeight.bold : FontWeight.w500,
+                      fontSize: depth == 0 ? 16 : 14,
                     ),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // 选择一级标签
-                      FilterChip(
-                        label: Text('选择'),
-                        selected: widget.selectedTagIds.contains(tag.id),
-                        onSelected: (selected) {
-                          setState(() {
-                            if (selected) {
-                              if (!widget.selectedTagIds.contains(tag.id)) {
-                                widget.selectedTagIds.add(tag.id);
-                              }
-                            } else {
-                              widget.selectedTagIds.remove(tag.id);
-                            }
-                          });
-                        },
-                        backgroundColor: Colors.transparent,
-                        selectedColor:
-                            Theme.of(context).colorScheme.primaryContainer,
-                        checkmarkColor:
-                            Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                    ],
                   ),
                 ),
-
-                // 二级标签
-                if (tag.children != null && tag.children!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: tag.children!.map((secondLevelTag) {
-                        bool isExpanded =
-                            _expandedSecondLevelIds.contains(secondLevelTag.id);
-                        bool hasThirdLevel = secondLevelTag.children != null &&
-                            secondLevelTag.children!.isNotEmpty;
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // 二级标签标题行
-                            InkWell(
-                              onTap: hasThirdLevel
-                                  ? () {
-                                      setState(() {
-                                        if (isExpanded) {
-                                          _expandedSecondLevelIds
-                                              .remove(secondLevelTag.id);
-                                        } else {
-                                          _expandedSecondLevelIds
-                                              .add(secondLevelTag.id);
-                                        }
-                                      });
-                                    }
-                                  : null,
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.label_outline,
-                                        size: 16,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .secondary),
-                                    SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        secondLevelTag.title,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                    if (hasThirdLevel)
-                                      Icon(
-                                        isExpanded
-                                            ? Icons.keyboard_arrow_up
-                                            : Icons.keyboard_arrow_down,
-                                        size: 18,
-                                      ),
-                                    SizedBox(width: 8),
-                                    FilterChip(
-                                      label: Text('选择'),
-                                      labelStyle: TextStyle(fontSize: 12),
-                                      selected: widget.selectedTagIds
-                                          .contains(secondLevelTag.id),
-                                      onSelected: (selected) {
-                                        setState(() {
-                                          if (selected) {
-                                            if (!widget.selectedTagIds
-                                                .contains(secondLevelTag.id)) {
-                                              widget.selectedTagIds
-                                                  .add(secondLevelTag.id);
-                                            }
-                                          } else {
-                                            widget.selectedTagIds
-                                                .remove(secondLevelTag.id);
-                                          }
-                                        });
-                                      },
-                                      backgroundColor: Colors.transparent,
-                                      selectedColor: Theme.of(context)
-                                          .colorScheme
-                                          .secondaryContainer,
-                                      checkmarkColor: Theme.of(context)
-                                          .colorScheme
-                                          .onSecondaryContainer,
-                                      padding: EdgeInsets.zero,
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-
-                            // 三级标签（如果有且已展开）
-                            if (hasThirdLevel && isExpanded)
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 24.0, bottom: 8.0),
-                                child: Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: secondLevelTag.children!
-                                      .map((thirdLevelTag) {
-                                    return FilterChip(
-                                      label: Text(thirdLevelTag.title),
-                                      selected: widget.selectedTagIds
-                                          .contains(thirdLevelTag.id),
-                                      onSelected: (selected) {
-                                        setState(() {
-                                          if (selected) {
-                                            if (!widget.selectedTagIds
-                                                .contains(thirdLevelTag.id)) {
-                                              widget.selectedTagIds
-                                                  .add(thirdLevelTag.id);
-                                            }
-                                          } else {
-                                            widget.selectedTagIds
-                                                .remove(thirdLevelTag.id);
-                                          }
-                                        });
-                                      },
-                                      backgroundColor: Colors.transparent,
-                                      selectedColor: Theme.of(context)
-                                          .colorScheme
-                                          .tertiaryContainer,
-                                      checkmarkColor: Theme.of(context)
-                                          .colorScheme
-                                          .onTertiaryContainer,
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 0),
-                                      materialTapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    );
-                                  }).toList(),
-                                ),
-                              ),
-
-                            Divider(height: 1, indent: 16),
-                          ],
-                        );
-                      }).toList(),
-                    ),
+                if (hasChildren)
+                  Icon(
+                    isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                    size: 18,
                   ),
-                SizedBox(height: 8),
+                const SizedBox(width: 8),
+                FilterChip(
+                  label: const Text('选择', style: TextStyle(fontSize: 12)),
+                  selected: widget.selectedTagIds.contains(node.id),
+                  onSelected: (selected) {
+                    setState(() {
+                      if (selected) {
+                        if (!widget.selectedTagIds.contains(node.id)) {
+                          widget.selectedTagIds.add(node.id);
+                        }
+                      } else {
+                        widget.selectedTagIds.remove(node.id);
+                      }
+                    });
+                  },
+                  showCheckmark: true,
+                  elevation: 0,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  selectedColor: Theme.of(context).colorScheme.secondaryContainer,
+                  checkmarkColor: Theme.of(context).colorScheme.onSecondaryContainer,
+                  shape: const StadiumBorder(),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                ),
               ],
             ),
-          );
-        }).toList(),
-      ),
+          ),
+        ),
+  
+        if (hasChildren && isExpanded)
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: _buildNodes(node.children!, depth + 1),
+            ),
+          ),
+  
+        const Divider(height: 1, indent: 16),
+      ],
     );
   }
 }
