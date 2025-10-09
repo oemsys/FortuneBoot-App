@@ -50,6 +50,11 @@ class _StatsViewState extends State<StatsView>
   int _selectedTimeRange = 1; // 0: 周, 1: 月, 2: 年
   final List<String> _timeRanges = ['周', '月', '年'];
   var maxValue = 0.0;
+  // 交互状态：饼图与柱状图的触摸选择
+  int? _pieSelectedIndex;
+  Offset? _pieTooltipPos;
+  int? _barSelectedGroup;
+  Offset? _barTooltipPos;
 
   @override
   void initState() {
@@ -374,20 +379,27 @@ class _StatsViewState extends State<StatsView>
       List<BillStatsChartEi> expenseTrends) {
     // 简单的图表替代，不使用fl_chart库
     List<Widget> children = [];
+    maxValue = 0.0;
     incomeTrends.forEach((ele) {
       maxValue = max(ele.value ?? 0.0, maxValue);
     });
     expenseTrends.forEach((ele) {
       maxValue = max(ele.value ?? 0.0, maxValue);
     });
-    for (var i = 5; i >= 0; i--) {
+    for (var j = 0; j < 6; j++) {
+      final idx = incomeTrends.length - 6 + j;
+      final name = incomeTrends[idx].name ?? '${j + 1}月';
+      final inc = incomeTrends[idx].value ?? 0;
+      final exp = expenseTrends[idx].value ?? 0;
       children.add(_buildBarGroup(
-          context,
-          incomeTrends[incomeTrends.length - i - 1].name ?? '$i月',
-          incomeTrends[incomeTrends.length - i - 1].value ?? 0,
-          expenseTrends[expenseTrends.length - i - 1].value ?? 0,
-          Colors.green,
-          Colors.red));
+        context,
+        name,
+        inc,
+        exp,
+        Colors.green,
+        Colors.red,
+        highlighted: _barSelectedGroup == j,
+      ));
     }
     return Container(
       height: 300,
@@ -408,10 +420,68 @@ class _StatsViewState extends State<StatsView>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: children // 收入柱状图
-                ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapDown: (details) {
+                    final dx = details.localPosition.dx;
+                    final groupCount = 6;
+                    final perGroupWidth = constraints.maxWidth / groupCount;
+                    int g = dx ~/ perGroupWidth;
+                    if (g < 0) g = 0;
+                    if (g > groupCount - 1) g = groupCount - 1;
+                    setState(() {
+                      _barSelectedGroup = g;
+                      _barTooltipPos = details.localPosition;
+                    });
+                  },
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: children,
+                      ),
+                      if (_barSelectedGroup != null && incomeTrends.isNotEmpty && expenseTrends.isNotEmpty)
+                        Positioned(
+                          left: max(0.0, min((_barTooltipPos?.dx ?? 0) - 60, constraints.maxWidth - 120)),
+                          top: max(0.0, min((_barTooltipPos?.dy ?? 0) - 50, constraints.maxHeight - 80)),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.75),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Builder(
+                              builder: (context) {
+                                const groupCount = 6;
+                                final baseIndex = incomeTrends.length - groupCount;
+                                int idx = baseIndex + (_barSelectedGroup ?? 0);
+                                if (idx < 0) idx = 0;
+                                if (idx > incomeTrends.length - 1) idx = incomeTrends.length - 1;
+                                final name = incomeTrends[idx].name ?? '';
+                                final inc = incomeTrends[idx].value ?? 0;
+                                final exp = expenseTrends[idx].value ?? 0;
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 2),
+                                    Text('收入: ¥${NumberFormat('#,##0.00').format(inc)}', style: const TextStyle(color: Colors.white)),
+                                    Text('支出: ¥${NumberFormat('#,##0.00').format(exp)}', style: const TextStyle(color: Colors.white)),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -454,7 +524,7 @@ class _StatsViewState extends State<StatsView>
   }
 
   Widget _buildBarGroup(BuildContext context, String label, double income,
-      double expense, Color incomeColor, Color expenseColor) {
+      double expense, Color incomeColor, Color expenseColor, {bool highlighted = false}) {
     // 图表最大值
     final incomeHeight = (income / maxValue) * 200; // 200是图表高度
     final expenseHeight = (expense / maxValue) * 200;
@@ -463,31 +533,40 @@ class _StatsViewState extends State<StatsView>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                width: 15,
-                height: incomeHeight,
-                margin: const EdgeInsets.symmetric(horizontal: 2),
-                decoration: BoxDecoration(
-                  color: incomeColor,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(4)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+            decoration: highlighted
+                ? BoxDecoration(
+                    border: Border.all(color: Colors.black26),
+                    borderRadius: BorderRadius.circular(6),
+                  )
+                : null,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  width: highlighted ? 18 : 15,
+                  height: incomeHeight,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    color: incomeColor,
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(4)),
+                  ),
                 ),
-              ),
-              Container(
-                width: 15,
-                height: expenseHeight,
-                margin: const EdgeInsets.symmetric(horizontal: 2),
-                decoration: BoxDecoration(
-                  color: expenseColor,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(4)),
+                Container(
+                  width: highlighted ? 18 : 15,
+                  height: expenseHeight,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    color: expenseColor,
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(4)),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -519,9 +598,88 @@ class _StatsViewState extends State<StatsView>
       child: Column(
         children: [
           Expanded(
-            child: CustomPaint(
-              size: const Size(double.infinity, double.infinity),
-              painter: SimplePieChartPainter(categarys),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (categarys.isEmpty) {
+                  return const Center(child: Text('暂无数据'));
+                }
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapDown: (details) {
+                    final size = Size(constraints.maxWidth, constraints.maxHeight);
+                    final center = Offset(size.width / 2, size.height / 2);
+                    final dx = details.localPosition.dx - center.dx;
+                    final dy = details.localPosition.dy - center.dy;
+                    final dist = sqrt(dx * dx + dy * dy);
+                    final outerRadius = (size.width < size.height ? size.width / 2 * 0.8 : size.height / 2 * 0.8);
+                    final innerRadius = outerRadius * 0.5;
+                    if (dist < innerRadius || dist > outerRadius) {
+                      setState(() {
+                        _pieSelectedIndex = null;
+                        _pieTooltipPos = null;
+                      });
+                      return;
+                    }
+                    double angle = atan2(dy, dx);
+                    if (angle < 0) angle += 2 * pi;
+                    double start = 0;
+                    int? hitIndex;
+                    for (int i = 0; i < categarys.length; i++) {
+                      final per = (categarys[i].percent ?? 0) / 100.0;
+                      final sweep = per * 2 * pi;
+                      if (angle >= start && angle <= start + sweep) {
+                        hitIndex = i;
+                        break;
+                      }
+                      start += sweep;
+                    }
+                    setState(() {
+                      _pieSelectedIndex = hitIndex;
+                      _pieTooltipPos = details.localPosition;
+                    });
+                  },
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: SimplePieChartPainter(categarys, selectedIndex: _pieSelectedIndex),
+                        ),
+                      ),
+                      if (_pieSelectedIndex != null && _pieTooltipPos != null && _pieSelectedIndex! < categarys.length)
+                        Positioned(
+                          left: max(0.0, min(_pieTooltipPos!.dx - 60, constraints.maxWidth - 120)),
+                          top: max(0.0, min(_pieTooltipPos!.dy - 48, constraints.maxHeight - 80)),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.75),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Builder(
+                              builder: (context) {
+                                final item = categarys[_pieSelectedIndex!];
+                                final name = item.name ?? '';
+                                final percent = (item.percent ?? 0).toStringAsFixed(1);
+                                final value = (item.value ?? 0);
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 2),
+                                    Text('占比: $percent%', style: const TextStyle(color: Colors.white)),
+                                    Text('金额: ¥${NumberFormat('#,##0.00').format(value)}', style: const TextStyle(color: Colors.white)),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(height: 16),
@@ -546,9 +704,20 @@ class _StatsViewState extends State<StatsView>
                       ),
                     ),
                     const SizedBox(width: 4),
-                    // 修正百分比计算：为计算式加上括号
-                    Text(
-                        '${item.name} (${(item.percent ?? 0).toStringAsFixed(1)}%)'),
+                    // 百分比显示兼容：支持小数(0..1)与百分比(0..100)，无percent时按value占比
+                    Builder(builder: (context) {
+                      final totalPercent = categarys.fold<double>(0, (s, e) => s + (e.percent ?? 0));
+                      final totalValue = categarys.fold<double>(0, (s, e) => s + (e.value ?? 0));
+                      final raw = item.percent ?? 0;
+                      double frac = 0;
+                      if (totalPercent > 0) {
+                        frac = raw > 1 ? raw / 100.0 : raw;
+                      } else if (totalValue > 0) {
+                        frac = (item.value ?? 0) / totalValue;
+                      }
+                      final display = (frac * 100).toStringAsFixed(1);
+                      return Text('${item.name} ($display%)');
+                    }),
                   ],
                 );
               }).toList(),
@@ -777,8 +946,9 @@ class _StatsViewState extends State<StatsView>
 // 简单的饼图绘制器
 class SimplePieChartPainter extends CustomPainter {
   final List<BillStatsClassification> categarys;
+  final int? selectedIndex;
 
-  SimplePieChartPainter(this.categarys);
+  SimplePieChartPainter(this.categarys, {this.selectedIndex});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -788,20 +958,54 @@ class SimplePieChartPainter extends CustomPainter {
 
     double startAngle = 0;
 
-    for (var item in categarys) {
-      final sweepAngle = ((item.percent ?? 0) * 100) / 2 * 3.14159;
-      print('lxjtodo: per: $sweepAngle , $item');
-      final paint = Paint()
+    // 兼容percent为小数或百分比；当percent不可用时按value占比绘制
+    final double totalPercent = categarys.fold(0.0, (s, i) => s + (i.percent ?? 0.0));
+    final double totalValue = categarys.fold(0.0, (s, i) => s + (i.value ?? 0.0));
+
+    for (int i = 0; i < categarys.length; i++) {
+      final item = categarys[i];
+
+      double frac = 0.0;
+      final raw = item.percent ?? 0.0;
+      if (totalPercent > 0.0) {
+        // 如果传入的是百分比(0..100)，转换为比例；如果是比例(0..1)，直接使用
+        frac = raw > 1.0 ? raw / 100.0 : raw;
+      } else if (totalValue > 0.0) {
+        // 无percent时按value占比
+        frac = (item.value ?? 0.0) / totalValue;
+      }
+
+      final sweepAngle = frac * 2 * pi;
+
+      final fillPaint = Paint()
         ..color = item.color ?? Colors.grey
         ..style = PaintingStyle.fill;
 
+      final rect = Rect.fromCircle(center: center, radius: radius);
+
+      // 填充扇形
       canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
+        rect,
         startAngle,
         sweepAngle,
         true,
-        paint,
+        fillPaint,
       );
+
+      // 高亮选中的扇区（外圈描边）
+      if (selectedIndex != null && selectedIndex == i) {
+        final highlightPaint = Paint()
+          ..color = Colors.white70
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4;
+        canvas.drawArc(
+          rect,
+          startAngle,
+          sweepAngle,
+          false, // 仅画弧线，不连接到中心
+          highlightPaint,
+        );
+      }
 
       startAngle += sweepAngle;
     }
