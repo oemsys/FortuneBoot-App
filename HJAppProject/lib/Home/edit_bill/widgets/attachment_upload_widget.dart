@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:hjproject/home/edit_bill/models/attachment_item.dart';
 import 'package:hjproject/home/edit_bill/services/attachment_service.dart';
 
@@ -249,6 +250,18 @@ class _AttachmentUploadWidgetState extends State<AttachmentUploadWidget> {
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.red,
+        action: message.contains('权限') || message.contains('设置')
+            ? SnackBarAction(
+                label: '去设置',
+                textColor: Colors.white,
+                onPressed: () async {
+                  final opened = await openAppSettings();
+                  if (!opened) {
+                    _showError('无法打开设置页面');
+                  }
+                },
+              )
+            : null,
       ),
     );
   }

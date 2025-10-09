@@ -12,6 +12,7 @@ import 'package:hjproject/home/todos_overview/models/bill_item_add.dart';
 import 'package:hjproject/generated/l10n.dart';
 import 'package:hjproject/repository/repository/bills_repository.dart';
 import 'package:intl/intl.dart';
+import 'package:multi_dropdown/multi_dropdown.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
 class EditBillPage extends StatelessWidget {
@@ -394,61 +395,79 @@ class _EditBillViewState extends State<EditBillView> {
         ),
         const SizedBox(height: 16),
         // 账户选择
-        Container(
-          padding: const EdgeInsets.only(right: 6, top: 2, bottom: 2),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade400),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: DropdownButtonFormField<AccountSelectItem>(
-            key: Key('${curBillType()}_account'),
-            value: selectItem,
-            decoration: const InputDecoration(
-              labelText: '账户',
-              prefixIcon: Icon(Icons.account_balance_wallet),
-              contentPadding: EdgeInsets.zero,
-              border: InputBorder.none,
-            ),
-            items: items.map((item) {
-              return DropdownMenuItem<AccountSelectItem>(
-                value: item.value,
-                child: Text(item.label),
-              );
-            }).toList(),
-            onChanged: (value) {
+        InkWell(
+          onTap: () => _showAccountSelectionDialog(context, items, selectItem, (value) {
+            setState(() {
               state.editBill.data?.accountId = value?.id;
-            },
-            isExpanded: true,
+            });
+          }),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade400),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.account_balance_wallet, color: Colors.grey),
+                const SizedBox(width: 12),
+                Text(
+                  '账户',
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontSize: 16,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  selectItem?.title ?? '请选择账户',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 16),
 
         // 交易对象选择
-        Container(
-          padding: const EdgeInsets.only(right: 6, top: 2, bottom: 2),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade400),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: DropdownButtonFormField<PayeeSelectItem>(
-            key: Key('${curBillType()}_payee'),
-            value: payeeSelectItem,
-            decoration: const InputDecoration(
-              labelText: '交易对象',
-              contentPadding: EdgeInsets.zero,
-              prefixIcon: Icon(Icons.person),
-              border: InputBorder.none,
-            ),
-            items: payeeItems.map((item) {
-              return DropdownMenuItem<PayeeSelectItem>(
-                value: item.value,
-                child: Text(item.label),
-              );
-            }).toList(),
-            onChanged: (value) {
+        InkWell(
+          onTap: () => _showPayeeSelectionDialog(context, payeeItems, payeeSelectItem, (value) {
+            setState(() {
               state.editBill.data?.payeeId = value?.id;
-            },
-            isExpanded: true,
+            });
+          }),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade400),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.person, color: Colors.grey),
+                const SizedBox(width: 12),
+                Text(
+                  '交易对象',
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontSize: 16,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  payeeSelectItem?.title ?? '请选择交易对象',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+              ],
+            ),
           ),
         ),
       ],
@@ -543,61 +562,80 @@ class _EditBillViewState extends State<EditBillView> {
           maxLength: 50,
         ),
         const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.only(right: 6, top: 2, bottom: 2),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade400),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: DropdownButtonFormField<AccountSelectItem>(
-            key: Key('${curBillType()}_transfer'),
-            value: selectOutItem,
-            decoration: const InputDecoration(
-              labelText: '转入账户',
-              contentPadding: EdgeInsets.zero,
-              prefixIcon: Icon(Icons.arrow_upward),
-              border: InputBorder.none,
-            ),
-            items: inItems.map((item) {
-              return DropdownMenuItem<AccountSelectItem>(
-                value: item.value,
-                child: Text(item.label),
-              );
-            }).toList(),
-            onChanged: (value) {
+        // 转入账户选择
+        InkWell(
+          onTap: () => _showTransferInAccountSelectionDialog(context, inItems, selectOutItem, (value) {
+            setState(() {
               state.editBill.data?.toAccountId = value?.id;
-            },
-            isExpanded: true,
+            });
+          }),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade400),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.arrow_upward, color: Colors.grey),
+                const SizedBox(width: 12),
+                Text(
+                  '转入账户',
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontSize: 16,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  selectOutItem?.title ?? '请选择转入账户',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 16),
 
-        // 转入账户
-        Container(
-          padding: const EdgeInsets.only(right: 6, top: 2, bottom: 2),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade400),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: DropdownButtonFormField<AccountSelectItem>(
-            key: Key('${curBillType()}_transfer_in'),
-            value: selectInItem,
-            decoration: const InputDecoration(
-              labelText: '转出账户',
-              contentPadding: EdgeInsets.zero,
-              prefixIcon: Icon(Icons.arrow_downward),
-              border: InputBorder.none,
-            ),
-            items: outItems.map((item) {
-              return DropdownMenuItem<AccountSelectItem>(
-                value: item.value,
-                child: Text(item.label),
-              );
-            }).toList(),
-            onChanged: (value) {
+        // 转出账户选择
+        InkWell(
+          onTap: () => _showTransferOutAccountSelectionDialog(context, outItems, selectInItem, (value) {
+            setState(() {
               state.editBill.data?.accountId = value?.id;
-            },
-            isExpanded: true,
+            });
+          }),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade400),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.arrow_downward, color: Colors.grey),
+                const SizedBox(width: 12),
+                Text(
+                  '转出账户',
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontSize: 16,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  selectInItem?.title ?? '请选择转出账户',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+              ],
+            ),
           ),
         ),
       ],
@@ -950,44 +988,7 @@ class TimeSelector extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               InkWell(
-                onTap: () async {
-                  final DateTime? dateTime = await showOmniDateTimePicker(
-                    context: context,
-                    initialDate: value != null
-                        ? DateFormat('yyyy-MM-dd HH:mm:ss').parse(value)
-                        : DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime.now(),
-                    is24HourMode: true,
-                    isShowSeconds: false,
-                    minutesInterval: 1,
-                    secondsInterval: 1,
-                    borderRadius: const BorderRadius.all(Radius.circular(16)),
-                    constraints: const BoxConstraints(
-                      maxWidth: 350,
-                      maxHeight: 650,
-                    ),
-                    transitionBuilder: (context, anim1, anim2, child) {
-                      return FadeTransition(
-                        opacity: anim1.drive(
-                          Tween(
-                            begin: 0,
-                            end: 1,
-                          ),
-                        ),
-                        child: child,
-                      );
-                    },
-                    transitionDuration: const Duration(milliseconds: 200),
-                    barrierDismissible: true,
-                  );
-
-                  if (dateTime != null) {
-                    _tradeTimeStr.value =
-                        DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
-                    state.editBill.data?.tradeTime = _tradeTimeStr.value;
-                  }
-                },
+                onTap: () => _showCustomDateTimePicker(context, value),
                 child: Container(
                   padding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
@@ -1025,6 +1026,338 @@ class TimeSelector extends StatelessWidget {
             ],
           );
         });
+  }
+
+  void _showCustomDateTimePicker(BuildContext context, String? currentValue) {
+    DateTime initialDate = currentValue != null
+        ? DateFormat('yyyy-MM-dd HH:mm:ss').parse(currentValue)
+        : DateTime.now();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return CustomDateTimePicker(
+              initialDate: initialDate,
+              onDateTimeChanged: (DateTime selectedDateTime) {
+                _tradeTimeStr.value =
+                    DateFormat('yyyy-MM-dd HH:mm:ss').format(selectedDateTime);
+                state.editBill.data?.tradeTime = _tradeTimeStr.value;
+                Navigator.pop(context);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class CustomDateTimePicker extends StatefulWidget {
+  final DateTime initialDate;
+  final Function(DateTime) onDateTimeChanged;
+
+  const CustomDateTimePicker({
+    super.key,
+    required this.initialDate,
+    required this.onDateTimeChanged,
+  });
+
+  @override
+  State<CustomDateTimePicker> createState() => _CustomDateTimePickerState();
+}
+
+class _CustomDateTimePickerState extends State<CustomDateTimePicker> {
+  late FixedExtentScrollController _yearController;
+  late FixedExtentScrollController _monthController;
+  late FixedExtentScrollController _dayController;
+  late FixedExtentScrollController _hourController;
+  late FixedExtentScrollController _minuteController;
+
+  late int selectedYear;
+  late int selectedMonth;
+  late int selectedDay;
+  late int selectedHour;
+  late int selectedMinute;
+
+  final int startYear = 2000;
+  final int endYear = DateTime.now().year + 25;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedYear = widget.initialDate.year;
+    selectedMonth = widget.initialDate.month;
+    selectedDay = widget.initialDate.day;
+    selectedHour = widget.initialDate.hour;
+    selectedMinute = widget.initialDate.minute;
+
+    _yearController = FixedExtentScrollController(
+      initialItem: selectedYear - startYear,
+    );
+    _monthController = FixedExtentScrollController(
+      initialItem: selectedMonth - 1,
+    );
+    _dayController = FixedExtentScrollController(
+      initialItem: selectedDay - 1,
+    );
+    _hourController = FixedExtentScrollController(
+      initialItem: selectedHour,
+    );
+    _minuteController = FixedExtentScrollController(
+      initialItem: selectedMinute,
+    );
+  }
+
+  @override
+  void dispose() {
+    _yearController.dispose();
+    _monthController.dispose();
+    _dayController.dispose();
+    _hourController.dispose();
+    _minuteController.dispose();
+    super.dispose();
+  }
+
+  int _getDaysInMonth(int year, int month) {
+    return DateTime(year, month + 1, 0).day;
+  }
+
+  void _updateDay() {
+    final daysInMonth = _getDaysInMonth(selectedYear, selectedMonth);
+    if (selectedDay > daysInMonth) {
+      selectedDay = daysInMonth;
+      _dayController.animateToItem(
+        selectedDay - 1,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // 顶部标题栏
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: Colors.grey, width: 0.5)),
+          ),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: const Text(
+                  '取消',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+              ),
+              const Expanded(
+                child: Text(
+                  '选择日期时间',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  final selectedDateTime = DateTime(
+                    selectedYear,
+                    selectedMonth,
+                    selectedDay,
+                    selectedHour,
+                    selectedMinute,
+                  );
+                  widget.onDateTimeChanged(selectedDateTime);
+                },
+                child: const Text(
+                  '确定',
+                  style: TextStyle(fontSize: 16, color: Colors.blue),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // 滚动选择器
+        Expanded(
+          child: Row(
+            children: [
+              // 年份选择器
+              Expanded(
+                child: Column(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('年', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                    Expanded(
+                      child: CupertinoPicker(
+                        scrollController: _yearController,
+                        itemExtent: 40,
+                        onSelectedItemChanged: (index) {
+                          setState(() {
+                            selectedYear = startYear + index;
+                            _updateDay();
+                          });
+                        },
+                        children: List.generate(
+                          endYear - startYear + 1,
+                          (index) => Center(
+                            child: Text(
+                              '${startYear + index}',
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // 月份选择器
+              Expanded(
+                child: Column(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('月', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                    Expanded(
+                      child: CupertinoPicker(
+                        scrollController: _monthController,
+                        itemExtent: 40,
+                        onSelectedItemChanged: (index) {
+                          setState(() {
+                            selectedMonth = index + 1;
+                            _updateDay();
+                          });
+                        },
+                        children: List.generate(
+                          12,
+                          (index) => Center(
+                            child: Text(
+                              '${index + 1}',
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // 日期选择器
+              Expanded(
+                child: Column(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('日', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                    Expanded(
+                      child: CupertinoPicker(
+                        scrollController: _dayController,
+                        itemExtent: 40,
+                        onSelectedItemChanged: (index) {
+                          setState(() {
+                            selectedDay = index + 1;
+                          });
+                        },
+                        children: List.generate(
+                          _getDaysInMonth(selectedYear, selectedMonth),
+                          (index) => Center(
+                            child: Text(
+                              '${index + 1}',
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // 小时选择器
+              Expanded(
+                child: Column(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('时', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                    Expanded(
+                      child: CupertinoPicker(
+                        scrollController: _hourController,
+                        itemExtent: 40,
+                        onSelectedItemChanged: (index) {
+                          setState(() {
+                            selectedHour = index;
+                          });
+                        },
+                        children: List.generate(
+                          24,
+                          (index) => Center(
+                            child: Text(
+                              index.toString().padLeft(2, '0'),
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // 分钟选择器
+              Expanded(
+                child: Column(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('分', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                    Expanded(
+                      child: CupertinoPicker(
+                        scrollController: _minuteController,
+                        itemExtent: 40,
+                        onSelectedItemChanged: (index) {
+                          setState(() {
+                            selectedMinute = index;
+                          });
+                        },
+                        children: List.generate(
+                          60,
+                          (index) => Center(
+                            child: Text(
+                              index.toString().padLeft(2, '0'),
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -1076,3 +1409,343 @@ class TitleField extends StatelessWidget {
     );
   }
 }
+
+// 显示账户选择弹窗
+  void _showAccountSelectionDialog(
+    BuildContext context,
+    List<DropdownItem<AccountSelectItem>> items,
+    AccountSelectItem? currentItem,
+    Function(AccountSelectItem?) onSelected,
+  ) {
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('暂无可选账户')),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 顶部标题栏
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    border: Border(bottom: BorderSide(color: Colors.grey, width: 0.5)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          '选择账户',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                ),
+                // 列表内容
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      final isSelected = currentItem?.id == item.value.id;
+                      return ListTile(
+                        title: Text(item.label),
+                        trailing: isSelected
+                            ? const Icon(Icons.check, color: Colors.green)
+                            : null,
+                        onTap: () {
+                          Navigator.pop(context);
+                          onSelected(item.value);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // 显示交易对象选择弹窗
+  void _showPayeeSelectionDialog(
+    BuildContext context,
+    List<DropdownItem<PayeeSelectItem>> items,
+    PayeeSelectItem? currentItem,
+    Function(PayeeSelectItem?) onSelected,
+  ) {
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('暂无可选交易对象')),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 顶部标题栏
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    border: Border(bottom: BorderSide(color: Colors.grey, width: 0.5)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          '选择交易对象',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                ),
+                // 列表内容
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      final isSelected = currentItem?.id == item.value.id;
+                      return ListTile(
+                        title: Text(item.label),
+                        trailing: isSelected
+                            ? const Icon(Icons.check, color: Colors.green)
+                            : null,
+                        onTap: () {
+                          Navigator.pop(context);
+                          onSelected(item.value);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+// 显示转入账户选择弹窗
+  void _showTransferInAccountSelectionDialog(
+    BuildContext context,
+    List<DropdownItem<AccountSelectItem>> items,
+    AccountSelectItem? currentItem,
+    Function(AccountSelectItem?) onSelected,
+  ) {
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('暂无可选转入账户')),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 顶部标题栏
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    border: Border(bottom: BorderSide(color: Colors.grey, width: 0.5)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          '选择转入账户',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                ),
+                // 列表内容
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      final isSelected = currentItem?.id == item.value.id;
+                      return ListTile(
+                        title: Text(item.label),
+                        trailing: isSelected
+                            ? const Icon(Icons.check, color: Colors.green)
+                            : null,
+                        onTap: () {
+                          Navigator.pop(context);
+                          onSelected(item.value);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // 显示转出账户选择弹窗
+  void _showTransferOutAccountSelectionDialog(
+    BuildContext context,
+    List<DropdownItem<AccountSelectItem>> items,
+    AccountSelectItem? currentItem,
+    Function(AccountSelectItem?) onSelected,
+  ) {
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('暂无可选转出账户')),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 顶部标题栏
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    border: Border(bottom: BorderSide(color: Colors.grey, width: 0.5)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          '选择转出账户',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                ),
+                // 列表内容
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      final isSelected = currentItem?.id == item.value.id;
+                      return ListTile(
+                        title: Text(item.label),
+                        trailing: isSelected
+                            ? const Icon(Icons.check, color: Colors.green)
+                            : null,
+                        onTap: () {
+                          Navigator.pop(context);
+                          onSelected(item.value);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
