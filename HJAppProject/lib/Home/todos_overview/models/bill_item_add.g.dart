@@ -23,26 +23,25 @@ Map<String, dynamic> _$BillItemAddToJson(BillItemAdd instance) =>
 
 BillItemAddData _$BillItemAddDataFromJson(Map<String, dynamic> json) =>
     BillItemAddData(
-      bookId: (json['bookId'] as num?)?.toInt(),
-      billId: (json['billId'] as num?)?.toInt(),
+      bookId: json['bookId'] as int?,
+      billId: json['billId'] as int?,
       title: json['title'] as String?,
       tradeTime: json['tradeTime'] as String?,
-      accountId: (json['accountId'] as num?)?.toInt(),
-      accountToId: (json['accountToId'] as num?)?.toInt(),
+      accountId: json['accountId'] as int?,
+      accountToId: json['accountToId'] as int?,
       categoryAmountPair: (json['categoryAmountPair'] as List<dynamic>?)
           ?.map((e) => Map<String, num>.from(e as Map))
           .toList(),
       amount: (json['amount'] as num?)?.toDouble(),
       convertedAmount: (json['convertedAmount'] as num?)?.toDouble(),
-      payeeId: (json['payeeId'] as num?)?.toInt(),
-      billType: (json['billType'] as num?)?.toInt(),
-      toAccountId: (json['toAccountId'] as num?)?.toInt(),
+      payeeId: json['payeeId'] as int?,
+      billType: json['billType'] as int?,
+      toAccountId: json['toAccountId'] as int?,
       confirm: json['confirm'] as bool?,
       include: json['include'] as bool?,
       remark: json['remark'] as String?,
-      tagIdList: (json['tagIdList'] as List<dynamic>?)
-          ?.map((e) => (e as num).toInt())
-          .toList(),
+      tagIdList:
+          (json['tagIdList'] as List<dynamic>?)?.map((e) => e as int).toList(),
       fileList: (json['fileList'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),

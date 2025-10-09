@@ -33,4 +33,50 @@ abstract class IncludeService {
     @Query('tradeTimeStartTime') String tradeTimeStartTime,
     @Query('tradeTimeEndTime') String tradeTimeEndTime,
   );
+
+  /// 收入类型分析
+  @GET('/fortune/include/getCategoryIncome')
+  Future<HJResponse> getCategoryIncome(
+    @Query('bookId') int bookId,
+    @Query('startDate') String startDate,
+    @Query('endDate') String endDate,
+  );
+
+  /// 支出类型分析
+  /// [
+  ///      {
+  ///          "value": 492.0000,
+  ///          "name": "维持类-1",
+  ///          "percent": 0.04853905
+  ///      },
+  /// ]
+  @GET('/fortune/include/getCategoryExpense')
+  Future<HJResponse> getCategoryExpense(
+    @Query('bookId') int bookId,
+    @Query('startDate') String startDate,
+    @Query('endDate') String endDate,
+  );
+
+  /// 收入折线图
+  @GET('/fortune/include/getIncomeTrends')
+  Future<HJResponse> getIncomeTrends(
+    @Query('bookId') int bookId,
+    @Query('timeGranularity') int timeGranularity, // 1，日 2，月 3，年
+    @Query('timePoint') String timePoint,
+  );
+
+  ///
+  /// 支出折线图
+  /// data: [
+  ///   {
+  ///   name: 2025-09-09,
+  ///   value: 199.0000
+  ///   }
+  /// ]
+  @GET('/fortune/include/getExpenseTrends')
+  Future<HJResponse> getExpenseTrends(
+    @Query('bookId') int bookId,
+    @Query('timeGranularity') int timeGranularity, // 1，日 2，月 3，年
+    @Query('timePoint') String timePoint,
+  );
 }

@@ -1,6 +1,6 @@
 include: 
   - package:lint/strict.yaml
-  - package:flutter_lints/flutter.yaml 
+  # - package:flutter_lints/flutter.yaml 
 
 linter:
   rules:

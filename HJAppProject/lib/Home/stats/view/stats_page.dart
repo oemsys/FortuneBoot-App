@@ -1,12 +1,30 @@
+import 'dart:math';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hjproject/home/setting_page/bloc/setting_bloc.dart';
+import 'package:hjproject/home/stats/bloc/bills_stats_bloc.dart';
+import 'package:hjproject/home/stats/models/bill_stats_chart_EI.dart';
+import 'package:hjproject/home/stats/models/bill_stats_classification.dart';
+import 'package:hjproject/home/todos_overview/models/bill_statistics.dart';
 import 'package:hjproject/repository/repository/bills_repository.dart';
 import '../../../generated/l10n.dart';
 import 'package:intl/intl.dart';
 
 class StatsPage extends StatelessWidget {
   const StatsPage({super.key});
+
+  static Route<void> route() {
+    return MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => BlocProvider(
+              create: (context) => BillsStatsBloc(
+                billsRepository: context.read<BillsRepository>(),
+              )..add(BillsStatsRequested()),
+              child: const StatsView(),
+            ));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +46,10 @@ class StatsView extends StatefulWidget {
 class _StatsViewState extends State<StatsView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final List<String> _tabs = ['收支趋势', '收入分析', '支出分析', '资产负债'];
+  final List<String> _tabs = ['收支趋势', '收入分析', '支出分析' /** lxjtodo, '资产负债'*/];
   int _selectedTimeRange = 1; // 0: 周, 1: 月, 2: 年
   final List<String> _timeRanges = ['周', '月', '年'];
+  var maxValue = 0.0;
 
   @override
   void initState() {
@@ -46,13 +65,14 @@ class _StatsViewState extends State<StatsView>
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<SettingBloc>().state;
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(S.current.statsAppBarTitle),
         bottom: TabBar(
+          tabAlignment: TabAlignment.start,
+          padding: EdgeInsets.all(0),
           controller: _tabController,
           tabs: _tabs.map((tab) => Tab(text: tab)).toList(),
           isScrollable: true,
@@ -64,57 +84,74 @@ class _StatsViewState extends State<StatsView>
           _buildTimeRangeSelector(),
         ],
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildTrendsTab(context, state),
-          _buildIncomeAnalysisTab(context, state),
-          _buildExpenseAnalysisTab(context, state),
-          _buildAssetsLiabilitiesTab(context, state),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimeRangeSelector() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: DropdownButton<int>(
-        value: _selectedTimeRange,
-        underline: Container(),
-        icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-        style: TextStyle(
-            color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
-        dropdownColor: Theme.of(context).cardColor,
-        items: List.generate(_timeRanges.length, (index) {
-          return DropdownMenuItem(
-            value: index,
-            child: Text(_timeRanges[index],
-                style: TextStyle(
-                  color: index == _selectedTimeRange
-                      ? Theme.of(context).primaryColor
-                      : Colors.grey[700],
-                )),
-          );
-        }),
-        onChanged: (value) {
-          if (value != null) {
-            setState(() {
-              _selectedTimeRange = value;
-            });
+      body: BlocBuilder<BillsStatsBloc, BillsStatsState>(
+        builder: (context, state) {
+          if (state.status == BillsStatsStatus.loading) {
+            return const Center(child: CupertinoActivityIndicator());
+          } else if (state.status != BillsStatsStatus.success) {
+            return const SizedBox();
+          } else {
+            return TabBarView(
+              controller: _tabController,
+              children: [
+                _buildTrendsTab(context, state.statistics, state.incomeList,
+                    state.expenseList),
+                _buildIncomeAnalysisTab(context, state.incomeCategarys),
+                _buildExpenseAnalysisTab(context, state.expenseCategarys),
+                // _buildAssetsLiabilitiesTab(context),
+              ],
+            );
           }
         },
       ),
     );
   }
 
-  Widget _buildTrendsTab(BuildContext context, SettingState state) {
+  Widget _buildTimeRangeSelector() {
+    return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.0), child: Text('近6月'));
+    // return Padding(
+    //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+    //   child: DropdownButton<int>(
+    //     value: _selectedTimeRange,
+    //     underline: Container(),
+    //     icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+    //     style: TextStyle(
+    //         color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold),
+    //     dropdownColor: Theme.of(context).cardColor,
+    //     items: List.generate(_timeRanges.length, (index) {
+    //       return DropdownMenuItem(
+    //         value: index,
+    //         child: Text(_timeRanges[index],
+    //             style: TextStyle(
+    //               color: index == _selectedTimeRange
+    //                   ? Theme.of(context).primaryColor
+    //                   : Colors.grey[700],
+    //             )),
+    //       );
+    //     }),
+    //     onChanged: (value) {
+    //       if (value != null) {
+    //         setState(() {
+    //           _selectedTimeRange = value;
+    //         });
+    //       }
+    //     },
+    //   ),
+    // );
+  }
+
+  Widget _buildTrendsTab(
+      BuildContext context,
+      BillStatistics? statistics,
+      List<BillStatsChartEi> incomeTrends,
+      List<BillStatsChartEi> expenseTrends) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSummaryCard(context),
+          _buildSummaryCard(context, statistics),
           const SizedBox(height: 24),
           Text(
             '收支趋势图',
@@ -123,15 +160,16 @@ class _StatsViewState extends State<StatsView>
                 ),
           ),
           const SizedBox(height: 8),
-          _buildSimpleLineChart(context),
-          const SizedBox(height: 24),
-          _buildCompletionStats(context, state),
+          _buildSimpleLineChart(context, incomeTrends, expenseTrends),
+          // const SizedBox(height: 24),
+          // _buildCompletionStats(context),
         ],
       ),
     );
   }
 
-  Widget _buildIncomeAnalysisTab(BuildContext context, SettingState state) {
+  Widget _buildIncomeAnalysisTab(
+      BuildContext context, List<BillStatsClassification> incomeCategarys) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -146,69 +184,20 @@ class _StatsViewState extends State<StatsView>
           const SizedBox(height: 16),
           _buildSimplePieChart(
             context,
-            [
-              {
-                'name': '工资',
-                'amount': 3500.0,
-                'color': Colors.blue,
-                'percent': 35
-              },
-              {
-                'name': '投资',
-                'amount': 2500.0,
-                'color': Colors.green,
-                'percent': 25
-              },
-              {
-                'name': '兼职',
-                'amount': 2000.0,
-                'color': Colors.purple,
-                'percent': 20
-              },
-              {
-                'name': '其他',
-                'amount': 1500.0,
-                'color': Colors.orange,
-                'percent': 15
-              },
-            ],
+            incomeCategarys,
           ),
           const SizedBox(height: 24),
           _buildCategoryList(
             context,
-            [
-              {
-                'name': '工资',
-                'amount': 3500.0,
-                'color': Colors.blue,
-                'percent': 35
-              },
-              {
-                'name': '投资',
-                'amount': 2500.0,
-                'color': Colors.green,
-                'percent': 25
-              },
-              {
-                'name': '兼职',
-                'amount': 2000.0,
-                'color': Colors.purple,
-                'percent': 20
-              },
-              {
-                'name': '其他',
-                'amount': 1500.0,
-                'color': Colors.orange,
-                'percent': 15
-              },
-            ],
+            incomeCategarys,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildExpenseAnalysisTab(BuildContext context, SettingState state) {
+  Widget _buildExpenseAnalysisTab(
+      BuildContext context, List<BillStatsClassification> expenseCategarys) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -223,81 +212,19 @@ class _StatsViewState extends State<StatsView>
           const SizedBox(height: 16),
           _buildSimplePieChart(
             context,
-            [
-              {
-                'name': '餐饮',
-                'amount': 1800.0,
-                'color': Colors.red,
-                'percent': 30
-              },
-              {
-                'name': '购物',
-                'amount': 1500.0,
-                'color': Colors.amber,
-                'percent': 25
-              },
-              {
-                'name': '交通',
-                'amount': 1200.0,
-                'color': Colors.cyan,
-                'percent': 20
-              },
-              {
-                'name': '娱乐',
-                'amount': 900.0,
-                'color': Colors.deepPurple,
-                'percent': 15
-              },
-              {
-                'name': '其他',
-                'amount': 600.0,
-                'color': Colors.teal,
-                'percent': 10
-              },
-            ],
+            expenseCategarys,
           ),
           const SizedBox(height: 24),
           _buildCategoryList(
             context,
-            [
-              {
-                'name': '餐饮',
-                'amount': 1800.0,
-                'color': Colors.red,
-                'percent': 30
-              },
-              {
-                'name': '购物',
-                'amount': 1500.0,
-                'color': Colors.amber,
-                'percent': 25
-              },
-              {
-                'name': '交通',
-                'amount': 1200.0,
-                'color': Colors.cyan,
-                'percent': 20
-              },
-              {
-                'name': '娱乐',
-                'amount': 900.0,
-                'color': Colors.deepPurple,
-                'percent': 15
-              },
-              {
-                'name': '其他',
-                'amount': 600.0,
-                'color': Colors.teal,
-                'percent': 10
-              },
-            ],
+            expenseCategarys,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAssetsLiabilitiesTab(BuildContext context, SettingState state) {
+  Widget _buildAssetsLiabilitiesTab(BuildContext context) {
     // 模拟数据 - 实际应用中应从API获取
     final double totalAssets = 120000.0;
     final double totalLiabilities = 45000.0;
@@ -375,10 +302,10 @@ class _StatsViewState extends State<StatsView>
     );
   }
 
-  Widget _buildSummaryCard(BuildContext context) {
+  Widget _buildSummaryCard(BuildContext context, BillStatistics? statistics) {
     // 模拟数据 - 实际应用中应从API获取
-    final double monthlyIncome = 9500.0;
-    final double monthlyExpense = 7200.0;
+    final double monthlyIncome = statistics?.income ?? 0.0;
+    final double monthlyExpense = statistics?.expense ?? 0.0;
     final double monthlyBalance = monthlyIncome - monthlyExpense;
 
     return Card(
@@ -392,7 +319,7 @@ class _StatsViewState extends State<StatsView>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '本月收支概览',
+              '半年收支概览',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -441,8 +368,27 @@ class _StatsViewState extends State<StatsView>
     );
   }
 
-  Widget _buildSimpleLineChart(BuildContext context) {
+  Widget _buildSimpleLineChart(
+      BuildContext context,
+      List<BillStatsChartEi> incomeTrends,
+      List<BillStatsChartEi> expenseTrends) {
     // 简单的图表替代，不使用fl_chart库
+    List<Widget> children = [];
+    incomeTrends.forEach((ele) {
+      maxValue = max(ele.value ?? 0.0, maxValue);
+    });
+    expenseTrends.forEach((ele) {
+      maxValue = max(ele.value ?? 0.0, maxValue);
+    });
+    for (var i = 5; i >= 0; i--) {
+      children.add(_buildBarGroup(
+          context,
+          incomeTrends[incomeTrends.length - i - 1].name ?? '$i月',
+          incomeTrends[incomeTrends.length - i - 1].value ?? 0,
+          expenseTrends[expenseTrends.length - i - 1].value ?? 0,
+          Colors.green,
+          Colors.red));
+    }
     return Container(
       height: 300,
       padding: const EdgeInsets.all(16),
@@ -463,23 +409,9 @@ class _StatsViewState extends State<StatsView>
         children: [
           Expanded(
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // 收入柱状图
-                _buildBarGroup(
-                    context, '1月', 2500, 1800, Colors.green, Colors.red),
-                _buildBarGroup(
-                    context, '2月', 1800, 2200, Colors.green, Colors.red),
-                _buildBarGroup(
-                    context, '3月', 3200, 1500, Colors.green, Colors.red),
-                _buildBarGroup(
-                    context, '4月', 2000, 2400, Colors.green, Colors.red),
-                _buildBarGroup(
-                    context, '5月', 2800, 1900, Colors.green, Colors.red),
-                _buildBarGroup(
-                    context, '6月', 3600, 2100, Colors.green, Colors.red),
-              ],
-            ),
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: children // 收入柱状图
+                ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -523,10 +455,10 @@ class _StatsViewState extends State<StatsView>
 
   Widget _buildBarGroup(BuildContext context, String label, double income,
       double expense, Color incomeColor, Color expenseColor) {
-    final maxValue = 4000.0; // 图表最大值
+    // 图表最大值
     final incomeHeight = (income / maxValue) * 200; // 200是图表高度
     final expenseHeight = (expense / maxValue) * 200;
-
+    print('lxjtodo draw: $incomeHeight, $expenseHeight');
     return Expanded(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -568,7 +500,7 @@ class _StatsViewState extends State<StatsView>
   }
 
   Widget _buildSimplePieChart(
-      BuildContext context, List<Map<String, dynamic>> data) {
+      BuildContext context, List<BillStatsClassification> categarys) {
     return Container(
       height: 300,
       padding: const EdgeInsets.all(16),
@@ -589,38 +521,45 @@ class _StatsViewState extends State<StatsView>
           Expanded(
             child: CustomPaint(
               size: const Size(double.infinity, double.infinity),
-              painter: SimplePieChartPainter(data),
+              painter: SimplePieChartPainter(categarys),
             ),
           ),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 16,
-            runSpacing: 8,
-            alignment: WrapAlignment.center,
-            children: data.map((item) {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: item['color'] as Color?,
-                      shape: BoxShape.circle,
+          // 使用 SingleChildScrollView 包裹 Wrap，并指定滚动方向为水平
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal, // 设置为水平滚动
+            child: Wrap(
+              spacing: 16,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              // 注意：当置于水平滚动的SingleChildScrollView内时，Wrap的主轴方向通常保持默认的水平方向即可。
+              children: categarys.map((item) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: item.color,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text('${item['name']} (${item['percent']}%)'),
-                ],
-              );
-            }).toList(),
-          ),
+                    const SizedBox(width: 4),
+                    // 修正百分比计算：为计算式加上括号
+                    Text(
+                        '${item.name} (${(item.percent ?? 0).toStringAsFixed(1)}%)'),
+                  ],
+                );
+              }).toList(),
+            ),
+          )
         ],
       ),
     );
   }
 
-  Widget _buildCompletionStats(BuildContext context, SettingState state) {
+  Widget _buildCompletionStats(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
     return Card(
@@ -684,27 +623,27 @@ class _StatsViewState extends State<StatsView>
   }
 
   Widget _buildCategoryList(
-      BuildContext context, List<Map<String, dynamic>> categories) {
+      BuildContext context, List<BillStatsClassification> categarys) {
     return Column(
-      children: categories.map((category) {
+      children: categarys.map((category) {
         return ListTile(
           leading: Container(
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: category['color'] as Color?,
+              color: category.color,
               shape: BoxShape.circle,
             ),
           ),
           title: Text(
-            category['name'] as String? ?? '',
+            category.name ?? '',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '¥${NumberFormat('#,##0.00').format(category['amount'])}',
+                '¥${NumberFormat('#,##0.00').format(category.value)}',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.grey[800],
@@ -712,7 +651,7 @@ class _StatsViewState extends State<StatsView>
               ),
               const SizedBox(width: 8),
               Text(
-                '${category['percent']}%',
+                '${(category.percent ?? 0).toStringAsFixed(2)}%',
                 style: TextStyle(
                   color: Colors.grey[600],
                 ),
@@ -837,9 +776,9 @@ class _StatsViewState extends State<StatsView>
 
 // 简单的饼图绘制器
 class SimplePieChartPainter extends CustomPainter {
-  final List<Map<String, dynamic>> data;
+  final List<BillStatsClassification> categarys;
 
-  SimplePieChartPainter(this.data);
+  SimplePieChartPainter(this.categarys);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -849,10 +788,11 @@ class SimplePieChartPainter extends CustomPainter {
 
     double startAngle = 0;
 
-    for (var item in data) {
-      final sweepAngle = (item['percent'] as num) / 100 * 2 * 3.14159;
+    for (var item in categarys) {
+      final sweepAngle = ((item.percent ?? 0) * 100) / 2 * 3.14159;
+      print('lxjtodo: per: $sweepAngle , $item');
       final paint = Paint()
-        ..color = item['color'] as Color? ?? Colors.grey
+        ..color = item.color ?? Colors.grey
         ..style = PaintingStyle.fill;
 
       canvas.drawArc(
