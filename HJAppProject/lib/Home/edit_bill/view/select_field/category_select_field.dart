@@ -13,6 +13,7 @@ class CategoryTreeWidget extends StatefulWidget {
       required this.billType,
       this.onCategorySelected,
       required this.categoryAmountPairs});
+
   List<CategorySelectItem> categories;
   Function(Map<int, double>)? onCategorySelected;
   Map<int, double> categoryAmountPairs;
@@ -23,12 +24,12 @@ class CategoryTreeWidget extends StatefulWidget {
 }
 
 class CategoryTreeWidgetState extends State<CategoryTreeWidget> {
-  CategorySelectItem? _selectedMainCategory;
-  CategorySelectItem? _selectedSubCategory;
-  CategorySelectItem? _selectedThirdCategory;
+  // 当前选中的分类ID（选中路径的最后一个）
+  int? _selectedCategoryId;
+
+  // 选中的路径（从顶层到当前层的分类ID）
+  List<int> _selectedPath = [];
   TextEditingController _amountController = TextEditingController();
-  // 展开的二级分类ID列表（用于控制UI展开/折叠）
-  List<int> _expandedSecondLevelIds = [];
 
   @override
   void dispose() {
@@ -89,7 +90,7 @@ class CategoryTreeWidgetState extends State<CategoryTreeWidget> {
                       onPressed: () {
                         final amount = double.tryParse(_amountController.text);
                         if (amount != null && amount != 0) {
-                          if (_selectedMainCategory == null) {
+                          if (_selectedCategoryId == null) {
                             ScaffoldMessenger.of(context)
                                 .removeCurrentSnackBar();
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -135,16 +136,13 @@ class CategoryTreeWidgetState extends State<CategoryTreeWidget> {
   Map<int, double> categorys() {
     final amount = double.tryParse(_amountController.text);
     if (amount != null && amount != 0) {
-      if (_selectedMainCategory == null) {
+      if (_selectedCategoryId == null) {
         ScaffoldMessenger.of(context).removeCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('请选择当前费用所属分类')),
+          const SnackBar(content: Text('请选择当前费用所属分类')),
         );
       } else {
-        final categoryId = _selectedThirdCategory?.id ??
-            _selectedSubCategory?.id ??
-            _selectedMainCategory!.id;
-        widget.categoryAmountPairs[categoryId] = amount;
+        widget.categoryAmountPairs[_selectedCategoryId!] = amount;
       }
     }
     return widget.categoryAmountPairs;
@@ -235,232 +233,138 @@ class CategoryTreeWidgetState extends State<CategoryTreeWidget> {
     );
   }
 
-  // 分类选择器
+  // 分类选择器（递归实现，每一层均为左右滑动的水平列表）
   Widget _buildCategorySelector(List<CategorySelectItem> categories) {
+    final List<Widget> levelWidgets = [];
+
+    // 顶层
+    levelWidgets.add(_buildLevelRow(categories, 0));
+
+    // 逐层渲染子级（根据已选择路径）
+    int depth = 1;
+    List<CategorySelectItem>? currentChildren;
+    while (true) {
+      final int? parentId =
+          depth - 1 < _selectedPath.length ? _selectedPath[depth - 1] : null;
+      if (parentId == null) break;
+      final CategorySelectItem? parentNode =
+          _findByIdInTree(categories, parentId);
+      if (parentNode == null ||
+          parentNode.children == null ||
+          parentNode.children!.isEmpty) {
+        break;
+      }
+      currentChildren = parentNode.children;
+      levelWidgets.add(_buildLevelRow(currentChildren!, depth));
+      depth++;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 主分类选择
-        Card(
-          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          elevation: 0,
-          color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    '一级分类',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: categories.map((category) {
-                      final isSelected =
-                          _selectedMainCategory?.id == category.id;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0, bottom: 8.0),
-                        child: ChoiceChip(
-                          label: Text(category.title),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            setState(() {
-                              _selectedMainCategory =
-                                  selected ? category : null;
-                              _selectedSubCategory = null;
-                              _selectedThirdCategory = null;
-                            });
-                          },
-                          labelStyle: TextStyle(
-                            color: isSelected
-                                ? Theme.of(context).colorScheme.onPrimary
-                                : null,
-                          ),
-                          backgroundColor: Colors.transparent,
-                          selectedColor: Theme.of(context).colorScheme.primary,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      children: levelWidgets,
+    );
+  }
 
-        // 二级分类选择
-        if (_selectedMainCategory != null &&
-            _selectedMainCategory!.children != null)
-          Card(
-            margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            elevation: 0,
-            color:
-                Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
+  // 构建某一层的水平列表（左右滑动）
+  Widget _buildLevelRow(List<CategorySelectItem> nodes, int depth) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 0,
+      color: Theme.of(context)
+          .colorScheme
+          .surfaceContainerHighest
+          .withOpacity(0.3),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      '二级分类',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children:
-                        _selectedMainCategory!.children!.map((subCategory) {
-                      final isSelected =
-                          _selectedSubCategory?.id == subCategory.id;
-                      final hasThirdLevel = subCategory.children != null &&
-                          subCategory.children!.isNotEmpty;
-                      final isExpanded =
-                          _expandedSecondLevelIds.contains(subCategory.id);
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          InkWell(
-                            onTap: hasThirdLevel
-                                ? () {
-                                    setState(() {
-                                      if (isExpanded) {
-                                        _expandedSecondLevelIds
-                                            .remove(subCategory.id);
-                                      } else {
-                                        _expandedSecondLevelIds
-                                            .add(subCategory.id);
-                                      }
-                                    });
-                                  }
-                                : null,
-                            child: ChoiceChip(
-                              label: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(subCategory.title),
-                                  if (hasThirdLevel)
-                                    Icon(
-                                      isExpanded
-                                          ? Icons.keyboard_arrow_up
-                                          : Icons.keyboard_arrow_down,
-                                      size: 16,
-                                    ),
-                                ],
-                              ),
-                              selected: isSelected,
-                              onSelected: (selected) {
-                                setState(() {
-                                  _selectedSubCategory =
-                                      selected ? subCategory : null;
-                                  _selectedThirdCategory = null;
-
-                                  // 如果选中且有三级分类，自动展开
-                                  if (selected &&
-                                      hasThirdLevel &&
-                                      !isExpanded) {
-                                    _expandedSecondLevelIds.add(subCategory.id);
-                                  }
-                                });
-                              },
-                              labelStyle: TextStyle(
-                                color: isSelected
-                                    ? Theme.of(context).colorScheme.onSecondary
-                                    : null,
-                              ),
-                              backgroundColor: Colors.transparent,
-                              selectedColor:
-                                  Theme.of(context).colorScheme.secondary,
-                            ),
-                          ),
-
-                          // 三级分类
-                          if (hasThirdLevel && isExpanded)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                  left: 16.0, top: 4.0, bottom: 8.0),
-                              child: Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children:
-                                    subCategory.children!.map((thirdCategory) {
-                                  final isThirdSelected =
-                                      _selectedThirdCategory?.id ==
-                                          thirdCategory.id;
-                                  return ChoiceChip(
-                                    label: Text(thirdCategory.title),
-                                    selected: isThirdSelected,
-                                    onSelected: (selected) {
-                                      setState(() {
-                                        _selectedThirdCategory =
-                                            selected ? thirdCategory : null;
-                                      });
-                                    },
-                                    labelStyle: TextStyle(
-                                      color: isThirdSelected
-                                          ? Theme.of(context)
-                                              .colorScheme
-                                              .onTertiary
-                                          : null,
-                                      fontSize: 12,
-                                    ),
-                                    backgroundColor: Colors.transparent,
-                                    selectedColor:
-                                        Theme.of(context).colorScheme.tertiary,
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 0),
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-                ],
+              child: Text(
+                _levelTitle(depth),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
               ),
             ),
-          ),
-      ],
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: nodes.map((node) {
+                  final bool isSelected = _selectedPath.length > depth &&
+                      _selectedPath[depth] == node.id;
+                  final bool hasChildren =
+                      node.children != null && node.children!.isNotEmpty;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0, bottom: 8.0),
+                    child: ChoiceChip(
+                      label: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(node.title,
+                              style: TextStyle(fontSize: depth == 0 ? 14 : 12)),
+                          if (hasChildren)
+                            const Padding(
+                              padding: EdgeInsets.only(left: 4.0),
+                              child: Icon(Icons.chevron_right, size: 16),
+                            ),
+                        ],
+                      ),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          // 截断到当前深度
+                          _selectedPath = _selectedPath.take(depth).toList();
+                          if (selected) {
+                            _selectedPath.add(node.id);
+                          }
+                          // 更新当前选中的分类ID为路径末尾
+                          _selectedCategoryId = _selectedPath.isNotEmpty
+                              ? _selectedPath.last
+                              : null;
+                        });
+                      },
+                      labelStyle: TextStyle(
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.onPrimary
+                            : null,
+                      ),
+                      backgroundColor: Colors.transparent,
+                      selectedColor: Theme.of(context).colorScheme.primary,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   // 获取当前选择的分类路径
   String _getSelectedCategoryPath() {
-    if (_selectedMainCategory == null) return '';
+    if (_selectedCategoryId == null) return '';
+    return CategorySelectItem.getFullPathById(
+        widget.categories, _selectedCategoryId!);
+  }
 
-    String path = _selectedMainCategory!.title;
-
-    if (_selectedSubCategory != null) {
-      path += ' > ${_selectedSubCategory!.title}';
-
-      if (_selectedThirdCategory != null) {
-        path += ' > ${_selectedThirdCategory!.title}';
-      }
+  // 在整棵分类树中查找指定ID的节点
+  CategorySelectItem? _findByIdInTree(List<CategorySelectItem> roots, int id) {
+    for (final root in roots) {
+      final found = root.findById(id);
+      if (found != null) return found;
     }
+    return null;
+  }
 
-    return path;
+  // 根据层级生成标题
+  String _levelTitle(int depth) {
+    final level = depth + 1;
+    return '${level}级分类';
   }
 }
