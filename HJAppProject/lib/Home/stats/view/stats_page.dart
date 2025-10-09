@@ -56,6 +56,12 @@ class _StatsViewState extends State<StatsView>
   int? _barSelectedGroup;
   Offset? _barTooltipPos;
 
+  // 颜色解析：统一使用高饱和度的 Material 主色系，尽量不使用自定义颜色
+  Color _resolveCategoryColor(int index, BillStatsClassification item) {
+    final material = Colors.primaries[index % Colors.primaries.length];
+    return material.shade700 ?? material.shade600 ?? material;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -660,7 +666,16 @@ class _StatsViewState extends State<StatsView>
                               builder: (context) {
                                 final item = categarys[_pieSelectedIndex!];
                                 final name = item.name ?? '';
-                                final percent = (item.percent ?? 0).toStringAsFixed(1);
+                                final totalPercent = categarys.fold<double>(0, (s, e) => s + (e.percent ?? 0));
+                                final totalValue = categarys.fold<double>(0, (s, e) => s + (e.value ?? 0));
+                                final raw = item.percent ?? 0;
+                                double frac = 0;
+                                if (totalPercent > 0) {
+                                  frac = raw > 1 ? raw / 100.0 : raw;
+                                } else if (totalValue > 0) {
+                                  frac = (item.value ?? 0) / totalValue;
+                                }
+                                final percentText = (frac * 100).toStringAsFixed(1);
                                 final value = (item.value ?? 0);
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -668,7 +683,7 @@ class _StatsViewState extends State<StatsView>
                                   children: [
                                     Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                     const SizedBox(height: 2),
-                                    Text('占比: $percent%', style: const TextStyle(color: Colors.white)),
+                                    Text('占比: $percentText%', style: const TextStyle(color: Colors.white)),
                                     Text('金额: ¥${NumberFormat('#,##0.00').format(value)}', style: const TextStyle(color: Colors.white)),
                                   ],
                                 );
@@ -691,7 +706,10 @@ class _StatsViewState extends State<StatsView>
               runSpacing: 8,
               alignment: WrapAlignment.center,
               // 注意：当置于水平滚动的SingleChildScrollView内时，Wrap的主轴方向通常保持默认的水平方向即可。
-              children: categarys.map((item) {
+              children: categarys.asMap().entries.map((entry) {
+                final i = entry.key;
+                final item = entry.value;
+                final dotColor = _resolveCategoryColor(i, item);
                 return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -699,7 +717,7 @@ class _StatsViewState extends State<StatsView>
                       width: 12,
                       height: 12,
                       decoration: BoxDecoration(
-                        color: item.color,
+                        color: dotColor,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -794,13 +812,16 @@ class _StatsViewState extends State<StatsView>
   Widget _buildCategoryList(
       BuildContext context, List<BillStatsClassification> categarys) {
     return Column(
-      children: categarys.map((category) {
+      children: categarys.asMap().entries.map((entry) {
+        final i = entry.key;
+        final category = entry.value;
+        final dotColor = _resolveCategoryColor(i, category);
         return ListTile(
           leading: Container(
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: category.color,
+              color: dotColor,
               shape: BoxShape.circle,
             ),
           ),
@@ -977,8 +998,11 @@ class SimplePieChartPainter extends CustomPainter {
 
       final sweepAngle = frac * 2 * pi;
 
+      // 使用高饱和度的 Material 主色系作为默认颜色，提升鲜艳度（忽略自定义颜色）
+      final material = Colors.primaries[i % Colors.primaries.length];
+      final defaultColor = material.shade700 ?? material.shade600 ?? material;
       final fillPaint = Paint()
-        ..color = item.color ?? Colors.grey
+        ..color = defaultColor
         ..style = PaintingStyle.fill;
 
       final rect = Rect.fromCircle(center: center, radius: radius);
