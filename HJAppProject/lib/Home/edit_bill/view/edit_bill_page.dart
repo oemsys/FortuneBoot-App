@@ -112,6 +112,7 @@ class _EditBillViewState extends State<EditBillView> {
   final ValueNotifier<bool?> _include = ValueNotifier(null);
   final ValueNotifier<String?> _tradeTimeStr = ValueNotifier(null);
   GlobalKey<CategoryTreeWidgetState>? curCategoryKey;
+  BillType? _lastCategoryBillType;
 
   @override
   void dispose() {
@@ -659,9 +660,10 @@ class _EditBillViewState extends State<EditBillView> {
 
       categoryAmountPair[categoryId.toInt()] = amount.toDouble();
     }
-    final curCategoryKeyWithBillType =
-    GlobalKey<CategoryTreeWidgetState>(debugLabel: '${billType}_category');
-    curCategoryKey = curCategoryKeyWithBillType;
+    if (curCategoryKey == null || _lastCategoryBillType != billType) {
+      curCategoryKey = GlobalKey<CategoryTreeWidgetState>(debugLabel: '${billType}_category');
+      _lastCategoryBillType = billType;
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -683,7 +685,7 @@ class _EditBillViewState extends State<EditBillView> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: CategoryTreeWidget(
-                key: curCategoryKeyWithBillType,
+                key: curCategoryKey,
                 categoryAmountPairs: categoryAmountPair,
                 categories: state.categoryList,
                 billType: billType,
