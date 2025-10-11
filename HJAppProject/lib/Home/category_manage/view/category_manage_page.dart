@@ -580,6 +580,27 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
     );
   }
 
+  Future<String> _loadParentName(int parentId, int categoryType) async {
+    if (parentId == -1) return '根分类';
+    final bookId = context.read<BillsRepository>().bookId() ?? 1;
+    final roots = await _service.fetchList(
+      bookId: bookId,
+      categoryType: categoryType,
+      recycleBin: false,
+    );
+    final name = _findNameById(roots, parentId);
+    return name ?? '未知';
+  }
+
+  String? _findNameById(List<CategoryNode> nodes, int id) {
+    for (final n in nodes) {
+      if (n.id == id) return n.categoryName;
+      final found = _findNameById(n.children, id);
+      if (found != null) return found;
+    }
+    return null;
+  }
+
   Future<void> _openModifyDialog(CategoryNode node) async {
     final formKey = GlobalKey<FormState>();
     String name = node.categoryName;
@@ -595,7 +616,7 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
         return StatefulBuilder(
           builder: (contextSB, setStateSB) {
             return AlertDialog(
-              title: const Text('修改分类'),
+              title: Center(child: Text('修改${node.categoryType == 1 ? '支出' : '收入'}分类')),
               content: SingleChildScrollView(
                 child: Form(
                   key: formKey,
@@ -613,18 +634,16 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('分类ID：${node.categoryId}',
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.black54)),
-                            const SizedBox(height: 4),
-                            Text('父级分类ID：${node.parentId}',
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.black54)),
-                            const SizedBox(height: 4),
-                            Text(
-                                '分类类型：${node.categoryType == 1 ? '支出(1)' : '收入(2)'}',
-                                style: const TextStyle(
-                                    fontSize: 12, color: Colors.black54)),
+                            FutureBuilder<String>(
+                              future: _loadParentName(node.parentId, node.categoryType),
+                              builder: (context, snapshot) {
+                                final text = snapshot.hasData ? snapshot.data! : '加载中...';
+                                return Text(
+                                  '父级分类：$text',
+                                  style: const TextStyle(fontSize: 12, color: Colors.black54),
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),
@@ -840,6 +859,36 @@ class CategoryPageService {
       throw Exception('网络错误: ${response.statusCode}');
     }
   }
+
+  Future<List<CategoryNode>> fetchList({
+    required int bookId,
+    required int categoryType,
+    required bool recycleBin,
+  }) async {
+    final response = await _dio.get(
+      '/fortune/category/getList',
+      queryParameters: {
+        'bookId': bookId,
+        'categoryType': categoryType,
+        'recycleBin': recycleBin,
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = response.data;
+      final code = data['code'] as int? ?? -1;
+      if (code == 0) {
+        final list = (data['data'] as List? ?? []);
+        return list
+            .map((e) => CategoryNode.fromJson(e as Map<String, dynamic>))
+            .toList();
+      } else {
+        final msg = data['msg']?.toString() ?? '服务返回错误';
+        throw Exception(msg);
+      }
+    } else {
+      throw Exception('网络错误: ${response.statusCode}');
+    }
+  }
 }
 
 class CategoryPageData {
@@ -859,6 +908,7 @@ class CategoryPageData {
 
 class CategoryNode {
   final int categoryId;
+  final int id;
   final String categoryName;
   final int categoryType;
   final int bookId;
@@ -871,6 +921,7 @@ class CategoryNode {
 
   CategoryNode({
     required this.categoryId,
+    required this.id,
     required this.categoryName,
     required this.categoryType,
     required this.bookId,
@@ -885,6 +936,9 @@ class CategoryNode {
   factory CategoryNode.fromJson(Map<String, dynamic> json) {
     return CategoryNode(
       categoryId: (json['categoryId'] as num?)?.toInt() ?? 0,
+      id: (json['id'] as num?)?.toInt() ??
+          (json['categoryId'] as num?)?.toInt() ??
+          0,
       categoryName: json['categoryName']?.toString() ?? '',
       categoryType: (json['categoryType'] as num?)?.toInt() ?? 1,
       bookId: (json['bookId'] as num?)?.toInt() ?? 0,
