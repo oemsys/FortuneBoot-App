@@ -80,6 +80,13 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('分类管理'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: '新增分类',
+            onPressed: () => _openAddDialog(initialParentId: -1),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -340,6 +347,8 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
           _openModifyDialog(node);
         } else if (value == 1) {
           _confirmMoveToRecycle(node);
+        } else if (value == 2) {
+          _openAddDialog(initialParentId: node.categoryId);
         }
       },
       itemBuilder: (context) => [
@@ -360,6 +369,16 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
               Icon(Icons.delete_outline, color: Colors.red),
               SizedBox(width: 8),
               Text('移入回收站'),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 2,
+          child: Row(
+            children: const [
+              Icon(Icons.add, color: Colors.green),
+              SizedBox(width: 8),
+              Text('新增子类'),
             ],
           ),
         ),
@@ -764,6 +783,183 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
       await _load();
     }
   }
+
+  Future<void> _openAddDialog({int initialParentId = -1}) async {
+    final formKey = GlobalKey<FormState>();
+    String name = '';
+    String sortText = '';
+    String? remark;
+    bool enable = true;
+    bool submitting = false;
+    int parentId = initialParentId;
+    final int categoryType = _categoryType;
+    final int bookId = context.read<BillsRepository>().bookId() ?? 1;
+
+    List<Map<String, dynamic>> _flatten(List<CategoryNode> nodes, {int depth = 0}) {
+      final List<Map<String, dynamic>> result = [];
+      for (final n in nodes) {
+        final prefix = depth > 0 ? '${'—' * depth} ' : '';
+        result.add({'id': n.id, 'label': '$prefix${n.categoryName}'});
+        result.addAll(_flatten(n.children, depth: depth + 1));
+      }
+      return result;
+    }
+
+    final bool? ok = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) {
+        return StatefulBuilder(
+          builder: (contextSB, setStateSB) {
+            return AlertDialog(
+              title: Center(child: Text('新增${categoryType == 1 ? '支出' : '收入'}分类')),
+              content: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FutureBuilder<List<CategoryNode>>(
+                        future: _service.fetchList(
+                          bookId: bookId,
+                          categoryType: categoryType,
+                          recycleBin: false,
+                        ),
+                        builder: (context, snapshot) {
+                          final opts = <DropdownMenuItem<int>>[
+                            const DropdownMenuItem<int>(
+                              value: -1,
+                              child: Text('根分类'),
+                            ),
+                          ];
+                          if (snapshot.hasData) {
+                            final flattened = _flatten(snapshot.data!);
+                            opts.addAll(flattened.map((e) => DropdownMenuItem<int>(
+                                  value: e['id'] as int,
+                                  child: Text(e['label'] as String),
+                                )));
+                          }
+                          return DropdownButtonFormField<int>(
+                            value: parentId,
+                            items: opts,
+                            decoration: const InputDecoration(
+                              labelText: '父级分类（必填）',
+                              border: OutlineInputBorder(),
+                            ),
+                            onChanged: submitting
+                                ? null
+                                : (v) => setStateSB(() => parentId = (v ?? -1)),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        initialValue: name,
+                        decoration: const InputDecoration(
+                          labelText: '分类名称（必填）',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (v) => name = v.trim(),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return '请输入分类名称';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      SwitchListTile(
+                        title: const Text('启用状态（必填）'),
+                        value: enable,
+                        onChanged: submitting ? null : (v) => setStateSB(() => enable = v),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        initialValue: sortText,
+                        decoration: const InputDecoration(
+                          labelText: '顺序（数字，可选）',
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (v) => sortText = v.trim(),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return null;
+                          final n = int.tryParse(v);
+                          if (n == null) return '顺序需为数字';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        initialValue: remark,
+                        decoration: const InputDecoration(
+                          labelText: '备注（可选）',
+                          border: OutlineInputBorder(),
+                        ),
+                        maxLines: 3,
+                        onChanged: (v) => remark = v.trim().isEmpty ? null : v.trim(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: submitting ? null : () => Navigator.of(dialogCtx).pop(false),
+                  child: const Text('取消'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: submitting
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          setStateSB(() => submitting = true);
+                          try {
+                            await _service.addCategory(
+                              enable: enable,
+                              parentId: parentId,
+                              categoryName: name,
+                              categoryType: categoryType,
+                              bookId: bookId,
+                              sort: int.tryParse(sortText) ?? 0,
+                              remark: remark,
+                            );
+                            if (Navigator.of(dialogCtx).canPop()) {
+                              Navigator.of(dialogCtx).pop(true);
+                            }
+                          } catch (e) {
+                            setStateSB(() => submitting = false);
+                            ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('新增失败: ${e.toString()}')),
+                            );
+                          }
+                        },
+                  icon: submitting
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.check),
+                  label: const Text('保存'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (ok == true) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('新增成功')),
+      );
+      await _load();
+    }
+  }
 }
 
 class CategoryPageService {
@@ -859,6 +1055,42 @@ class CategoryPageService {
       throw Exception('网络错误: ${response.statusCode}');
     }
   }
+
+ Future<void> addCategory({
+   required bool enable,
+   required int parentId,
+   required String categoryName,
+   required int categoryType,
+   required int bookId,
+   int sort = 0,
+   String? remark,
+ }) async {
+   final payload = {
+     'enable': enable,
+     'parentId': parentId,
+     'categoryName': categoryName,
+     'sort': sort,
+     'remark': remark,
+     'bookId': bookId,
+     'categoryType': categoryType,
+   };
+   final response = await _dio.post(
+     '/fortune/category/add',
+     data: payload,
+   );
+   if (response.statusCode == 200) {
+     final data = response.data;
+     final code = data['code'] as int? ?? -1;
+     if (code == 0) {
+       return;
+     } else {
+       final msg = data['msg']?.toString() ?? '操作失败';
+       throw Exception(msg);
+     }
+   } else {
+     throw Exception('网络错误: ${response.statusCode}');
+   }
+ }
 
   Future<List<CategoryNode>> fetchList({
     required int bookId,
