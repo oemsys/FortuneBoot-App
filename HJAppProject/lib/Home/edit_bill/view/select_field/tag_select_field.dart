@@ -54,14 +54,14 @@ class _TagTreeSelectionState extends State<TagTreeSelection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             '已选择的标签',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 14,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -71,7 +71,7 @@ class _TagTreeSelectionState extends State<TagTreeSelection> {
 
               return Chip(
                 label: Text(tagName),
-                deleteIcon: Icon(Icons.close, size: 16),
+                deleteIcon: const Icon(Icons.close, size: 16),
                 onDeleted: () {
                   setState(() {
                     widget.selectedTagIds.remove(tagId);
@@ -85,8 +85,8 @@ class _TagTreeSelectionState extends State<TagTreeSelection> {
               );
             }),
           ),
-          SizedBox(height: 16),
-          Divider(),
+          const SizedBox(height: 16),
+          const Divider(),
         ],
       ),
     );

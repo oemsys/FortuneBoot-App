@@ -17,6 +17,7 @@ import 'package:multi_dropdown/multi_dropdown.dart';
 import '../../../generated/l10n.dart';
 
 import 'package:hjproject/home/setting_page/view/profile_page.dart';
+import 'package:hjproject/home/category_manage/view/category_manage_page.dart';
 class MinePage extends StatelessWidget {
   const MinePage({super.key});
 
@@ -244,6 +245,8 @@ class _MineViewState extends State<MineView> {
           _buildSettingGroup(context, '账户设置', accountSettings),
           const SizedBox(height: 16),
         ],
+        _buildBookConfigGroup(context),
+        const SizedBox(height: 16),
         if (appSettings.isNotEmpty) ...[
           _buildSettingGroup(context, '应用设置', appSettings),
           const SizedBox(height: 16),
@@ -290,6 +293,53 @@ class _MineViewState extends State<MineView> {
           ...settings
               .map((setting) => _getSettingItem(context, setting))
               .toList(),
+        ],
+      ),
+    );
+  }
+
+  // 新增：账本配置分组（与账户设置、应用设置、关于同级）
+  Widget _buildBookConfigGroup(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 16, top: 16, bottom: 8),
+            child: Text(
+              '账本配置',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).primaryColor,
+              ),
+            ),
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: Icon(Icons.category, color: Theme.of(context).primaryColor),
+            title: const Text('分类管理'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const CategoryManagePage(),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
