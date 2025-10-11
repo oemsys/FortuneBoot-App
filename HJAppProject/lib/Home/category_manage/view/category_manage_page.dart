@@ -24,7 +24,7 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
   String? _error;
   List<CategoryNode> _roots = [];
   final Set<int> _expandedNodeIds = {};
- 
+
   final CategoryPageService _service = CategoryPageService();
 
   @override
@@ -318,73 +318,85 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
   }
 
   // 右侧对齐：x个子类 | 三点菜单 | 展开箭头
-   Widget _buildTrailing(CategoryNode node, bool hasChildren, int childCount) {
-     // 统一显示“x 子类”（包括 0 子类），根据内容自适应宽度
-     final Widget countChip = Container(
-       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-       decoration: BoxDecoration(
-         color: Colors.blueGrey.withOpacity(0.08),
-         borderRadius: BorderRadius.circular(12),
-       ),
-       child: Text(
-         '$childCount 子类',
-         textAlign: TextAlign.center,
-         style: const TextStyle(fontSize: 12, color: Colors.black54),
-       ),
-     );
- 
-     final Widget menu = PopupMenuButton<int>(
-       icon: const Icon(Icons.more_vert),
-       onSelected: (value) {
-         if (value == 1) {
-           _confirmMoveToRecycle(node);
-         }
-       },
-       itemBuilder: (context) => [
-         PopupMenuItem(
-           value: 1,
-           child: Row(
-             children: const [
-               Icon(Icons.delete_outline, color: Colors.red),
-               SizedBox(width: 8),
-               Text('移入回收站'),
-             ],
-           ),
-         ),
-       ],
-     );
- 
-     // 箭头：有子类时仅展示状态；无子类时可点击仅切换上下箭头
-     final bool expanded = _expandedNodeIds.contains(node.categoryId);
-     final Widget arrowIcon = Icon(
-       expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-     );
-     final Widget arrow = hasChildren
-         ? arrowIcon
-         : InkWell(
-             onTap: () {
-               setState(() {
-                 if (expanded) {
-                   _expandedNodeIds.remove(node.categoryId);
-                 } else {
-                   _expandedNodeIds.add(node.categoryId);
-                 }
-               });
-             },
-             child: arrowIcon,
-           );
- 
-     return Row(
-       mainAxisSize: MainAxisSize.min,
-       children: [
-         countChip,
-         const SizedBox(width: 8),
-         menu,
-         const SizedBox(width: 8),
-         arrow,
-       ],
-     );
-   }
+  Widget _buildTrailing(CategoryNode node, bool hasChildren, int childCount) {
+    // 统一显示“x 子类”（包括 0 子类），根据内容自适应宽度
+    final Widget countChip = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.blueGrey.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        '$childCount 子类',
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontSize: 12, color: Colors.black54),
+      ),
+    );
+
+    final Widget menu = PopupMenuButton<int>(
+      icon: const Icon(Icons.more_vert),
+      onSelected: (value) {
+        if (value == 0) {
+          _openModifyDialog(node);
+        } else if (value == 1) {
+          _confirmMoveToRecycle(node);
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 0,
+          child: Row(
+            children: const [
+              Icon(Icons.edit, color: Colors.blueGrey),
+              SizedBox(width: 8),
+              Text('修改'),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 1,
+          child: Row(
+            children: const [
+              Icon(Icons.delete_outline, color: Colors.red),
+              SizedBox(width: 8),
+              Text('移入回收站'),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    // 箭头：有子类时仅展示状态；无子类时可点击仅切换上下箭头
+    final bool expanded = _expandedNodeIds.contains(node.categoryId);
+    final Widget arrowIcon = Icon(
+      expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+    );
+    final Widget arrow = hasChildren
+        ? arrowIcon
+        : InkWell(
+            onTap: () {
+              setState(() {
+                if (expanded) {
+                  _expandedNodeIds.remove(node.categoryId);
+                } else {
+                  _expandedNodeIds.add(node.categoryId);
+                }
+              });
+            },
+            child: arrowIcon,
+          );
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        countChip,
+        const SizedBox(width: 8),
+        menu,
+        const SizedBox(width: 8),
+        arrow,
+      ],
+    );
+  }
 
   // 递归渲染任意层级的分类节点
   Widget _buildNode(CategoryNode node, int depth) {
@@ -567,6 +579,172 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
       ),
     );
   }
+
+  Future<void> _openModifyDialog(CategoryNode node) async {
+    final formKey = GlobalKey<FormState>();
+    String name = node.categoryName;
+    String sortText = node.sort.toString();
+    String? remark = node.remark;
+    bool enable = node.enable;
+    bool submitting = false;
+
+    final bool? ok = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) {
+        return StatefulBuilder(
+          builder: (contextSB, setStateSB) {
+            return AlertDialog(
+              title: const Text('修改分类'),
+              content: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 不可修改但必填的字段信息展示
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.blueGrey.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('分类ID：${node.categoryId}',
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.black54)),
+                            const SizedBox(height: 4),
+                            Text('父级分类ID：${node.parentId}',
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.black54)),
+                            const SizedBox(height: 4),
+                            Text(
+                                '分类类型：${node.categoryType == 1 ? '支出(1)' : '收入(2)'}',
+                                style: const TextStyle(
+                                    fontSize: 12, color: Colors.black54)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        initialValue: name,
+                        decoration: const InputDecoration(
+                          labelText: '分类名称（必填）',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (v) => name = v.trim(),
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return '请输入分类名称';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      SwitchListTile(
+                        title: const Text('启用状态（必填）'),
+                        value: enable,
+                        onChanged: submitting
+                            ? null
+                            : (v) => setStateSB(() => enable = v),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        initialValue: sortText,
+                        decoration: const InputDecoration(
+                          labelText: '顺序（数字，可选）',
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (v) => sortText = v.trim(),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return null;
+                          final n = int.tryParse(v);
+                          if (n == null) return '顺序需为数字';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        initialValue: remark,
+                        decoration: const InputDecoration(
+                          labelText: '备注（可选）',
+                          border: OutlineInputBorder(),
+                        ),
+                        maxLines: 3,
+                        onChanged: (v) =>
+                            remark = v.trim().isEmpty ? null : v.trim(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: submitting
+                      ? null
+                      : () => Navigator.of(dialogCtx).pop(false),
+                  child: const Text('取消'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: submitting
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          setStateSB(() => submitting = true);
+                          try {
+                            final bookId =
+                                context.read<BillsRepository>().bookId() ?? 1;
+                            await _service.modifyCategory(
+                              enable: enable,
+                              categoryId: node.categoryId,
+                              categoryName: name,
+                              categoryType: node.categoryType,
+                              bookId: bookId,
+                              parentId: node.parentId,
+                              sort: int.tryParse(sortText) ?? node.sort,
+                              remark: remark,
+                              recycleBin: false,
+                            );
+                            if (Navigator.of(dialogCtx).canPop()) {
+                              Navigator.of(dialogCtx).pop(true);
+                            }
+                          } catch (e) {
+                            setStateSB(() => submitting = false);
+                            ScaffoldMessenger.of(context)
+                                .removeCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('修改失败: ${e.toString()}')),
+                            );
+                          }
+                        },
+                  icon: submitting
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.check),
+                  label: const Text('保存'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (ok == true) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('修改成功')));
+      await _load();
+    }
+  }
 }
 
 class CategoryPageService {
@@ -607,6 +785,47 @@ class CategoryPageService {
   }) async {
     final response = await _dio.patch(
       '/fortune/category/$bookId/$categoryId/moveToRecycleBin',
+    );
+    if (response.statusCode == 200) {
+      final data = response.data;
+      final code = data['code'] as int? ?? -1;
+      if (code == 0) {
+        return;
+      } else {
+        final msg = data['msg']?.toString() ?? '操作失败';
+        throw Exception(msg);
+      }
+    } else {
+      throw Exception('网络错误: ${response.statusCode}');
+    }
+  }
+
+  Future<void> modifyCategory({
+    required bool enable,
+    required int categoryId,
+    required String categoryName,
+    required int categoryType,
+    required int bookId,
+    required int parentId,
+    required int sort,
+    String? remark,
+    bool recycleBin = false,
+  }) async {
+    final payload = {
+      'enable': enable,
+      'categoryId': categoryId,
+      'categoryName': categoryName,
+      'categoryType': categoryType,
+      'bookId': bookId,
+      'parentId': parentId,
+      'sort': sort,
+      'remark': remark,
+      'recycleBin': recycleBin,
+      'id': categoryId,
+    };
+    final response = await _dio.put(
+      '/fortune/category/modify',
+      data: payload,
     );
     if (response.statusCode == 200) {
       final data = response.data;
