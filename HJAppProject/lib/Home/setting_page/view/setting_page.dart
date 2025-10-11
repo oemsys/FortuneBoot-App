@@ -312,6 +312,15 @@ class _MineViewState extends State<MineView> {
       child: Column(
         children: [
           ListTile(
+            leading: Icon(Icons.favorite, color: Theme.of(context).primaryColor),
+            title: const Text('打赏作者'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              _showQRCode(context);
+            },
+          ),
+          const Divider(height: 1, indent: 16, endIndent: 16),
+          ListTile(
             leading:
                 Icon(Icons.feedback, color: Theme.of(context).primaryColor),
             title: const Text('意见反馈'),
