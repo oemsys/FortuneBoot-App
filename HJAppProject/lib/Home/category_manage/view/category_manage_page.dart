@@ -23,7 +23,8 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
   bool _loading = true;
   String? _error;
   List<CategoryNode> _roots = [];
-
+  final Set<int> _expandedNodeIds = {};
+ 
   final CategoryPageService _service = CategoryPageService();
 
   @override
@@ -316,52 +317,117 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
     );
   }
 
+// 右侧对齐：x个子类 | 三点菜单 | 展开箭头
+  Widget _buildTrailing(CategoryNode node, bool hasChildren, int childCount) {
+    // 固定第一列宽度以实现对齐
+    const double countWidth = 88;
+    final Widget countChip = hasChildren
+        ? SizedBox(
+            width: countWidth,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.blueGrey.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '$childCount 子类',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
+              ),
+            ),
+          )
+        : const SizedBox(width: countWidth);
+
+    final Widget menu = PopupMenuButton<int>(
+      icon: const Icon(Icons.more_vert),
+      onSelected: (value) {
+        if (value == 1) {
+          _confirmMoveToRecycle(node);
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 1,
+          child: Row(
+            children: const [
+              Icon(Icons.delete_outline, color: Colors.red),
+              SizedBox(width: 8),
+              Text('移入回收站'),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    final Widget arrow = hasChildren
+        ? Icon(
+            _expandedNodeIds.contains(node.categoryId)
+                ? Icons.keyboard_arrow_up
+                : Icons.keyboard_arrow_down,
+          )
+        : Opacity(
+            opacity: 0.0,
+            child: const Icon(Icons.keyboard_arrow_down),
+          );
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        countChip,
+        const SizedBox(width: 8),
+        menu,
+        const SizedBox(width: 8),
+        arrow,
+      ],
+    );
+  }
+
   // 递归渲染任意层级的分类节点
   Widget _buildNode(CategoryNode node, int depth) {
     final bool hasChildren = node.children.isNotEmpty;
     final int childCount = node.children.length;
 
-    final subtitleRow = Row(
-      children: [
-        if (node.remark != null && node.remark!.isNotEmpty)
-          Flexible(
-            child: Text(
-              node.remark!,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ),
-        if (childCount > 0) ...[
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.blueGrey.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              '$childCount 子类',
-              style: const TextStyle(fontSize: 12, color: Colors.black54),
-            ),
-          ),
-        ],
-      ],
-    );
+    final subtitleRow = (node.remark != null && node.remark!.isNotEmpty)
+        ? Row(
+            children: [
+              Flexible(
+                child: Text(
+                  node.remark!,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              ),
+            ],
+          )
+        : const SizedBox.shrink();
 
     final Widget tile = hasChildren
         ? ExpansionTile(
             leading: _buildLeading(true),
-            title: Row(
+            title: Text(
+              node.categoryName,
+              style: TextStyle(
+                fontWeight: depth == 0 ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
+                // x个子类徽标（左侧）
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.blueGrey.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Text(
-                    node.categoryName,
-                    style: TextStyle(
-                      fontWeight:
-                          depth == 0 ? FontWeight.w600 : FontWeight.w500,
-                    ),
+                    '$childCount 子类',
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ),
+                const SizedBox(width: 8),
+                // 三点菜单：移入回收站（中间）
                 PopupMenuButton<int>(
                   icon: const Icon(Icons.more_vert),
                   onSelected: (value) {
@@ -382,42 +448,40 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
                     ),
                   ],
                 ),
+                const SizedBox(width: 8),
+                // 展开子类箭头（最右侧）
+                Icon(
+                  _expandedNodeIds.contains(node.categoryId)
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                ),
               ],
             ),
+            onExpansionChanged: (expanded) {
+              setState(() {
+                if (expanded) {
+                  _expandedNodeIds.add(node.categoryId);
+                } else {
+                  _expandedNodeIds.remove(node.categoryId);
+                }
+              });
+            },
             subtitle: subtitleRow,
             children:
                 node.children.map((c) => _buildNode(c, depth + 1)).toList(),
           )
         : ListTile(
             leading: _buildLeading(false),
-            title: Row(
+            title: Text(
+              node.categoryName,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: Text(
-                    node.categoryName,
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                ),
-                PopupMenuButton<int>(
-                  icon: const Icon(Icons.more_vert),
-                  onSelected: (value) {
-                    if (value == 1) {
-                      _confirmMoveToRecycle(node);
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 1,
-                      child: Row(
-                        children: const [
-                          Icon(Icons.delete_outline, color: Colors.red),
-                          SizedBox(width: 8),
-                          Text('移入回收站'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                // 无子类不显示“x个子类”和展开箭头，仅保留三点菜单
+                // 统一对齐：使用公共 trailing 构建方法
+                _buildTrailing(node, false, 0),
               ],
             ),
             subtitle: (node.remark != null && node.remark!.isNotEmpty)
