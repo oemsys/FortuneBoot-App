@@ -795,12 +795,12 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
     final int categoryType = _categoryType;
     final int bookId = context.read<BillsRepository>().bookId() ?? 1;
 
-    List<Map<String, dynamic>> _flatten(List<CategoryNode> nodes, {int depth = 0}) {
+    List<Map<String, dynamic>> _flattenAll(List<CategoryNode> nodes, {int depth = 0}) {
       final List<Map<String, dynamic>> result = [];
       for (final n in nodes) {
         final prefix = depth > 0 ? '${'—' * depth} ' : '';
-        result.add({'id': n.id, 'label': '$prefix${n.categoryName}'});
-        result.addAll(_flatten(n.children, depth: depth + 1));
+        result.add({'id': n.id, 'label': '$prefix${n.categoryName}', 'parentId': n.parentId});
+        result.addAll(_flattenAll(n.children, depth: depth + 1));
       }
       return result;
     }
@@ -819,39 +819,58 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      FutureBuilder<List<CategoryNode>>(
-                        future: _service.fetchList(
-                          bookId: bookId,
-                          categoryType: categoryType,
-                          recycleBin: false,
+                      if (initialParentId != -1) ...[
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.blueGrey.withOpacity(0.06),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: FutureBuilder<String>(
+                            future: _loadParentName(parentId, categoryType),
+                            builder: (context, snapshot) {
+                              final text = snapshot.hasData ? snapshot.data! : '加载中...';
+                              return Text(
+                                '父级分类：$text（已固定）',
+                                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                              );
+                            },
+                          ),
                         ),
-                        builder: (context, snapshot) {
-                          final opts = <DropdownMenuItem<int>>[
-                            const DropdownMenuItem<int>(
-                              value: -1,
-                              child: Text('根分类'),
-                            ),
-                          ];
-                          if (snapshot.hasData) {
-                            final flattened = _flatten(snapshot.data!);
-                            opts.addAll(flattened.map((e) => DropdownMenuItem<int>(
+                      ] else ...[
+                        FutureBuilder<List<CategoryNode>>(
+                          future: _service.fetchList(
+                            bookId: bookId,
+                            categoryType: categoryType,
+                            recycleBin: false,
+                          ),
+                          builder: (context, snapshot) {
+                            final opts = <DropdownMenuItem<int>>[];
+                            if (snapshot.hasData) {
+                              final flattened = _flattenAll(snapshot.data!);
+                              opts.addAll(flattened.map(
+                                (e) => DropdownMenuItem<int>(
                                   value: e['id'] as int,
                                   child: Text(e['label'] as String),
-                                )));
-                          }
-                          return DropdownButtonFormField<int>(
-                            value: parentId,
-                            items: opts,
-                            decoration: const InputDecoration(
-                              labelText: '父级分类（必填）',
-                              border: OutlineInputBorder(),
-                            ),
-                            onChanged: submitting
-                                ? null
-                                : (v) => setStateSB(() => parentId = (v ?? -1)),
-                          );
-                        },
-                      ),
+                                ),
+                              ));
+                            }
+                            return DropdownButtonFormField<int>(
+                              value: parentId == -1 ? null : parentId,
+                              items: opts,
+                              decoration: const InputDecoration(
+                                labelText: '父级分类（可选）',
+                                helperText: '不选择则为一级分类',
+                                border: OutlineInputBorder(),
+                              ),
+                              onChanged: submitting
+                                  ? null
+                                  : (v) => setStateSB(() => parentId = (v ?? -1)),
+                            );
+                          },
+                        ),
+                      ],
                       const SizedBox(height: 12),
                       TextFormField(
                         initialValue: name,
