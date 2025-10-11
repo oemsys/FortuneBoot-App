@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hjproject/util/dio_client.dart';
 import 'package:hjproject/repository/repository/bills_repository.dart';
 
+import 'widgets/category_delete_confirm_dialog.dart';
+import 'widgets/category_edit_dialog.dart';
+import 'widgets/category_add_dialog.dart';
+import 'widgets/category_list_view.dart';
+import 'widgets/category_manage_appbar.dart';
+import 'widgets/category_filter_bar.dart';
 class CategoryManagePage extends StatefulWidget {
   const CategoryManagePage({Key? key}) : super(key: key);
 
@@ -78,19 +83,17 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('分类管理'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: '新增分类',
-            onPressed: () => _openAddDialog(initialParentId: -1),
-          ),
-        ],
+      appBar: CategoryManageAppBar(
+        onAddPressed: () => _openAddDialog(initialParentId: -1),
       ),
       body: Column(
         children: [
-          _buildTopSwitcher(context),
+          CategoryFilterBar(
+            selectedType: _categoryType,
+            onTypeChanged: (type) {
+              _switchType(type);
+            },
+          ),
           const SizedBox(height: 8),
           Expanded(
             child: RefreshIndicator(
@@ -106,498 +109,81 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
     );
   }
 
-  Widget _buildTopSwitcher(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(child: _typeButton(expenseType, '支出分类')),
-          const SizedBox(width: 8),
-          Expanded(child: _typeButton(incomeType, '收入分类')),
-        ],
-      ),
-    );
-  }
 
-  Widget _typeButton(int type, String label) {
-    final selected = _categoryType == type;
-    final color = Theme.of(context).primaryColor;
-    return InkWell(
-      onTap: () => _switchType(type),
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? color : Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected ? Colors.white : color,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildBody() {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_error != null) {
-      return _buildError();
-    }
-    if (_roots.isEmpty) {
-      return ListView(
-        children: [
-          _buildSummaryBar(),
-          const SizedBox(height: 80),
-          const Center(child: Text('暂无分类')),
-          const SizedBox(height: 16),
-          _buildPager(),
-        ],
-      );
-    }
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      children: [
-        _buildSummaryBar(),
-        ..._roots.map((n) => _buildNode(n, 0)),
-        const SizedBox(height: 8),
-        _buildPager(),
-        const SizedBox(height: 8),
-      ],
-    );
-  }
-
-  Widget _buildError() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.error_outline, color: Colors.red, size: 36),
-          const SizedBox(height: 8),
-          Text(_error ?? '加载失败', style: const TextStyle(color: Colors.red)),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: _load,
-            child: const Text('重试'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryBar() {
-    final typeText = _categoryType == expenseType ? '支出' : '收入';
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  _categoryType == expenseType
-                      ? Icons.remove_circle
-                      : Icons.add_circle,
-                  color: Theme.of(context).primaryColor,
-                  size: 18,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  '$typeText分类 共$_total项',
-                  style: TextStyle(color: Theme.of(context).primaryColor),
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          Text('第 $_currentPage 页', style: const TextStyle(color: Colors.grey)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildParentCard(CategoryNode node) {
-    final childCount = node.children.length;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ExpansionTile(
-        leading: _buildLeading(node.children.isNotEmpty),
-        title: Text(
-          node.categoryName,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Row(
-          children: [
-            if (node.remark != null && node.remark!.isNotEmpty)
-              Flexible(
-                child: Text(
-                  node.remark!,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.grey),
-                ),
-              ),
-            if (childCount > 0) ...[
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.blueGrey.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '$childCount 子类',
-                  style: const TextStyle(fontSize: 12, color: Colors.black54),
-                ),
-              ),
-            ],
-          ],
-        ),
-        children: node.children.isEmpty
-            ? [
-                const ListTile(
-                    title: Text('无子分类', style: TextStyle(color: Colors.grey)))
-              ]
-            : node.children.map((c) => _buildChildTile(c)).toList(),
-      ),
-    );
-  }
-
-  Widget _buildChildTile(CategoryNode node) {
-    return ListTile(
-      leading: _buildLeading(node.children.isNotEmpty),
-      title: Row(
-        children: [
-          Expanded(
-            child: Text(
-              node.categoryName,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-          )
-        ],
-      ),
-      subtitle: (node.remark != null && node.remark!.isNotEmpty)
-          ? Text(node.remark!, maxLines: 1, overflow: TextOverflow.ellipsis)
-          : null,
-    );
-  }
-
-  Widget _buildLeading(bool hasChildren) {
-    return Icon(
-      hasChildren ? Icons.label : Icons.label_outline,
-      size: 16,
-      color: Theme.of(context).colorScheme.secondary,
-    );
-  }
-
-  // 右侧对齐：x个子类 | 三点菜单 | 展开箭头
-  Widget _buildTrailing(CategoryNode node, bool hasChildren, int childCount) {
-    // 统一显示“x 子类”（包括 0 子类），根据内容自适应宽度
-    final Widget countChip = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: Colors.blueGrey.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        '$childCount 子类',
-        textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 12, color: Colors.black54),
-      ),
-    );
-
-    final Widget menu = PopupMenuButton<int>(
-      icon: const Icon(Icons.more_vert),
-      onSelected: (value) {
-        if (value == 0) {
-          _openModifyDialog(node);
-        } else if (value == 1) {
-          _confirmMoveToRecycle(node);
-        } else if (value == 2) {
-          _openAddDialog(initialParentId: node.categoryId);
-        }
+    return CategoryListView<CategoryNode>(
+      loading: _loading,
+      error: _error,
+      onRetry: _load,
+      typeText: _categoryType == expenseType ? '支出' : '收入',
+      total: _total,
+      currentPage: _currentPage,
+      roots: _roots,
+      expandedNodeIds: _expandedNodeIds,
+      childrenOf: (n) => n.children,
+      nameOf: (n) => n.categoryName,
+      remarkOf: (n) => n.remark,
+      idOf: (n) => n.categoryId,
+      onToggleNode: (node, expanded) {
+        setState(() {
+          if (expanded) {
+            _expandedNodeIds.add(node.categoryId);
+          } else {
+            _expandedNodeIds.remove(node.categoryId);
+          }
+        });
       },
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: 0,
-          child: Row(
-            children: const [
-              Icon(Icons.edit, color: Colors.blueGrey),
-              SizedBox(width: 8),
-              Text('修改'),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: 1,
-          child: Row(
-            children: const [
-              Icon(Icons.delete_outline, color: Colors.red),
-              SizedBox(width: 8),
-              Text('移入回收站'),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: 2,
-          child: Row(
-            children: const [
-              Icon(Icons.add, color: Colors.green),
-              SizedBox(width: 8),
-              Text('新增子类'),
-            ],
-          ),
-        ),
-      ],
-    );
-
-    // 箭头：有子类时仅展示状态；无子类时可点击仅切换上下箭头
-    final bool expanded = _expandedNodeIds.contains(node.categoryId);
-    final Widget arrowIcon = Icon(
-      expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-    );
-    final Widget arrow = hasChildren
-        ? arrowIcon
-        : InkWell(
-            onTap: () {
-              setState(() {
-                if (expanded) {
-                  _expandedNodeIds.remove(node.categoryId);
-                } else {
-                  _expandedNodeIds.add(node.categoryId);
-                }
-              });
-            },
-            child: arrowIcon,
-          );
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        countChip,
-        const SizedBox(width: 8),
-        menu,
-        const SizedBox(width: 8),
-        arrow,
-      ],
+      onModify: (node) => _openModifyDialog(node),
+      onMoveToRecycle: (node) => _confirmMoveToRecycle(node),
+      onAddChild: (node) => _openAddDialog(initialParentId: node.categoryId),
+      hasPrev: _hasPrev,
+      hasNext: _hasNext,
+      onPrev: () {
+        setState(() => _currentPage -= 1);
+        _load();
+      },
+      onNext: () {
+        setState(() => _currentPage += 1);
+        _load();
+      },
     );
   }
 
-  // 递归渲染任意层级的分类节点
-  Widget _buildNode(CategoryNode node, int depth) {
-    final bool hasChildren = node.children.isNotEmpty;
-    final int childCount = node.children.length;
 
-    final subtitleRow = (node.remark != null && node.remark!.isNotEmpty)
-        ? Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              node.remark!,
-              style: const TextStyle(color: Colors.grey),
-              softWrap: true,
-            ),
-          )
-        : const SizedBox.shrink();
 
-    final Widget tile = hasChildren
-        ? ExpansionTile(
-            leading: _buildLeading(true),
-            title: Text(
-              node.categoryName,
-              style: TextStyle(
-                fontWeight: depth == 0 ? FontWeight.w600 : FontWeight.w500,
-              ),
-            ),
-            trailing: _buildTrailing(node, true, childCount),
-            onExpansionChanged: (expanded) {
-              setState(() {
-                if (expanded) {
-                  _expandedNodeIds.add(node.categoryId);
-                } else {
-                  _expandedNodeIds.remove(node.categoryId);
-                }
-              });
-            },
-            subtitle: subtitleRow,
-            children:
-                node.children.map((c) => _buildNode(c, depth + 1)).toList(),
-          )
-        : ListTile(
-            leading: _buildLeading(false),
-            title: Text(
-              node.categoryName,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 无子类不显示“x个子类”和展开箭头，仅保留三点菜单
-                // 统一对齐：使用公共 trailing 构建方法
-                _buildTrailing(node, false, 0),
-              ],
-            ),
-            subtitle: (node.remark != null && node.remark!.isNotEmpty)
-                ? Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      node.remark!,
-                      style: const TextStyle(color: Colors.grey),
-                      softWrap: true,
-                    ),
-                  )
-                : null,
-          );
 
-    if (depth == 0) {
-      // 顶层节点使用卡片样式
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: tile,
-      );
-    } else {
-      // 子层级添加缩进即可
-      return Padding(
-        padding: EdgeInsets.only(left: 12.0 * depth),
-        child: tile,
-      );
-    }
-  }
+
+
+
 
   Future<void> _confirmMoveToRecycle(CategoryNode node) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('移入回收站'),
-          content: Text('将分类“${node.categoryName}”移入回收站？其子分类也将一并处理。'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('确认'),
-            ),
-          ],
+        return CategoryDeleteConfirmDialog(
+          categoryName: node.categoryName,
+          onConfirm: () async {
+            final bookId = context.read<BillsRepository>().bookId() ?? 1;
+            await _service.moveToRecycleBin(
+              bookId: bookId,
+              categoryId: node.categoryId,
+            );
+          },
         );
       },
     );
     if (confirmed == true) {
-      await _moveToRecycle(node);
-    }
-  }
-
-  Future<void> _moveToRecycle(CategoryNode node) async {
-    try {
-      setState(() {
-        _loading = true;
-      });
-      final bookId = context.read<BillsRepository>().bookId() ?? 1;
-      await _service.moveToRecycleBin(
-        bookId: bookId,
-        categoryId: node.categoryId,
-      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).removeCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('已移入回收站')),
       );
       await _load();
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).removeCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('操作失败: ${e.toString()}')),
-      );
-      setState(() {
-        _loading = false;
-      });
     }
   }
 
-  Widget _buildPager() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          OutlinedButton.icon(
-            onPressed: _hasPrev
-                ? () {
-                    setState(() => _currentPage -= 1);
-                    _load();
-                  }
-                : null,
-            icon: const Icon(Icons.chevron_left),
-            label: const Text('上一页'),
-          ),
-          Expanded(
-            child: Center(
-              child: Text(
-                '共 $_total 条',
-                style: const TextStyle(color: Colors.grey),
-              ),
-            ),
-          ),
-          OutlinedButton.icon(
-            onPressed: _hasNext
-                ? () {
-                    setState(() => _currentPage += 1);
-                    _load();
-                  }
-                : null,
-            icon: const Icon(Icons.chevron_right),
-            label: const Text('下一页'),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Future<String> _loadParentName(int parentId, int categoryType) async {
     if (parentId == -1) return '根分类';
@@ -621,154 +207,34 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
   }
 
   Future<void> _openModifyDialog(CategoryNode node) async {
-    final formKey = GlobalKey<FormState>();
-    String name = node.categoryName;
-    String sortText = node.sort.toString();
-    String? remark = node.remark;
-    bool enable = node.enable;
-    bool submitting = false;
-
     final bool? ok = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (dialogCtx) {
-        return StatefulBuilder(
-          builder: (contextSB, setStateSB) {
-            return AlertDialog(
-              title: Center(child: Text('修改${node.categoryType == 1 ? '支出' : '收入'}分类')),
-              content: SingleChildScrollView(
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // 不可修改但必填的字段信息展示
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.blueGrey.withOpacity(0.06),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            FutureBuilder<String>(
-                              future: _loadParentName(node.parentId, node.categoryType),
-                              builder: (context, snapshot) {
-                                final text = snapshot.hasData ? snapshot.data! : '加载中...';
-                                return Text(
-                                  '父级分类：$text',
-                                  style: const TextStyle(fontSize: 12, color: Colors.black54),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        initialValue: name,
-                        decoration: const InputDecoration(
-                          labelText: '分类名称（必填）',
-                          border: OutlineInputBorder(),
-                        ),
-                        onChanged: (v) => name = v.trim(),
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return '请输入分类名称';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      SwitchListTile(
-                        title: const Text('启用状态（必填）'),
-                        value: enable,
-                        onChanged: submitting
-                            ? null
-                            : (v) => setStateSB(() => enable = v),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        initialValue: sortText,
-                        decoration: const InputDecoration(
-                          labelText: '顺序（数字，可选）',
-                          border: OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                        onChanged: (v) => sortText = v.trim(),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) return null;
-                          final n = int.tryParse(v);
-                          if (n == null) return '顺序需为数字';
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        initialValue: remark,
-                        decoration: const InputDecoration(
-                          labelText: '备注（可选）',
-                          border: OutlineInputBorder(),
-                        ),
-                        maxLines: 3,
-                        onChanged: (v) =>
-                            remark = v.trim().isEmpty ? null : v.trim(),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: submitting
-                      ? null
-                      : () => Navigator.of(dialogCtx).pop(false),
-                  child: const Text('取消'),
-                ),
-                ElevatedButton.icon(
-                  onPressed: submitting
-                      ? null
-                      : () async {
-                          if (!formKey.currentState!.validate()) return;
-                          setStateSB(() => submitting = true);
-                          try {
-                            final bookId =
-                                context.read<BillsRepository>().bookId() ?? 1;
-                            await _service.modifyCategory(
-                              enable: enable,
-                              categoryId: node.categoryId,
-                              categoryName: name,
-                              categoryType: node.categoryType,
-                              bookId: bookId,
-                              parentId: node.parentId,
-                              sort: int.tryParse(sortText) ?? node.sort,
-                              remark: remark,
-                              recycleBin: false,
-                            );
-                            if (Navigator.of(dialogCtx).canPop()) {
-                              Navigator.of(dialogCtx).pop(true);
-                            }
-                          } catch (e) {
-                            setStateSB(() => submitting = false);
-                            ScaffoldMessenger.of(context)
-                                .removeCurrentSnackBar();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('修改失败: ${e.toString()}')),
-                            );
-                          }
-                        },
-                  icon: submitting
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.check),
-                  label: const Text('保存'),
-                ),
-              ],
+        return CategoryEditDialog(
+          titleText: '修改${node.categoryType == 1 ? '支出' : '收入'}分类',
+          initialName: node.categoryName,
+          initialEnable: node.enable,
+          initialSort: node.sort,
+          initialRemark: node.remark,
+          fixedParentNameFuture: _loadParentName(node.parentId, node.categoryType),
+          onSubmit: ({
+            required String name,
+            required bool enable,
+            required int sort,
+            String? remark,
+          }) async {
+            final bookId = context.read<BillsRepository>().bookId() ?? 1;
+            await _service.modifyCategory(
+              enable: enable,
+              categoryId: node.categoryId,
+              categoryName: name,
+              categoryType: node.categoryType,
+              bookId: bookId,
+              parentId: node.parentId,
+              sort: sort,
+              remark: remark,
+              recycleBin: false,
             );
           },
         );
@@ -785,22 +251,15 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
   }
 
   Future<void> _openAddDialog({int initialParentId = -1}) async {
-    final formKey = GlobalKey<FormState>();
-    String name = '';
-    String sortText = '';
-    String? remark;
-    bool enable = true;
-    bool submitting = false;
-    int parentId = initialParentId;
     final int categoryType = _categoryType;
     final int bookId = context.read<BillsRepository>().bookId() ?? 1;
 
-    List<Map<String, dynamic>> _flattenAll(List<CategoryNode> nodes, {int depth = 0}) {
-      final List<Map<String, dynamic>> result = [];
+    List<ParentOption> _flattenToOptions(List<CategoryNode> nodes, {int depth = 0}) {
+      final List<ParentOption> result = [];
       for (final n in nodes) {
         final prefix = depth > 0 ? '${'—' * depth} ' : '';
-        result.add({'id': n.id, 'label': '$prefix${n.categoryName}', 'parentId': n.parentId});
-        result.addAll(_flattenAll(n.children, depth: depth + 1));
+        result.add(ParentOption(id: n.id, label: '$prefix${n.categoryName}'));
+        result.addAll(_flattenToOptions(n.children, depth: depth + 1));
       }
       return result;
     }
@@ -809,161 +268,37 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
       context: context,
       barrierDismissible: false,
       builder: (dialogCtx) {
-        return StatefulBuilder(
-          builder: (contextSB, setStateSB) {
-            return AlertDialog(
-              title: Center(child: Text('新增${categoryType == 1 ? '支出' : '收入'}分类')),
-              content: SingleChildScrollView(
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (initialParentId != -1) ...[
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.blueGrey.withOpacity(0.06),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: FutureBuilder<String>(
-                            future: _loadParentName(parentId, categoryType),
-                            builder: (context, snapshot) {
-                              final text = snapshot.hasData ? snapshot.data! : '加载中...';
-                              return Text(
-                                '父级分类：$text（已固定）',
-                                style: const TextStyle(fontSize: 12, color: Colors.black54),
-                              );
-                            },
-                          ),
-                        ),
-                      ] else ...[
-                        FutureBuilder<List<CategoryNode>>(
-                          future: _service.fetchList(
-                            bookId: bookId,
-                            categoryType: categoryType,
-                            recycleBin: false,
-                          ),
-                          builder: (context, snapshot) {
-                            final opts = <DropdownMenuItem<int>>[];
-                            if (snapshot.hasData) {
-                              final flattened = _flattenAll(snapshot.data!);
-                              opts.addAll(flattened.map(
-                                (e) => DropdownMenuItem<int>(
-                                  value: e['id'] as int,
-                                  child: Text(e['label'] as String),
-                                ),
-                              ));
-                            }
-                            return DropdownButtonFormField<int>(
-                              value: parentId == -1 ? null : parentId,
-                              items: opts,
-                              decoration: const InputDecoration(
-                                labelText: '父级分类（可选）',
-                                helperText: '不选择则为一级分类',
-                                border: OutlineInputBorder(),
-                              ),
-                              onChanged: submitting
-                                  ? null
-                                  : (v) => setStateSB(() => parentId = (v ?? -1)),
-                            );
-                          },
-                        ),
-                      ],
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        initialValue: name,
-                        decoration: const InputDecoration(
-                          labelText: '分类名称（必填）',
-                          border: OutlineInputBorder(),
-                        ),
-                        onChanged: (v) => name = v.trim(),
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return '请输入分类名称';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      SwitchListTile(
-                        title: const Text('启用状态（必填）'),
-                        value: enable,
-                        onChanged: submitting ? null : (v) => setStateSB(() => enable = v),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        initialValue: sortText,
-                        decoration: const InputDecoration(
-                          labelText: '顺序（数字，可选）',
-                          border: OutlineInputBorder(),
-                        ),
-                        keyboardType: TextInputType.number,
-                        onChanged: (v) => sortText = v.trim(),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) return null;
-                          final n = int.tryParse(v);
-                          if (n == null) return '顺序需为数字';
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        initialValue: remark,
-                        decoration: const InputDecoration(
-                          labelText: '备注（可选）',
-                          border: OutlineInputBorder(),
-                        ),
-                        maxLines: 3,
-                        onChanged: (v) => remark = v.trim().isEmpty ? null : v.trim(),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: submitting ? null : () => Navigator.of(dialogCtx).pop(false),
-                  child: const Text('取消'),
-                ),
-                ElevatedButton.icon(
-                  onPressed: submitting
-                      ? null
-                      : () async {
-                          if (!formKey.currentState!.validate()) return;
-                          setStateSB(() => submitting = true);
-                          try {
-                            await _service.addCategory(
-                              enable: enable,
-                              parentId: parentId,
-                              categoryName: name,
-                              categoryType: categoryType,
-                              bookId: bookId,
-                              sort: int.tryParse(sortText) ?? 0,
-                              remark: remark,
-                            );
-                            if (Navigator.of(dialogCtx).canPop()) {
-                              Navigator.of(dialogCtx).pop(true);
-                            }
-                          } catch (e) {
-                            setStateSB(() => submitting = false);
-                            ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('新增失败: ${e.toString()}')),
-                            );
-                          }
-                        },
-                  icon: submitting
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.check),
-                  label: const Text('保存'),
-                ),
-              ],
+        return CategoryAddDialog(
+          titleText: '新增${categoryType == 1 ? '支出' : '收入'}分类',
+          initialParentId: initialParentId,
+          fixedParentNameFuture: initialParentId != -1
+              ? _loadParentName(initialParentId, categoryType)
+              : null,
+          fetchParentOptions: initialParentId == -1
+              ? () async {
+                  final roots = await _service.fetchList(
+                    bookId: bookId,
+                    categoryType: categoryType,
+                    recycleBin: false,
+                  );
+                  return _flattenToOptions(roots);
+                }
+              : null,
+          onSubmit: ({
+            required int parentId,
+            required String name,
+            required bool enable,
+            required int sort,
+            String? remark,
+          }) async {
+            await _service.addCategory(
+              enable: enable,
+              parentId: parentId,
+              categoryName: name,
+              categoryType: categoryType,
+              bookId: bookId,
+              sort: sort,
+              remark: remark,
             );
           },
         );
