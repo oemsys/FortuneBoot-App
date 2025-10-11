@@ -16,6 +16,7 @@ import 'package:hjproject/util/dio_client.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
 import '../../../generated/l10n.dart';
 
+import 'package:hjproject/home/setting_page/view/profile_page.dart';
 class MinePage extends StatelessWidget {
   const MinePage({super.key});
 
@@ -175,10 +176,10 @@ class _MineViewState extends State<MineView> {
                 const SizedBox(height: 4),
                 InkWell(
                   onTap: () {
-                    // 跳转到个人资料页面
-                    ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('敬请期待...')),
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const ProfilePage(),
+                      ),
                     );
                   },
                   child: const Row(
@@ -771,12 +772,13 @@ class _MineViewState extends State<MineView> {
               Text('2. 如何修改个人资料?',
                   style: TextStyle(fontWeight: FontWeight.bold)),
               SizedBox(height: 4),
-              Text('点击头像或"查看个人资料"进入个人资料页面进行修改。'),
+              Text('点击"查看个人资料"进入个人资料页面进行修改。'),
               SizedBox(height: 12),
               Text('3. 遇到问题怎么办?',
                   style: TextStyle(fontWeight: FontWeight.bold)),
               SizedBox(height: 4),
-              Text('可以通过"意见反馈"功能向我们反馈问题，我们会尽快处理。'),
+              Text('加QQ群：1009576058，在群众反馈问题，我们会尽快处理。'),
+              // Text('可以通过"意见反馈"功能向我们反馈问题，我们会尽快处理。'),
             ],
           ),
           actions: [

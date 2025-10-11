@@ -52,18 +52,16 @@ class DioClient {
           // 动态注入token
           bool needAuth = true;
           if (needAuth) {
-            options.headers = header;
+            // 合并而不是覆盖，避免丢失 Content-Type 等原有头
+            options.headers.addAll(header);
+            // 如若缺失，则兜底设置为 application/json
+            if (options.contentType == null || options.headers['Content-Type'] == null) {
+              options.contentType = Headers.jsonContentType;
+            }
           }
-          // options.headers['Authorization'] = 'Bearer ${_getToken()}';
           return handler.next(options);
         },
         onError: (error, handler) async {
-          // 退出登录 lxjtodo
-          // if (error.response?.statusCode == 401) {
-          //   // token过期自动刷新逻辑
-          //   // await _refreshToken();
-          //   // return handler.resolve(await _retry(error.requestOptions));
-          // }
           return handler.next(error);
         },
       ),
