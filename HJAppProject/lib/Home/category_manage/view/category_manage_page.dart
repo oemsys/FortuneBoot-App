@@ -7,6 +7,7 @@ import 'package:hjproject/repository/repository/bills_repository.dart';
 
 class CategoryManagePage extends StatefulWidget {
   const CategoryManagePage({Key? key}) : super(key: key);
+
   @override
   State<CategoryManagePage> createState() => _CategoryManagePageState();
 }
@@ -67,6 +68,7 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
   }
 
   bool get _hasPrev => _currentPage > 1;
+
   bool get _hasNext {
     if (_lastPageSize <= 0) return false;
     return _currentPage * _lastPageSize < _total;
@@ -209,7 +211,9 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
             child: Row(
               children: [
                 Icon(
-                  _categoryType == expenseType ? Icons.remove_circle : Icons.add_circle,
+                  _categoryType == expenseType
+                      ? Icons.remove_circle
+                      : Icons.add_circle,
                   color: Theme.of(context).primaryColor,
                   size: 18,
                 ),
@@ -276,7 +280,10 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
           ],
         ),
         children: node.children.isEmpty
-            ? [const ListTile(title: Text('无子分类', style: TextStyle(color: Colors.grey)))]
+            ? [
+                const ListTile(
+                    title: Text('无子分类', style: TextStyle(color: Colors.grey)))
+              ]
             : node.children.map((c) => _buildChildTile(c)).toList(),
       ),
     );
@@ -350,14 +357,36 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
                   child: Text(
                     node.categoryName,
                     style: TextStyle(
-                      fontWeight: depth == 0 ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight:
+                          depth == 0 ? FontWeight.w600 : FontWeight.w500,
                     ),
                   ),
-                )
+                ),
+                PopupMenuButton<int>(
+                  icon: const Icon(Icons.more_vert),
+                  onSelected: (value) {
+                    if (value == 1) {
+                      _confirmMoveToRecycle(node);
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 1,
+                      child: Row(
+                        children: const [
+                          Icon(Icons.delete_outline, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('移入回收站'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
             subtitle: subtitleRow,
-            children: node.children.map((c) => _buildNode(c, depth + 1)).toList(),
+            children:
+                node.children.map((c) => _buildNode(c, depth + 1)).toList(),
           )
         : ListTile(
             leading: _buildLeading(false),
@@ -368,11 +397,32 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
                     node.categoryName,
                     style: const TextStyle(fontWeight: FontWeight.w500),
                   ),
-                )
+                ),
+                PopupMenuButton<int>(
+                  icon: const Icon(Icons.more_vert),
+                  onSelected: (value) {
+                    if (value == 1) {
+                      _confirmMoveToRecycle(node);
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 1,
+                      child: Row(
+                        children: const [
+                          Icon(Icons.delete_outline, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('移入回收站'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
             subtitle: (node.remark != null && node.remark!.isNotEmpty)
-                ? Text(node.remark!, maxLines: 1, overflow: TextOverflow.ellipsis)
+                ? Text(node.remark!,
+                    maxLines: 1, overflow: TextOverflow.ellipsis)
                 : null,
           );
 
@@ -399,6 +449,59 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
         padding: EdgeInsets.only(left: 12.0 * depth),
         child: tile,
       );
+    }
+  }
+
+  Future<void> _confirmMoveToRecycle(CategoryNode node) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('移入回收站'),
+          content: Text('将分类“${node.categoryName}”移入回收站？其子分类也将一并处理。'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('确认'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed == true) {
+      await _moveToRecycle(node);
+    }
+  }
+
+  Future<void> _moveToRecycle(CategoryNode node) async {
+    try {
+      setState(() {
+        _loading = true;
+      });
+      final bookId = context.read<BillsRepository>().bookId() ?? 1;
+      await _service.moveToRecycleBin(
+        bookId: bookId,
+        categoryId: node.categoryId,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('已移入回收站')),
+      );
+      await _load();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('操作失败: ${e.toString()}')),
+      );
+      setState(() {
+        _loading = false;
+      });
     }
   }
 
@@ -443,6 +546,7 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
 
 class CategoryPageService {
   final Dio _dio = DioClient().dio;
+
   Future<CategoryPageData> fetch({
     required int bookId,
     required int categoryType,
@@ -471,12 +575,35 @@ class CategoryPageService {
       throw Exception('网络错误: ${response.statusCode}');
     }
   }
+
+  Future<void> moveToRecycleBin({
+    required int bookId,
+    required int categoryId,
+  }) async {
+    final response = await _dio.patch(
+      '/fortune/category/$bookId/$categoryId/moveToRecycleBin',
+    );
+    if (response.statusCode == 200) {
+      final data = response.data;
+      final code = data['code'] as int? ?? -1;
+      if (code == 0) {
+        return;
+      } else {
+        final msg = data['msg']?.toString() ?? '操作失败';
+        throw Exception(msg);
+      }
+    } else {
+      throw Exception('网络错误: ${response.statusCode}');
+    }
+  }
 }
 
 class CategoryPageData {
   final int total;
   final List<CategoryNode> rows;
+
   CategoryPageData({required this.total, required this.rows});
+
   factory CategoryPageData.fromJson(Map<String, dynamic> json) {
     final total = json['total'] as int? ?? 0;
     final rowsList = (json['rows'] as List? ?? [])
@@ -497,6 +624,7 @@ class CategoryNode {
   final bool enable;
   final bool recycleBin;
   final List<CategoryNode> children;
+
   CategoryNode({
     required this.categoryId,
     required this.categoryName,
@@ -509,6 +637,7 @@ class CategoryNode {
     required this.recycleBin,
     required this.children,
   });
+
   factory CategoryNode.fromJson(Map<String, dynamic> json) {
     return CategoryNode(
       categoryId: (json['categoryId'] as num?)?.toInt() ?? 0,
