@@ -82,6 +82,8 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
 
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final double gap = width < 600 ? 8 : 12;
     return Scaffold(
       appBar: CategoryManageAppBar(
         onAddPressed: () => _openAddDialog(initialParentId: -1),
@@ -94,7 +96,7 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
               _switchType(type);
             },
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: gap),
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {

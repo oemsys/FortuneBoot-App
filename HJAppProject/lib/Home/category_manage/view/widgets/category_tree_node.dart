@@ -36,6 +36,9 @@ class CategoryTreeNode<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     final List<T> children = childrenOf(node);
     final bool hasChildren = children.isNotEmpty;
     final int childCount = children.length;
@@ -46,69 +49,74 @@ class CategoryTreeNode<T> extends StatelessWidget {
     final Widget leading = Icon(
       hasChildren ? Icons.label : Icons.label_outline,
       size: 16,
-      color: Theme.of(context).colorScheme.secondary,
+      color: cs.secondary,
     );
 
     final Widget countChip = Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: Colors.blueGrey.withOpacity(0.08),
+        color: cs.secondaryContainer,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         '$childCount 子类',
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 12, color: Colors.black54),
+        style: tt.labelSmall?.copyWith(color: cs.onSecondaryContainer),
       ),
     );
 
-    final Widget menu = PopupMenuButton<int>(
-      icon: const Icon(Icons.more_vert),
-      onSelected: (value) {
-        if (value == 0) {
-          onModify(node);
-        } else if (value == 1) {
-          onMoveToRecycle(node);
-        } else if (value == 2) {
-          onAddChild(node);
-        }
-      },
-      itemBuilder: (context) => [
-        const PopupMenuItem(
-          value: 0,
-          child: Row(
-            children: [
-              Icon(Icons.edit, color: Colors.blueGrey),
-              SizedBox(width: 8),
-              Text('修改'),
-            ],
+    final Widget menu = Tooltip(
+      message: '更多操作',
+      child: PopupMenuButton<int>(
+        tooltip: '更多操作',
+        icon: const Icon(Icons.more_vert),
+        onSelected: (value) {
+          if (value == 0) {
+            onModify(node);
+          } else if (value == 1) {
+            onMoveToRecycle(node);
+          } else if (value == 2) {
+            onAddChild(node);
+          }
+        },
+        itemBuilder: (context) => [
+          PopupMenuItem(
+            value: 0,
+            child: Row(
+              children: [
+                Icon(Icons.edit, color: cs.primary),
+                const SizedBox(width: 8),
+                const Text('修改'),
+              ],
+            ),
           ),
-        ),
-        const PopupMenuItem(
-          value: 1,
-          child: Row(
-            children: [
-              Icon(Icons.delete_outline, color: Colors.red),
-              SizedBox(width: 8),
-              Text('移入回收站'),
-            ],
+          PopupMenuItem(
+            value: 1,
+            child: Row(
+              children: [
+                Icon(Icons.delete_outline, color: cs.error),
+                const SizedBox(width: 8),
+                const Text('移入回收站'),
+              ],
+            ),
           ),
-        ),
-        const PopupMenuItem(
-          value: 2,
-          child: Row(
-            children: [
-              Icon(Icons.add, color: Colors.green),
-              SizedBox(width: 8),
-              Text('新增子类'),
-            ],
+          PopupMenuItem(
+            value: 2,
+            child: Row(
+              children: [
+                Icon(Icons.add, color: cs.tertiary),
+                const SizedBox(width: 8),
+                const Text('新增子类'),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
 
     final Widget arrowIcon = Icon(
       expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+      color: cs.outline,
     );
 
     final Widget trailing = Row(
@@ -122,6 +130,7 @@ class CategoryTreeNode<T> extends StatelessWidget {
             ? arrowIcon
             : InkWell(
                 onTap: () => onToggleNode(node, !expanded),
+                borderRadius: BorderRadius.circular(8),
                 child: arrowIcon,
               ),
       ],
@@ -132,7 +141,7 @@ class CategoryTreeNode<T> extends StatelessWidget {
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               remark,
-              style: const TextStyle(color: Colors.grey),
+              style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
               softWrap: true,
             ),
           )
@@ -140,14 +149,14 @@ class CategoryTreeNode<T> extends StatelessWidget {
 
     final Widget tile = hasChildren
         ? ExpansionTile(
-            key: ValueKey('node-\${idOf(node)}-\$expanded'),
+            key: ValueKey('node-${idOf(node)}-$expanded'),
             initiallyExpanded: expanded,
             leading: leading,
             title: Text(
               name,
-              style: TextStyle(
-                fontWeight: depth == 0 ? FontWeight.w600 : FontWeight.w500,
-              ),
+              style: depth == 0
+                  ? tt.titleMedium?.copyWith(fontWeight: FontWeight.w600)
+                  : tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
             ),
             trailing: trailing,
             onExpansionChanged: (v) => onToggleNode(node, v),
@@ -161,7 +170,7 @@ class CategoryTreeNode<T> extends StatelessWidget {
                     nameOf: nameOf,
                     remarkOf: remarkOf,
                     idOf: idOf,
-                    isExpanded: isExpanded, // child will recompute via parent wrapper
+                    isExpanded: isExpanded, // child recomputes via parent
                     onToggleNode: onToggleNode,
                     onModify: onModify,
                     onMoveToRecycle: onMoveToRecycle,
@@ -174,27 +183,31 @@ class CategoryTreeNode<T> extends StatelessWidget {
             leading: leading,
             title: Text(
               name,
-              style: const TextStyle(fontWeight: FontWeight.w500),
+              style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
             ),
             trailing: trailing,
             subtitle: subtitle,
           );
 
     if (depth == 0) {
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
+      final double targetElevation = (expanded && hasChildren) ? 2.0 : 1.0;
+      return TweenAnimationBuilder<double>(
+        tween: Tween<double>(begin: targetElevation, end: targetElevation),
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        builder: (context, value, _) {
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            elevation: value,
+            color: cs.surface,
+            surfaceTintColor: cs.surfaceTint,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: cs.outlineVariant),
             ),
-          ],
-        ),
-        child: tile,
+            child: tile,
+          );
+        },
       );
     }
     return Padding(

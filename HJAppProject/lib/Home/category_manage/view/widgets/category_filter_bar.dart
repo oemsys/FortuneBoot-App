@@ -18,51 +18,110 @@ class CategoryFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+    final cs = Theme.of(context).colorScheme;
+
+    double hPadding() {
+      final w = MediaQuery.of(context).size.width;
+      if (w < 600) return 16;
+      if (w < 1024) return 20;
+      return 24;
+    }
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(hPadding(), 12, hPadding(), 0),
+      child: Card(
+        elevation: 1,
+        color: cs.surface,
+        surfaceTintColor: cs.surfaceTint,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: cs.outlineVariant),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            children: [
+              Expanded(
+                child: _typeButton(
+                  context: context,
+                  type: expenseType,
+                  label: '支出分类',
+                  selected: selectedType == expenseType,
+                  icon: Icons.remove_circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _typeButton(
+                  context: context,
+                  type: incomeType,
+                  label: '收入分类',
+                  selected: selectedType == incomeType,
+                  icon: Icons.add_circle,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(child: _typeButton(context, expenseType, '支出分类')),
-          const SizedBox(height: 0, width: 8),
-          Expanded(child: _typeButton(context, incomeType, '收入分类')),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _typeButton(BuildContext context, int type, String label) {
-    final bool selected = selectedType == type;
-    final Color color = Theme.of(context).primaryColor;
-    return InkWell(
-      onTap: () => onTypeChanged(type),
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? color : Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected ? Colors.white : color,
-            fontWeight: FontWeight.w600,
+  Widget _typeButton({
+    required BuildContext context,
+    required int type,
+    required String label,
+    required bool selected,
+    required IconData icon,
+  }) {
+    final tt = Theme.of(context).textTheme;
+
+    final Widget child = Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, size: 18),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            style: tt.labelLarge,
           ),
         ),
+      ],
+    );
+
+    final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(10));
+
+    final ButtonStyle baseStyle = ButtonStyle(
+      shape: MaterialStatePropertyAll(shape),
+      minimumSize: const MaterialStatePropertyAll(Size.fromHeight(44)),
+      padding: const MaterialStatePropertyAll(EdgeInsets.symmetric(vertical: 12)),
+      visualDensity: VisualDensity.standard,
+    );
+
+    final Widget button = selected
+        ? FilledButton.tonal(
+            onPressed: () => onTypeChanged(type),
+            style: baseStyle,
+            child: child,
+          )
+        : OutlinedButton(
+            onPressed: () => onTypeChanged(type),
+            style: baseStyle,
+            child: child,
+          );
+
+    return Tooltip(
+      message: label,
+      waitDuration: const Duration(milliseconds: 400),
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: label,
+        onTapHint: '切换$type',
+        child: FocusTraversalGroup(child: button),
       ),
     );
   }

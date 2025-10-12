@@ -19,33 +19,47 @@ class CategorySummaryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      // 交由外层 ListView 控制横向 padding，这里仅做垂直间距
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  typeText == '支出' ? Icons.remove_circle : Icons.add_circle,
-                  color: Theme.of(context).primaryColor,
-                  size: 18,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  '$typeText分类 共$total项',
-                  style: TextStyle(color: Theme.of(context).primaryColor),
-                ),
-              ],
+          Semantics(
+            label: '$typeText分类 共$total项',
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: cs.primaryContainer,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: cs.outlineVariant),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    typeText == '支出' ? Icons.remove_circle : Icons.add_circle,
+                    color: cs.onPrimaryContainer,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '$typeText分类 共$total项',
+                    style: tt.labelLarge?.copyWith(
+                      color: cs.onPrimaryContainer,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const Spacer(),
-          Text('第 $currentPage 页', style: const TextStyle(color: Colors.grey)),
+          Text(
+            '第 $currentPage 页',
+            style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+          ),
         ],
       ),
     );

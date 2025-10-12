@@ -10,13 +10,25 @@ class CategoryManageAppBar extends StatelessWidget implements PreferredSizeWidge
 
   @override
   Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+
     return AppBar(
-      title: const Text('分类管理'),
+      title: Text('分类管理', style: tt.titleLarge),
+      scrolledUnderElevation: 0,
       actions: [
-        IconButton(
-          icon: const Icon(Icons.add),
-          tooltip: '新增分类',
-          onPressed: onAddPressed,
+        Tooltip(
+          message: '新增分类',
+          child: Semantics(
+            button: true,
+            label: '新增分类',
+            child: IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: '新增分类',
+              onPressed: onAddPressed,
+              splashRadius: 24,
+              constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+            ),
+          ),
         ),
       ],
     );
