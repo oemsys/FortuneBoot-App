@@ -1,6 +1,6 @@
 name: hjproject
 description: "Hao Ji"
-version: 1.1.0+2025100920 #😁😈
+version: 1.1.1+2025101200 #😁😈
 publish_to: 'none'
 
 environment:
@@ -39,6 +39,7 @@ dependencies:
   mime: ^1.0.6
   permission_handler: 11.3.1
   path_provider: ^2.1.5
+  image_gallery_saver: ^2.0.3
   visibility_detector: ^0.4.0+2
   rxdart: ^0.28.0
   time: ^2.1.5

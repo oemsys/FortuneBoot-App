@@ -3,7 +3,10 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:hjproject/home/setting_page/bloc/setting_bloc.dart';
 import 'package:hjproject/home/setting_page/models/mine_setting.dart';
 import 'package:hjproject/home/setting_page/models/setting_select_item.dart';
@@ -15,6 +18,7 @@ import 'package:hjproject/repository/repository/bills_repository.dart';
 import 'package:hjproject/util/dio_client.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
 import '../../../generated/l10n.dart';
+import '../../../util/web_download_stub.dart' if (dart.library.html) '../../../util/web_download.dart' as webdl;
 
 import 'package:hjproject/home/setting_page/view/profile_page.dart';
 import 'package:hjproject/home/category_manage/view/category_manage_page.dart';
@@ -820,19 +824,24 @@ class _MineViewState extends State<MineView> {
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.asset(
-                                'assets/images/donate_wechat.jpg',
-                                height: 200,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    height: 200,
-                                    color: Colors.grey[200],
-                                    child: const Center(
-                                      child: Text('请上传: assets/images/donate_wechat.jpg'),
-                                    ),
-                                  );
+                              child: GestureDetector(
+                                onLongPress: () {
+                                  _showSaveOptions(context, 'assets/images/donate_wechat.jpg', '微信收款码');
                                 },
+                                child: Image.asset(
+                                  'assets/images/donate_wechat.jpg',
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      height: 200,
+                                      color: Colors.grey[200],
+                                      child: const Center(
+                                        child: Text('请上传: assets/images/donate_wechat.jpg'),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -846,19 +855,24 @@ class _MineViewState extends State<MineView> {
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(8),
-                              child: Image.asset(
-                                'assets/images/donate_alipay.jpg',
-                                height: 200,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    height: 200,
-                                    color: Colors.grey[200],
-                                    child: const Center(
-                                      child: Text('请上传: assets/images/donate_alipay.jpg'),
-                                    ),
-                                  );
+                              child: GestureDetector(
+                                onLongPress: () {
+                                  _showSaveOptions(context, 'assets/images/donate_alipay.jpg', '支付宝收款码');
                                 },
+                                child: Image.asset(
+                                  'assets/images/donate_alipay.jpg',
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      height: 200,
+                                      color: Colors.grey[200],
+                                      child: const Center(
+                                        child: Text('请上传: assets/images/donate_alipay.jpg'),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -977,5 +991,189 @@ class _MineViewState extends State<MineView> {
         );
       },
     );
+  }
+
+  // 长按后的操作面板（根据平台展示动作）
+  void _showSaveOptions(BuildContext context, String assetPath, String suggestedName) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              const Text(
+                '操作',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const Divider(height: 1),
+              if (kIsWeb)
+                ListTile(
+                  leading: const Icon(Icons.download),
+                  title: const Text('下载图片'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await _saveImageToGallery(assetPath, suggestedName);
+                  },
+                )
+              else ...[
+                ListTile(
+                  leading: const Icon(Icons.save_alt),
+                  title: const Text('保存到相册'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await _saveImageToGallery(assetPath, suggestedName);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.info_outline),
+                  title: const Text('说明'),
+                  subtitle: const Text('如保存失败，请尝试截图或检查系统权限设置'),
+                  onTap: () => Navigator.pop(context),
+                ),
+              ],
+              ListTile(
+                leading: const Icon(Icons.link),
+                title: const Text('复制资源路径'),
+                subtitle: Text(assetPath),
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: assetPath));
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('已复制资源路径')),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.close),
+                title: const Text('取消'),
+                onTap: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // 统一的跨平台保存实现
+  Future<void> _saveImageToGallery(String assetPath, String name) async {
+    try {
+      // 加载资产为字节
+      final data = await rootBundle.load(assetPath);
+      final bytes = data.buffer.asUint8List();
+      final ext = _getFileExtension(assetPath); // jpg/png
+
+      if (kIsWeb) {
+        // Web：触发浏览器下载（不依赖第三方库）
+        final mimeType = ext == 'png'
+            ? 'image/png'
+            : (ext == 'webp' ? 'image/webp' : 'image/jpeg');
+        final ok = await webdl.downloadBytes(name, bytes, mimeType);
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(ok ? '已开始下载' : '下载失败')),
+        );
+        return;
+      }
+
+      // Android/iOS：保存到系统相册
+      final result = await ImageGallerySaver.saveImage(
+        bytes,
+        name: name,
+        quality: 100,
+        isReturnImagePathOfIOS: true,
+      );
+
+      final success = _isSaveSuccess(result);
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(success ? '已保存到相册' : '保存失败'),
+          backgroundColor: success ? null : Colors.red,
+        ),
+      );
+    } on PlatformException catch (e) {
+      // HarmonyOS 或其他不支持的平台优雅降级
+      debugPrint('保存异常（平台不支持或未实现）：$e');
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('当前平台暂不支持直接保存，请截图或使用下载方式'),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    } catch (e, st) {
+      debugPrint('保存异常：$e\n$st');
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('保存失败：$e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // 工具方法：提取文件扩展名
+  String _getFileExtension(String assetPath) {
+    final dot = assetPath.lastIndexOf('.');
+    if (dot != -1 && dot + 1 < assetPath.length) {
+      final ext = assetPath.substring(dot + 1).toLowerCase();
+      if (ext.isNotEmpty) return ext;
+    }
+    // 默认 jpg，避免空断言导致异常
+    return 'jpg';
+  }
+
+  // 工具方法：扩展名转 mimeType（未知默认 image/jpeg）
+  String _toMimeType(String ext) {
+    switch (ext) {
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      default:
+        return 'image/jpeg';
+    }
+  }
+
+  // 工具方法：尽可能鲁棒地判断保存是否成功
+  bool _isSaveSuccess(dynamic result) {
+    try {
+      if (result == null) return false;
+
+      // bool 直接返回
+      if (result is bool) {
+        return result;
+      }
+
+      // Map 场景：兼容多种返回结构
+      if (result is Map) {
+        if (result['isSuccess'] == true) return true;
+        final status = result['status'];
+        if (status == 'success' || status == true) return true;
+        final filePath = result['filePath'] ?? result['savedFilePath'];
+        if (filePath is String && filePath.isNotEmpty) return true;
+        return false;
+      }
+
+      // String 场景：非空视为成功
+      if (result is String) {
+        return result.isNotEmpty;
+      }
+    } catch (_) {
+      return false;
+    }
+    return false;
   }
 }
