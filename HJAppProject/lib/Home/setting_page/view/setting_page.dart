@@ -1,12 +1,10 @@
-import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+
+
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:permission_handler/permission_handler.dart';
+
 import 'package:hjproject/home/setting_page/bloc/setting_bloc.dart';
 import 'package:hjproject/home/setting_page/models/mine_setting.dart';
 import 'package:hjproject/home/setting_page/models/setting_select_item.dart';
@@ -18,10 +16,24 @@ import 'package:hjproject/repository/repository/bills_repository.dart';
 import 'package:hjproject/util/dio_client.dart';
 import 'package:multi_dropdown/multi_dropdown.dart';
 import '../../../generated/l10n.dart';
-import '../../../util/web_download_stub.dart' if (dart.library.html) '../../../util/web_download.dart' as webdl;
 
 import 'package:hjproject/home/setting_page/view/profile_page.dart';
-import 'package:hjproject/home/category_manage/view/category_manage_page.dart';
+import 'package:hjproject/home/setting_page/view/widgets/user_header.dart';
+import 'package:hjproject/home/setting_page/view/widgets/book_config_group.dart';
+import 'package:hjproject/home/setting_page/view/widgets/additional_options_group.dart';
+import 'package:hjproject/home/setting_page/view/widgets/setting_group_card.dart';
+import 'package:hjproject/home/setting_page/view/widgets/setting_item_tile.dart';
+import 'package:hjproject/home/setting_page/view/widgets/donate_qr_sheet.dart';
+import 'package:hjproject/home/setting_page/view/widgets/help_dialog.dart';
+import 'package:hjproject/home/setting_page/view/widgets/api_info_dialog.dart';
+import 'package:hjproject/home/setting_page/view/widgets/setting_detail_dialog.dart';
+import 'package:hjproject/home/setting_page/view/widgets/theme_selection_sheet.dart';
+import 'package:hjproject/home/setting_page/view/widgets/logout_confirm_dialog.dart';
+import 'package:hjproject/home/setting_page/view/widgets/selection_bottom_sheet.dart';
+import 'package:hjproject/home/setting_page/view/widgets/save_options_sheet.dart';
+import 'package:hjproject/util/image_save_service.dart';
+import 'package:hjproject/home/setting_page/view/widgets/language_selection_sheet.dart';
+
 class MinePage extends StatelessWidget {
   const MinePage({super.key});
 
@@ -94,7 +106,9 @@ class _MineViewState extends State<MineView> {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<SettingBloc>().state;
+    final state = context
+        .watch<SettingBloc>()
+        .state;
     var elements = [
       ...state.settings,
       ...state.remoteSettings,
@@ -129,94 +143,22 @@ class _MineViewState extends State<MineView> {
   Widget _buildUserHeader(BuildContext context, List<Setting> elements) {
     // 查找用户名设置项
     final usernameSetting = elements.firstWhere(
-      (element) => element.type == SettingType.username,
+          (element) => element.type == SettingType.username,
       orElse: () => const Setting(SettingType.username, content: '未登录用户'),
     );
 
     final username = usernameSetting.content ?? '未登录用户';
 
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+    return MineUserHeader(
+      username: username,
+      onViewProfile: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const ProfilePage(),
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 40,
-            backgroundColor: Colors.white,
-            child: Text(
-              username.isNotEmpty
-                  ? username.substring(0, 1).toUpperCase()
-                  : '?',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  username,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                InkWell(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const ProfilePage(),
-                      ),
-                    );
-                  },
-                  child: const Row(
-                    children: [
-                      Text(
-                        '查看个人资料',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white70,
-                        ),
-                      ),
-                      SizedBox(width: 4),
-                      Icon(
-                        Icons.arrow_forward_ios,
-                        size: 12,
-                        color: Colors.white70,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.qr_code, color: Colors.white),
-            onPressed: () {
-              // 显示二维码
-              _showQRCode(context);
-            },
-          ),
-        ],
-      ),
+        );
+      },
+      onShowQRCode: () => _showQRCode(context),
     );
   }
 
@@ -224,22 +166,22 @@ class _MineViewState extends State<MineView> {
     // 将设置项分组
     final accountSettings = elements
         .where((e) =>
-            e.type == SettingType.currentGroup ||
-            e.type == SettingType.currentBook ||
-            e.type == SettingType.accountOverview)
+    e.type == SettingType.currentGroup ||
+        e.type == SettingType.currentBook ||
+        e.type == SettingType.accountOverview)
         .toList();
 
     final appSettings = elements
         .where((e) =>
-            e.type == SettingType.currentTheme ||
-            e.type == SettingType.currentLanguage)
+    e.type == SettingType.currentTheme ||
+        e.type == SettingType.currentLanguage)
         .toList();
 
     final aboutSettings = elements
         .where((e) =>
-            e.type == SettingType.api ||
-            e.type == SettingType.currentVersion ||
-            e.type == SettingType.apiVersion)
+    e.type == SettingType.api ||
+        e.type == SettingType.currentVersion ||
+        e.type == SettingType.apiVersion)
         .toList();
 
     return Column(
@@ -264,256 +206,35 @@ class _MineViewState extends State<MineView> {
     );
   }
 
-  Widget _buildSettingGroup(
-      BuildContext context, String title, List<Setting> settings) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 16, top: 16, bottom: 8),
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-          ),
-          const Divider(height: 1),
-          ...settings
-              .map((setting) => _getSettingItem(context, setting))
-              .toList(),
-        ],
-      ),
+  Widget _buildSettingGroup(BuildContext context, String title,
+      List<Setting> settings) {
+    return SettingGroupCard(
+      title: title,
+      children: settings
+          .map((setting) => _getSettingItem(context, setting))
+          .toList(),
     );
   }
 
   // 新增：账本配置分组（与账户设置、应用设置、关于同级）
   Widget _buildBookConfigGroup(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 16, top: 16, bottom: 8),
-            child: Text(
-              '账本配置',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: Icon(Icons.category, color: Theme.of(context).primaryColor),
-            title: const Text('分类管理'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const CategoryManagePage(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
+    return const BookConfigGroup();
   }
 
-  Widget _buildAdditionalOptions(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          ListTile(
-            leading: Icon(Icons.favorite, color: Theme.of(context).primaryColor),
-            title: const Text('打赏作者'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              _showQRCode(context);
-            },
-          ),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          ListTile(
-            leading:
-                Icon(Icons.feedback, color: Theme.of(context).primaryColor),
-            title: const Text('意见反馈'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              // 跳转到意见反馈页面
-              emptyPage();
-            },
-          ),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          ListTile(
-            leading: Icon(Icons.star, color: Theme.of(context).primaryColor),
-            title: const Text('给应用评分'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              // 跳转到应用商店评分
-              emptyPage();
-            },
-          ),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-          ListTile(
-            leading: Icon(Icons.logout, color: Colors.red),
-            title: const Text('退出登录', style: TextStyle(color: Colors.red)),
-            onTap: () {
-              _showLogoutConfirmation(context);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
+  // 通用设置项渲染：统一使用封装的 SettingItemTile，避免重复代码
   Widget _getSettingItem(BuildContext context, Setting element) {
-    final textTheme = Theme.of(context).textTheme;
-
-    if (element.type == SettingType.currentGroup ||
-        element.type == SettingType.currentBook) {
-      var curItem = element.content;
-
-      return Column(
-        children: [
-          ListTile(
-            leading: element.leadingWidget ??
-                Icon(
-                  element.type == SettingType.currentGroup
-                      ? Icons.group
-                      : Icons.book,
-                  color: Theme.of(context).primaryColor,
-                ),
-            title: Text(element.type.title),
-            subtitle: Text(curItem ?? '未选择',
-                style: TextStyle(color: Colors.grey[600])),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              _showSelectionDialog(context, element);
-            },
-          ),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-        ],
-      );
-    }
-
-    if (element.type == SettingType.accountOverview) {
-      return Column(
-        children: [
-          ListTile(
-            leading: element.leadingWidget ??
-                Icon(Icons.account_balance_wallet,
-                    color: Theme.of(context).primaryColor),
-            title: const Text('账户概览'),
-            subtitle: element.detail != null
-                ? Text(
-                    element.detail!,
-                    style: TextStyle(color: Colors.grey[600]),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  )
-                : null,
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              // 跳转到账户概览详情页
-            },
-          ),
-          const Divider(height: 1, indent: 16, endIndent: 16),
-        ],
-      );
-    }
-
-    return Column(
-      children: [
-        ListTile(
-          leading: element.leadingWidget ??
-              Icon(
-                _getIconForSettingType(element.type),
-                color: Theme.of(context).primaryColor,
-              ),
-          title: Text(element.type.title),
-          subtitle: element.content != null || element.detail != null
-              ? Text(
-                  element.content ?? element.detail ?? '',
-                  style: TextStyle(color: Colors.grey[600]),
-                )
-              : null,
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {
-            // 处理点击事件
-            _handleSettingTap(context, element);
-          },
-        ),
-        const Divider(height: 1, indent: 16, endIndent: 16),
-      ],
+    return SettingItemTile(
+      element: element,
+      onSelectSetting: (setting) {
+        _showSelectionDialog(context, setting);
+      },
+      onTapSetting: (setting) {
+        _handleSettingTap(context, setting);
+      },
     );
   }
 
-  IconData _getIconForSettingType(SettingType type) {
-    switch (type) {
-      case SettingType.username:
-        return Icons.person;
-      case SettingType.accountOverview:
-        return Icons.account_balance_wallet;
-      case SettingType.currentGroup:
-        return Icons.group;
-      case SettingType.currentBook:
-        return Icons.book;
-      case SettingType.currentTheme:
-        return Icons.color_lens;
-      case SettingType.currentLanguage:
-        return Icons.language;
-      case SettingType.api:
-        return Icons.api;
-      case SettingType.currentVersion:
-        return Icons.info;
-      case SettingType.apiVersion:
-        return Icons.cloud;
-      default:
-        return Icons.settings;
-    }
-  }
-
+  // 通用点击处理：根据类型分派到对应的对话框/逻辑
   void _handleSettingTap(BuildContext context, Setting element) {
     switch (element.type) {
       case SettingType.currentTheme:
@@ -526,10 +247,25 @@ class _MineViewState extends State<MineView> {
         _showApiSettingDialog(context, element);
         break;
       default:
-        // 显示详情对话框
         _showSettingDetailDialog(context, element);
         break;
     }
+  }
+
+  // 更多操作分组：打赏、反馈、评分、退出登录
+  Widget _buildAdditionalOptions(BuildContext context) {
+    return AdditionalOptionsGroup(
+      onDonate: () => _showQRCode(context),
+      onFeedback: () {
+        // 跳转到意见反馈页面
+        emptyPage();
+      },
+      onRate: () {
+        // 跳转到应用商店评分
+        emptyPage();
+      },
+      onLogout: () => _showLogoutConfirmation(context),
+    );
   }
 
   void _showSelectionDialog(BuildContext context, Setting element) async {
@@ -554,7 +290,7 @@ class _MineViewState extends State<MineView> {
     } else if (element.type == SettingType.currentBook) {
       final BookService bookService = BookService();
       final remoteBookResponse =
-          await bookService.getEnableList(element.data!['groupId'] as int? ?? 0);
+      await bookService.getEnableList(element.data!['groupId'] as int? ?? 0);
       if (remoteBookResponse.code == 0) {
         final remoteBookList = remoteBookResponse.data as List? ?? [];
         for (final remoteBookItem in remoteBookList) {
@@ -589,47 +325,28 @@ class _MineViewState extends State<MineView> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                '选择${element.type.title}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  return ListTile(
-                    title: Text(item.label),
-                    trailing: item.selected
-                        ? const Icon(Icons.check, color: Colors.green)
-                        : null,
-                    onTap: () {
-                      Navigator.pop(context);
-                      if (element.type == SettingType.currentGroup) {
-                        settingBloc.add(
-                          GroupSettingFetched(groupId: item.value.id),
-                        );
-                      } else if (element.type == SettingType.currentBook) {
-                        settingBloc.add(
-                          BookIdChanged(item.value.id, item.value.title),
-                        );
-                      }
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
+        final options = items
+            .map((item) =>
+            SelectionOption<SettingSelectItem>(
+              label: item.label,
+              value: item.value,
+              selected: item.selected,
+            ))
+            .toList();
+        return SelectionBottomSheet<SettingSelectItem>(
+          title: '选择${element.type.title}',
+          options: options,
+          onSelected: (selected) {
+            if (element.type == SettingType.currentGroup) {
+              settingBloc.add(
+                GroupSettingFetched(groupId: selected.value.id),
+              );
+            } else if (element.type == SettingType.currentBook) {
+              settingBloc.add(
+                BookIdChanged(selected.value.id, selected.value.title),
+              );
+            }
+          },
         );
       },
     );
@@ -637,44 +354,22 @@ class _MineViewState extends State<MineView> {
 
   void _showThemeSelectionDialog(BuildContext context) {
     final themes = ['跟随系统', '浅色模式', '深色模式'];
-    emptyPage();
-    return;
-
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                '选择主题',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const Divider(height: 1),
-            ...themes.map((theme) => ListTile(
-                  title: Text(theme),
-                  trailing: theme == '跟随系统'
-                      ? const Icon(Icons.check, color: Colors.green)
-                      : null,
-                  onTap: () {
-                    Navigator.pop(context);
-                    // 应用主题
-                    ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('已切换到$theme')),
-                    );
-                  },
-                )),
-          ],
+        return ThemeSelectionSheet(
+          themes: themes,
+          current: '跟随系统',
+          onSelected: (selected) {
+            ScaffoldMessenger.of(context).removeCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('已切换到$selected')),
+            );
+            // TODO: 接入实际主题切换逻辑（如通过 Bloc/Provider 改变主题）
+          },
         );
       },
     );
@@ -682,44 +377,22 @@ class _MineViewState extends State<MineView> {
 
   void _showLanguageSelectionDialog(BuildContext context) {
     final languages = ['🇨🇳 简体中文', '🇺🇸 English'];
-    emptyPage();
-    return;
-
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                '选择语言',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const Divider(height: 1),
-            ...languages.map((language) => ListTile(
-                  title: Text(language),
-                  trailing: language == '🇨🇳 简体中文'
-                      ? const Icon(Icons.check, color: Colors.green)
-                      : null,
-                  onTap: () {
-                    Navigator.pop(context);
-                    // 应用语言
-                    ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('已切换到$language')),
-                    );
-                  },
-                )),
-          ],
+        return LanguageSelectionSheet(
+          languages: languages,
+          current: '🇨🇳 简体中文',
+          onSelected: (selected) {
+            ScaffoldMessenger.of(context).removeCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('已切换到$selected')),
+            );
+            // TODO: 接入实际语言切换逻辑（如通过 Bloc/Provider 改变 Locale）
+          },
         );
       },
     );
@@ -728,59 +401,19 @@ class _MineViewState extends State<MineView> {
   void _showApiSettingDialog(BuildContext context, Setting element) {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('API'),
-          content: Text('${element.detail}'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () {
-                // 复制到剪贴板
-                Clipboard.setData(ClipboardData(text: element.detail ?? ''));
-                Navigator.pop(context);
-                // 显示复制成功的提示
-                ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('已复制到剪贴板')),
-                );
-              },
-              child: const Text('复制'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => ApiInfoDialog(apiDetail: element.detail),
     );
   }
 
   void _showSettingDetailDialog(BuildContext context, Setting element) {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(element.type.title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (element.content != null) Text('内容: ${element.content}'),
-              if (element.detail != null) ...[
-                const SizedBox(height: 8),
-                Text('详情: ${element.detail}'),
-              ],
-            ],
+      builder: (context) =>
+          SettingDetailDialog(
+            title: element.type.title,
+            contentText: element.content,
+            detailText: element.detail,
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('确定'),
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -792,118 +425,41 @@ class _MineViewState extends State<MineView> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 12),
-                const Text(
-                  '给作者加个油',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    '如果这个开源项目对你有帮助，欢迎打赏一杯咖啡（10元），你的支持是我持续维护与迭代的最大动力。',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey[700]),
+        return DonateQrSheet(
+          onLongPressWechat: () {
+            showModalBottomSheet(
+              context: context,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              builder: (context) =>
+                  SaveOptionsSheet(
+                    assetPath: 'assets/images/donate_wechat.jpg',
+                    suggestedName: '微信收款码',
+                    onDownloadOrSave: () =>
+                        ImageSaveService.saveAssetImage(
+                            context, 'assets/images/donate_wechat.jpg',
+                            '微信收款码'),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: GestureDetector(
-                                onLongPress: () {
-                                  _showSaveOptions(context, 'assets/images/donate_wechat.jpg', '微信收款码');
-                                },
-                                child: Image.asset(
-                                  'assets/images/donate_wechat.jpg',
-                                  height: 200,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      height: 200,
-                                      color: Colors.grey[200],
-                                      child: const Center(
-                                        child: Text('请上传: assets/images/donate_wechat.jpg'),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text('微信收款码', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: GestureDetector(
-                                onLongPress: () {
-                                  _showSaveOptions(context, 'assets/images/donate_alipay.jpg', '支付宝收款码');
-                                },
-                                child: Image.asset(
-                                  'assets/images/donate_alipay.jpg',
-                                  height: 200,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      height: 200,
-                                      color: Colors.grey[200],
-                                      child: const Center(
-                                        child: Text('请上传: assets/images/donate_alipay.jpg'),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text('支付宝收款码', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                          ],
-                        ),
-                      ),
-                    ],
+            );
+          },
+          onLongPressAlipay: () {
+            showModalBottomSheet(
+              context: context,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              builder: (context) =>
+                  SaveOptionsSheet(
+                    assetPath: 'assets/images/donate_alipay.jpg',
+                    suggestedName: '支付宝收款码',
+                    onDownloadOrSave: () =>
+                        ImageSaveService.saveAssetImage(
+                            context, 'assets/images/donate_alipay.jpg',
+                            '支付宝收款码'),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    '提示：长按二维码可保存，或直接打开微信/支付宝“扫一扫”。感谢你的每一份支持！',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('关闭'),
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
-            ),
-          ),
+            );
+          },
         );
       },
     );
@@ -912,37 +468,7 @@ class _MineViewState extends State<MineView> {
   void _showHelpDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('帮助中心'),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('1. 如何切换账本?', style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(height: 4),
-              Text('点击"当前账本"选项，在弹出的列表中选择需要的账本。'),
-              SizedBox(height: 12),
-              Text('2. 如何修改个人资料?',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(height: 4),
-              Text('点击"查看个人资料"进入个人资料页面进行修改。'),
-              SizedBox(height: 12),
-              Text('3. 遇到问题怎么办?',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(height: 4),
-              Text('加QQ群：1009576058，在群众反馈问题，我们会尽快处理。'),
-              // Text('可以通过"意见反馈"功能向我们反馈问题，我们会尽快处理。'),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('我知道了'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => const HelpDialog(),
     );
   }
 
@@ -956,224 +482,22 @@ class _MineViewState extends State<MineView> {
   void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('退出登录'),
-          content: const Text('确定要退出登录吗？'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                // 执行退出登录操作
-                ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('已退出登录')),
-                );
-                // 跳转到登录页面
-                UserDataSingleton().remove(UserDataSingleton.userInfo);
-                DioClient().refreshToken({});
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => const BaseUrlConfigPage(),
-                  ),
-                );
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
-              ),
-              child: const Text('退出'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // 长按后的操作面板（根据平台展示动作）
-  void _showSaveOptions(BuildContext context, String assetPath, String suggestedName) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              const Text(
-                '操作',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const Divider(height: 1),
-              if (kIsWeb)
-                ListTile(
-                  leading: const Icon(Icons.download),
-                  title: const Text('下载图片'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await _saveImageToGallery(assetPath, suggestedName);
-                  },
-                )
-              else ...[
-                ListTile(
-                  leading: const Icon(Icons.save_alt),
-                  title: const Text('保存到相册'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await _saveImageToGallery(assetPath, suggestedName);
-                  },
+      builder: (context) =>
+          LogoutConfirmDialog(
+            onConfirm: () {
+              ScaffoldMessenger.of(context).removeCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('已退出登录')),
+              );
+              UserDataSingleton().remove(UserDataSingleton.userInfo);
+              DioClient().refreshToken({});
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => const BaseUrlConfigPage(),
                 ),
-                ListTile(
-                  leading: const Icon(Icons.info_outline),
-                  title: const Text('说明'),
-                  subtitle: const Text('如保存失败，请尝试截图或检查系统权限设置'),
-                  onTap: () => Navigator.pop(context),
-                ),
-              ],
-              ListTile(
-                leading: const Icon(Icons.link),
-                title: const Text('复制资源路径'),
-                subtitle: Text(assetPath),
-                onTap: () {
-                  Clipboard.setData(ClipboardData(text: assetPath));
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('已复制资源路径')),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.close),
-                title: const Text('取消'),
-                onTap: () => Navigator.pop(context),
-              ),
-            ],
+              );
+            },
           ),
-        );
-      },
     );
-  }
-
-  // 统一的跨平台保存实现
-  Future<void> _saveImageToGallery(String assetPath, String name) async {
-    try {
-      // 加载资产为字节
-      final data = await rootBundle.load(assetPath);
-      final bytes = data.buffer.asUint8List();
-      final ext = _getFileExtension(assetPath); // jpg/png
-
-      if (kIsWeb) {
-        // Web：触发浏览器下载（不依赖第三方库）
-        final mimeType = ext == 'png'
-            ? 'image/png'
-            : (ext == 'webp' ? 'image/webp' : 'image/jpeg');
-        final ok = await webdl.downloadBytes(name, bytes, mimeType);
-        ScaffoldMessenger.of(context).removeCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ok ? '已开始下载' : '下载失败')),
-        );
-        return;
-      }
-
-      // Android/iOS：保存到系统相册
-      final result = await ImageGallerySaver.saveImage(
-        bytes,
-        name: name,
-        quality: 100,
-        isReturnImagePathOfIOS: true,
-      );
-
-      final success = _isSaveSuccess(result);
-      ScaffoldMessenger.of(context).removeCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success ? '已保存到相册' : '保存失败'),
-          backgroundColor: success ? null : Colors.red,
-        ),
-      );
-    } on PlatformException catch (e) {
-      // HarmonyOS 或其他不支持的平台优雅降级
-      debugPrint('保存异常（平台不支持或未实现）：$e');
-      ScaffoldMessenger.of(context).removeCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('当前平台暂不支持直接保存，请截图或使用下载方式'),
-          backgroundColor: Colors.orange,
-          duration: Duration(seconds: 3),
-        ),
-      );
-    } catch (e, st) {
-      debugPrint('保存异常：$e\n$st');
-      ScaffoldMessenger.of(context).removeCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('保存失败：$e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  // 工具方法：提取文件扩展名
-  String _getFileExtension(String assetPath) {
-    final dot = assetPath.lastIndexOf('.');
-    if (dot != -1 && dot + 1 < assetPath.length) {
-      final ext = assetPath.substring(dot + 1).toLowerCase();
-      if (ext.isNotEmpty) return ext;
-    }
-    // 默认 jpg，避免空断言导致异常
-    return 'jpg';
-  }
-
-  // 工具方法：扩展名转 mimeType（未知默认 image/jpeg）
-  String _toMimeType(String ext) {
-    switch (ext) {
-      case 'png':
-        return 'image/png';
-      case 'webp':
-        return 'image/webp';
-      case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      default:
-        return 'image/jpeg';
-    }
-  }
-
-  // 工具方法：尽可能鲁棒地判断保存是否成功
-  bool _isSaveSuccess(dynamic result) {
-    try {
-      if (result == null) return false;
-
-      // bool 直接返回
-      if (result is bool) {
-        return result;
-      }
-
-      // Map 场景：兼容多种返回结构
-      if (result is Map) {
-        if (result['isSuccess'] == true) return true;
-        final status = result['status'];
-        if (status == 'success' || status == true) return true;
-        final filePath = result['filePath'] ?? result['savedFilePath'];
-        if (filePath is String && filePath.isNotEmpty) return true;
-        return false;
-      }
-
-      // String 场景：非空视为成功
-      if (result is String) {
-        return result.isNotEmpty;
-      }
-    } catch (_) {
-      return false;
-    }
-    return false;
   }
 }
