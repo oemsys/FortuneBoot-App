@@ -43,11 +43,12 @@ class _PayeeAddPageState extends State<PayeeAddPage> {
     _remarkNode = FocusNode();
 
     void markDirty() {
-      if (!_dirty) {
-        setState(() {
+      setState(() {
+        if (!_dirty) {
           _dirty = true;
-        });
-      }
+        }
+        // 强制重建UI以更新按钮状态
+      });
     }
 
     _nameController.addListener(markDirty);
