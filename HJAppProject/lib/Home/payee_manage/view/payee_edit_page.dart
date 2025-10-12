@@ -30,7 +30,6 @@ class _PayeeEditPageState extends State<PayeeEditPage> {
   late bool _enable;
 
   bool _saving = false;
-  bool _deleting = false;
   bool _dirty = false;
 
   late final Map<String, dynamic> _initial;
@@ -40,7 +39,7 @@ class _PayeeEditPageState extends State<PayeeEditPage> {
     super.initState();
     final p = widget.payee;
     _nameController = TextEditingController(text: p.payeeName);
-    _sortController = TextEditingController(text: p.sort.toString());
+    _sortController = TextEditingController(text: p.sort?.toString() ?? '');
     _remarkController = TextEditingController(text: p.remark ?? '');
     _canExpense = p.canExpense;
     _canIncome = p.canIncome;
@@ -52,7 +51,7 @@ class _PayeeEditPageState extends State<PayeeEditPage> {
 
     _initial = {
       'name': p.payeeName,
-      'sort': p.sort.toString(),
+      'sort': p.sort?.toString() ?? '',
       'remark': p.remark ?? '',
       'canExpense': p.canExpense,
       'canIncome': p.canIncome,
@@ -97,8 +96,10 @@ class _PayeeEditPageState extends State<PayeeEditPage> {
     final name = _nameController.text.trim();
     if (name.isEmpty || name.length > 32) return false;
     final sortText = _sortController.text.trim();
-    final sort = int.tryParse(sortText);
-    if (sort == null || sort < 0) return false;
+    if (sortText.isNotEmpty) {
+      final sort = int.tryParse(sortText);
+      if (sort == null || sort < 0) return false;
+    }
     final remark = _remarkController.text;
     if (remark.isNotEmpty && remark.length > 200) return false;
     return true;
@@ -124,7 +125,9 @@ class _PayeeEditPageState extends State<PayeeEditPage> {
         payeeId: widget.payee.payeeId,
         bookId: widget.bookId,
         payeeName: _nameController.text.trim(),
-        sort: int.parse(_sortController.text.trim()),
+        sort: _sortController.text.trim().isEmpty
+            ? null
+            : int.parse(_sortController.text.trim()),
         canExpense: _canExpense,
         canIncome: _canIncome,
         enable: _enable,
@@ -160,82 +163,10 @@ class _PayeeEditPageState extends State<PayeeEditPage> {
     }
   }
 
-  Future<void> _onDelete() async {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-    final tt = theme.textTheme;
-
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: cs.surface,
-          surfaceTintColor: cs.surfaceTint,
-          elevation: 3,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: cs.outlineVariant),
-          ),
-          title: Text('移入回收站', style: tt.titleMedium),
-          content: Text('将交易对象“${widget.payee.payeeName}”移入回收站？', style: tt.bodyMedium),
-          actions: [
-            OutlinedButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text('取消', style: tt.labelLarge),
-            ),
-            OutlinedButton(
-              style: ButtonStyle(
-                side: MaterialStatePropertyAll(BorderSide(color: cs.error)),
-                foregroundColor: MaterialStatePropertyAll(cs.error),
-              ),
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text('确认', style: tt.labelLarge),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (ok != true) return;
-
-    setState(() {
-      _deleting = true;
-    });
-
-    try {
-      await PayeeService().moveToRecycleBin(
-        bookId: widget.bookId,
-        payeeId: widget.payee.payeeId,
-      );
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).removeCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('已移入回收站'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      Navigator.of(context).pop(true);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Theme.of(context).colorScheme.errorContainer,
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _deleting = false;
-        });
-      }
-    }
-  }
+  // 回收站操作已移除
 
   Future<bool> _confirmLeave() async {
-    if (!_dirty || _saving || _deleting) return true;
+    if (!_dirty || _saving) return true;
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final tt = theme.textTheme;
@@ -318,7 +249,7 @@ class _PayeeEditPageState extends State<PayeeEditPage> {
                       _computeDirty();
                     },
                     onChanged: _computeDirty,
-                    isBusy: _saving || _deleting,
+                    isBusy: _saving,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -326,80 +257,15 @@ class _PayeeEditPageState extends State<PayeeEditPage> {
             ),
           ),
         ),
-        bottomNavigationBar: SafeArea(
-          top: false,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              boxShadow: const [
-                BoxShadow(
-                  blurRadius: 8,
-                  color: Color(0x14000000),
-                  offset: Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: (_saving || _deleting)
-                            ? null
-                            : () async {
-                                final ok = await _confirmLeave();
-                                if (ok && mounted) {
-                                  Navigator.of(context).pop(false);
-                                }
-                              },
-                        child: const Text('取消'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: (_saving || _deleting || !_isValid) ? null : _onSave,
-                        icon: _saving
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.check),
-                        label: const Text('保存'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    icon: _deleting
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.delete_outline),
-                    onPressed: (_saving || _deleting) ? null : _onDelete,
-                    style: ButtonStyle(
-                      side: MaterialStatePropertyAll(
-                        BorderSide(color: Theme.of(context).colorScheme.error),
-                      ),
-                      foregroundColor: MaterialStatePropertyAll(
-                        Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                    label: const Text('移入回收站'),
-                  ),
-                ),
-              ],
-            ),
+        floatingActionButton: FloatingActionButton(
+          tooltip: '保存',
+          shape: const ContinuousRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(32)),
           ),
+          onPressed: _saving || !_isValid ? null : _onSave,
+          child: _saving
+              ? const CupertinoActivityIndicator()
+              : const Icon(Icons.check_rounded),
         ),
       ),
     );

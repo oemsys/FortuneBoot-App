@@ -206,13 +206,14 @@ class _PayeeTile extends StatelessWidget {
                   icon: Icon(Icons.more_vert, color: theme.iconTheme.color),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  '#${item.sort}',
-                  style: TextStyle(
-                    color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
-                    fontSize: 12,
+                if (item.sort != null)
+                  Text(
+                    '#${item.sort}',
+                    style: TextStyle(
+                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                      fontSize: 12,
+                    ),
                   ),
-                ),
               ],
             ),
           ],

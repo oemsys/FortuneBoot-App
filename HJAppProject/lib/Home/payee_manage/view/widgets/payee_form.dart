@@ -147,7 +147,7 @@ class PayeeOrderField extends StatelessWidget {
       decoration: buildUnifiedInputDecoration(
         context,
         label: '排序',
-        hint: '请输入非负整数',
+        hint: '可留空；如填写需为非负整数',
         icon: Icons.sort,
       ),
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -158,7 +158,7 @@ class PayeeOrderField extends StatelessWidget {
       autovalidateMode: AutovalidateMode.onUserInteraction,
       validator: (v) {
         final t = (v ?? '').trim();
-        if (t.isEmpty) return '排序不能为空';
+        if (t.isEmpty) return null;
         final n = int.tryParse(t);
         if (n == null) return '必须为整数';
         if (n < 0) return '必须为非负数';
@@ -268,7 +268,7 @@ class PayeeForm extends StatelessWidget {
               children: [
                 const GroupTitle(
                   title: '基本信息',
-                  subtitle: '填写名称与排序，名称必填且不超过32字符；排序为非负整数',
+                  subtitle: '填写名称与排序，名称必填且不超过32字符；排序可选，非负整数',
                 ),
                 const SizedBox(height: 16),
                 PayeeNameField(

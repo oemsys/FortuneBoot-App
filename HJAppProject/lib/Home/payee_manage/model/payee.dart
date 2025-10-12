@@ -5,7 +5,7 @@ class Payee {
   final int payeeId;
   final int bookId;
   final String payeeName;
-  final int sort;
+  final int? sort;
   final bool canExpense;
   final bool canIncome;
   final bool enable;
@@ -15,7 +15,7 @@ class Payee {
     required this.payeeId,
     required this.bookId,
     required this.payeeName,
-    required this.sort,
+    this.sort,
     required this.canExpense,
     required this.canIncome,
     required this.enable,
@@ -23,11 +23,18 @@ class Payee {
   });
 
   factory Payee.fromJson(Map<String, dynamic> json) {
+    int? parseSort(dynamic s) {
+      if (s == null) return null;
+      if (s is int) return s;
+      if (s is String) return int.tryParse(s);
+      return null;
+    }
+
     return Payee(
       payeeId: json['payeeId'] is String ? int.tryParse(json['payeeId']) ?? 0 : (json['payeeId'] ?? 0) as int,
       bookId: json['bookId'] is String ? int.tryParse(json['bookId']) ?? 0 : (json['bookId'] ?? 0) as int,
       payeeName: (json['payeeName'] ?? '').toString(),
-      sort: json['sort'] is String ? int.tryParse(json['sort']) ?? 0 : (json['sort'] ?? 0) as int,
+      sort: parseSort(json['sort']),
       canExpense: (json['canExpense'] as bool?) ?? false,
       canIncome: (json['canIncome'] as bool?) ?? false,
       enable: (json['enable'] as bool?) ?? false,

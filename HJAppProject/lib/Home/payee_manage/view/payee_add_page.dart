@@ -35,7 +35,7 @@ class _PayeeAddPageState extends State<PayeeAddPage> {
   void initState() {
     super.initState();
     _nameController = TextEditingController();
-    _sortController = TextEditingController(text: '0');
+    _sortController = TextEditingController();
     _remarkController = TextEditingController();
 
     _nameNode = FocusNode();
@@ -70,8 +70,10 @@ class _PayeeAddPageState extends State<PayeeAddPage> {
     final name = _nameController.text.trim();
     if (name.isEmpty || name.length > 32) return false;
     final sortText = _sortController.text.trim();
-    final sort = int.tryParse(sortText);
-    if (sort == null || sort < 0) return false;
+    if (sortText.isNotEmpty) {
+      final sort = int.tryParse(sortText);
+      if (sort == null || sort < 0) return false;
+    }
     final remark = _remarkController.text;
     if (remark.isNotEmpty && remark.length > 200) return false;
     return true;
@@ -97,7 +99,9 @@ class _PayeeAddPageState extends State<PayeeAddPage> {
       await PayeeService().add(
         bookId: bookId,
         payeeName: _nameController.text.trim(),
-        sort: int.parse(_sortController.text.trim()),
+        sort: _sortController.text.trim().isEmpty
+            ? null
+            : int.parse(_sortController.text.trim()),
         canExpense: _canExpense,
         canIncome: _canIncome,
         enable: _enable,
@@ -233,52 +237,15 @@ class _PayeeAddPageState extends State<PayeeAddPage> {
             ),
           ),
         ),
-        bottomNavigationBar: SafeArea(
-          top: false,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              boxShadow: const [
-                BoxShadow(
-                  blurRadius: 8,
-                  color: Color(0x14000000),
-                  offset: Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _saving
-                        ? null
-                        : () async {
-                            final ok = await _confirmLeave();
-                            if (ok && mounted) {
-                              Navigator.of(context).pop(false);
-                            }
-                          },
-                    child: const Text('取消'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: (_saving || !_isValid) ? null : _onSave,
-                    icon: _saving
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.check),
-                    label: const Text('保存'),
-                  ),
-                ),
-              ],
-            ),
+        floatingActionButton: FloatingActionButton(
+          tooltip: '保存',
+          shape: const ContinuousRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(32)),
           ),
+          onPressed: _saving || !_isValid ? null : _onSave,
+          child: _saving
+              ? const CupertinoActivityIndicator()
+              : const Icon(Icons.check_rounded),
         ),
       ),
     );
