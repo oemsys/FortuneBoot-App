@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:hjproject/Home/payee_manage/model/payee.dart';
 import 'package:hjproject/Home/payee_manage/data/payee_service.dart';
+import 'package:hjproject/Home/payee_manage/view/widgets/payee_form.dart';
 
 class PayeeEditPage extends StatefulWidget {
   final Payee payee;
@@ -14,13 +16,24 @@ class PayeeEditPage extends StatefulWidget {
 
 class _PayeeEditPageState extends State<PayeeEditPage> {
   final _formKey = GlobalKey<FormState>();
+
   late final TextEditingController _nameController;
   late final TextEditingController _sortController;
   late final TextEditingController _remarkController;
+
+  late final FocusNode _nameNode;
+  late final FocusNode _sortNode;
+  late final FocusNode _remarkNode;
+
   late bool _canExpense;
   late bool _canIncome;
   late bool _enable;
+
   bool _saving = false;
+  bool _deleting = false;
+  bool _dirty = false;
+
+  late final Map<String, dynamic> _initial;
 
   @override
   void initState() {
@@ -32,6 +45,24 @@ class _PayeeEditPageState extends State<PayeeEditPage> {
     _canExpense = p.canExpense;
     _canIncome = p.canIncome;
     _enable = p.enable;
+
+    _nameNode = FocusNode();
+    _sortNode = FocusNode();
+    _remarkNode = FocusNode();
+
+    _initial = {
+      'name': p.payeeName,
+      'sort': p.sort.toString(),
+      'remark': p.remark ?? '',
+      'canExpense': p.canExpense,
+      'canIncome': p.canIncome,
+      'enable': p.enable,
+    };
+
+    void listener() => _computeDirty();
+    _nameController.addListener(listener);
+    _sortController.addListener(listener);
+    _remarkController.addListener(listener);
   }
 
   @override
@@ -39,7 +70,27 @@ class _PayeeEditPageState extends State<PayeeEditPage> {
     _nameController.dispose();
     _sortController.dispose();
     _remarkController.dispose();
+    _nameNode.dispose();
+    _sortNode.dispose();
+    _remarkNode.dispose();
     super.dispose();
+  }
+
+  void _computeDirty() {
+    final now = {
+      'name': _nameController.text,
+      'sort': _sortController.text,
+      'remark': _remarkController.text,
+      'canExpense': _canExpense,
+      'canIncome': _canIncome,
+      'enable': _enable,
+    };
+    final changed = now.entries.any((e) => _initial[e.key] != e.value);
+    if (_dirty != changed) {
+      setState(() {
+        _dirty = changed;
+      });
+    }
   }
 
   bool get _isValid {
@@ -55,8 +106,14 @@ class _PayeeEditPageState extends State<PayeeEditPage> {
 
   Future<void> _onSave() async {
     if (!_isValid) {
-      setState(() {});
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请检查表单填写是否正确')));
+      setState(() {}); // 触发表单校验显示
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('请检查表单填写是否正确'),
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
     setState(() {
@@ -74,10 +131,26 @@ class _PayeeEditPageState extends State<PayeeEditPage> {
         remark: _remarkController.text.trim().isEmpty ? null : _remarkController.text.trim(),
       );
       if (!mounted) return;
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('保存成功'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      setState(() {
+        _dirty = false;
+      });
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -87,123 +160,248 @@ class _PayeeEditPageState extends State<PayeeEditPage> {
     }
   }
 
-  EdgeInsets _horizontalPaddingForWidth(double width) {
-    if (width < 600) return const EdgeInsets.symmetric(horizontal: 16);
-    if (width < 1024) return const EdgeInsets.symmetric(horizontal: 20);
-    return const EdgeInsets.symmetric(horizontal: 24);
+  Future<void> _onDelete() async {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final tt = theme.textTheme;
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: cs.surface,
+          surfaceTintColor: cs.surfaceTint,
+          elevation: 3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: cs.outlineVariant),
+          ),
+          title: Text('移入回收站', style: tt.titleMedium),
+          content: Text('将交易对象“${widget.payee.payeeName}”移入回收站？', style: tt.bodyMedium),
+          actions: [
+            OutlinedButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('取消', style: tt.labelLarge),
+            ),
+            OutlinedButton(
+              style: ButtonStyle(
+                side: MaterialStatePropertyAll(BorderSide(color: cs.error)),
+                foregroundColor: MaterialStatePropertyAll(cs.error),
+              ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text('确认', style: tt.labelLarge),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (ok != true) return;
+
+    setState(() {
+      _deleting = true;
+    });
+
+    try {
+      await PayeeService().moveToRecycleBin(
+        bookId: widget.bookId,
+        payeeId: widget.payee.payeeId,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('已移入回收站'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _deleting = false;
+        });
+      }
+    }
+  }
+
+  Future<bool> _confirmLeave() async {
+    if (!_dirty || _saving || _deleting) return true;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final tt = theme.textTheme;
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: cs.surface,
+          surfaceTintColor: cs.surfaceTint,
+          elevation: 3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: cs.outlineVariant),
+          ),
+          title: Text('放弃更改？', style: tt.titleMedium),
+          content: const Text('当前页面存在未保存的更改，确定要离开并丢弃这些更改吗？'),
+          actions: [
+            OutlinedButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text('取消', style: tt.labelLarge),
+            ),
+            OutlinedButton(
+              style: ButtonStyle(
+                side: MaterialStatePropertyAll(BorderSide(color: cs.error)),
+                foregroundColor: MaterialStatePropertyAll(cs.error),
+              ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text('离开', style: tt.labelLarge),
+            ),
+          ],
+        );
+      },
+    );
+    return result ?? false;
   }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final padding = _horizontalPaddingForWidth(constraints.maxWidth);
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('编辑交易对象'),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                child: ElevatedButton.icon(
-                  onPressed: (_saving || !_isValid) ? null : _onSave,
-                  icon: _saving
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Icon(Icons.check),
-                  label: const Text('保存'),
-                ),
-              ),
-            ],
+    return WillPopScope(
+      onWillPop: _confirmLeave,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            '修改交易对象',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          body: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Padding(
-                  padding: padding.copyWith(top: 12, bottom: 24),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        TextFormField(
-                          controller: _nameController,
-                          decoration: const InputDecoration(
-                            labelText: '名称',
-                            hintText: '请输入名称（必填，最长32个字符）',
-                          ),
-                          maxLength: 32,
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          validator: (v) {
-                            final t = (v ?? '').trim();
-                            if (t.isEmpty) return '名称不能为空';
-                            if (t.length > 32) return '名称长度不能超过32';
-                            return null;
-                          },
-                          onChanged: (_) => setState(() {}),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _sortController,
-                          decoration: const InputDecoration(
-                            labelText: '排序',
-                            hintText: '请输入非负整数',
-                          ),
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                          keyboardType: TextInputType.number,
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          validator: (v) {
-                            final t = (v ?? '').trim();
-                            if (t.isEmpty) return '排序不能为空';
-                            final n = int.tryParse(t);
-                            if (n == null) return '必须为整数';
-                            if (n < 0) return '必须为非负数';
-                            return null;
-                          },
-                          onChanged: (_) => setState(() {}),
-                        ),
-                        const SizedBox(height: 12),
-                        SwitchListTile.adaptive(
-                          title: const Text('支出'),
-                          value: _canExpense,
-                          onChanged: (v) => setState(() => _canExpense = v),
-                        ),
-                        SwitchListTile.adaptive(
-                          title: const Text('收入'),
-                          value: _canIncome,
-                          onChanged: (v) => setState(() => _canIncome = v),
-                        ),
-                        SwitchListTile.adaptive(
-                          title: const Text('启用'),
-                          value: _enable,
-                          onChanged: (v) => setState(() => _enable = v),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _remarkController,
-                          decoration: const InputDecoration(
-                            labelText: '备注',
-                            hintText: '可选，最长200个字符',
-                          ),
-                          maxLines: 3,
-                          maxLength: 200,
-                          autovalidateMode: AutovalidateMode.onUserInteraction,
-                          validator: (v) {
-                            final t = (v ?? '');
-                            if (t.isNotEmpty && t.length > 200) return '备注长度不能超过200';
-                            return null;
-                          },
-                          onChanged: (_) => setState(() {}),
-                        ),
-                      ],
-                    ),
+        ),
+        body: CupertinoScrollbar(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Form(
+                  key: _formKey,
+                  child: PayeeForm(
+                    nameController: _nameController,
+                    sortController: _sortController,
+                    remarkController: _remarkController,
+                    nameNode: _nameNode,
+                    sortNode: _sortNode,
+                    remarkNode: _remarkNode,
+                    canExpense: _canExpense,
+                    canIncome: _canIncome,
+                    enable: _enable,
+                    onCanExpenseChanged: (v) {
+                      setState(() {
+                        _canExpense = v;
+                      });
+                      _computeDirty();
+                    },
+                    onCanIncomeChanged: (v) {
+                      setState(() {
+                        _canIncome = v;
+                      });
+                      _computeDirty();
+                    },
+                    onEnableChanged: (v) {
+                      setState(() {
+                        _enable = v;
+                      });
+                      _computeDirty();
+                    },
+                    onChanged: _computeDirty,
+                    isBusy: _saving || _deleting,
                   ),
                 ),
-              ),
+                const SizedBox(height: 24),
+              ],
             ),
           ),
-        );
-      },
+        ),
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              boxShadow: const [
+                BoxShadow(
+                  blurRadius: 8,
+                  color: Color(0x14000000),
+                  offset: Offset(0, -2),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: (_saving || _deleting)
+                            ? null
+                            : () async {
+                                final ok = await _confirmLeave();
+                                if (ok && mounted) {
+                                  Navigator.of(context).pop(false);
+                                }
+                              },
+                        child: const Text('取消'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: (_saving || _deleting || !_isValid) ? null : _onSave,
+                        icon: _saving
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.check),
+                        label: const Text('保存'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    icon: _deleting
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.delete_outline),
+                    onPressed: (_saving || _deleting) ? null : _onDelete,
+                    style: ButtonStyle(
+                      side: MaterialStatePropertyAll(
+                        BorderSide(color: Theme.of(context).colorScheme.error),
+                      ),
+                      foregroundColor: MaterialStatePropertyAll(
+                        Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                    label: const Text('移入回收站'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
