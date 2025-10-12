@@ -107,4 +107,45 @@ class PayeeService {
       throw Exception('网络错误: ${response.statusCode}');
     }
   }
+/// 新增交易对象
+  /// - 接口：POST /fortune/payee/add
+  /// - 请求体：bookId, payeeName, sort, canExpense, canIncome, enable, remark
+  /// - 成功：返回 code==0；否则抛出后端 msg
+  Future<void> add({
+    required int bookId,
+    required String payeeName,
+    required int sort,
+    required bool canExpense,
+    required bool canIncome,
+    required bool enable,
+    String? remark,
+  }) async {
+    final body = <String, dynamic>{
+      'bookId': bookId,
+      'payeeName': payeeName,
+      'sort': sort,
+      'canExpense': canExpense,
+      'canIncome': canIncome,
+      'enable': enable,
+      if (remark != null) 'remark': remark,
+    };
+
+    final response = await _dio.post(
+      '/fortune/payee/add',
+      data: body,
+    );
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+      final code = data['code'] as int? ?? -1;
+      if (code == 0) {
+        return;
+      } else {
+        final msg = data['msg']?.toString() ?? '服务返回错误';
+        throw Exception(msg);
+      }
+    } else {
+      throw Exception('网络错误: ${response.statusCode}');
+    }
+  }
 }

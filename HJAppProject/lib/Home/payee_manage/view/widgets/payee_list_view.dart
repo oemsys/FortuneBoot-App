@@ -7,7 +7,7 @@ import 'package:hjproject/Home/payee_manage/view/widgets/payee_error_view.dart';
 import 'package:hjproject/Home/payee_manage/view/widgets/payee_empty_state.dart';
 import 'package:hjproject/Home/payee_manage/model/payee.dart';
 import 'package:hjproject/Home/payee_manage/data/payee_service.dart';
-import 'package:hjproject/Home/payee_manage/view/widgets/payee_edit_dialog.dart';
+import 'package:hjproject/Home/payee_manage/view/payee_edit_page.dart';
 
 /// 交易对象列表视图：统一三态切换 + 列表渲染
 class PayeeListView extends StatelessWidget {
@@ -143,29 +143,17 @@ class _PayeeTile extends StatelessWidget {
                   tooltip: '更多操作',
                   onSelected: (value) async {
                     if (value == 'edit') {
-                      // 打开编辑对话框
-                      final edited = await showDialog<Map<String, dynamic>?>(
-                        context: context,
-                        builder: (ctx) => PayeeEditDialog(initial: item),
+                      // 跳转到独立编辑页面
+                      final bookId = context.read<BillsRepository>().bookId() ?? item.bookId;
+                      final result = await Navigator.push<bool>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PayeeEditPage(payee: item, bookId: bookId),
+                        ),
                       );
-                      if (edited == null) return;
-                      // 组装请求体并调用修改接口
-                      try {
-                        final bookId = context.read<BillsRepository>().bookId() ?? item.bookId;
-                        await PayeeService().modify(
-                          payeeId: item.payeeId,
-                          bookId: bookId,
-                          payeeName: (edited['payeeName'] as String?) ?? item.payeeName,
-                          sort: (edited['sort'] as int?) ?? item.sort,
-                          canExpense: (edited['canExpense'] as bool?) ?? item.canExpense,
-                          canIncome: (edited['canIncome'] as bool?) ?? item.canIncome,
-                          enable: (edited['enable'] as bool?) ?? item.enable,
-                          remark: edited.containsKey('remark') ? edited['remark'] as String? : item.remark,
-                        );
+                      if (result == true) {
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已保存修改')));
                         onMovedToRecycleBin(); // 复用刷新回调，仅刷新当前页
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
                       }
                     } else if (value == 'move') {
                       final confirmed = await showDialog<bool>(

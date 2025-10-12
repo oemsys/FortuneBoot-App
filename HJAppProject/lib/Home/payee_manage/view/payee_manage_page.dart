@@ -5,6 +5,7 @@ import 'package:hjproject/Home/payee_manage/data/payee_service.dart';
 import 'package:hjproject/Home/payee_manage/model/payee.dart';
 import 'package:hjproject/Home/payee_manage/view/widgets/payee_list_view.dart';
 import 'package:hjproject/Home/category_manage/view/widgets/category_pager.dart';
+import 'package:hjproject/Home/payee_manage/view/payee_add_page.dart';
 
 /// 交易对象管理页面：首屏展示列表，下拉刷新，错误/加载/空态 + 分页条
 class PayeeManagePage extends StatefulWidget {
@@ -24,7 +25,7 @@ class _PayeeManagePageState extends State<PayeeManagePage> {
 
   // 分页状态
   int _pageNum = 1;
-  final int _pageSize = 20;
+  final int _pageSize = 10;
 
   @override
   void initState() {
@@ -81,6 +82,14 @@ class _PayeeManagePageState extends State<PayeeManagePage> {
     }
   }
 
+Future<void> _openAddPage() async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const PayeeAddPage()),
+    );
+    if (result == true) {
+      await _load(); // 仅刷新当前页
+    }
+  }
   @override
   Widget build(BuildContext context) {
     double horizontalPadding() {
@@ -95,6 +104,13 @@ class _PayeeManagePageState extends State<PayeeManagePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('交易对象管理'),
+        actions: [
+          IconButton(
+            tooltip: '新增',
+            icon: const Icon(Icons.add),
+            onPressed: _openAddPage,
+          ),
+        ],
       ),
       body: Column(
         children: [
