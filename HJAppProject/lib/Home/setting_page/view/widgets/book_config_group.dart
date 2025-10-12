@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hjproject/Home/payee_manage/view/payee_manage_page.dart';
 import 'package:hjproject/home/category_manage/view/category_manage_page.dart';
 
 /// 账本配置分组组件：包含“分类管理”入口
@@ -46,6 +47,19 @@ class BookConfigGroup extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const CategoryManagePage(),
+                ),
+              );
+            },
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: Icon(Icons.people_alt, color: theme.primaryColor),
+            title: const Text('交易对象管理'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const PayeeManagePage(),
                 ),
               );
             },
