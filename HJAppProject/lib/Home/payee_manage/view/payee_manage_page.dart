@@ -103,7 +103,7 @@ Future<void> _openAddPage() async {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('交易对象管理'),
+        title: const Text('交易对象'),
         actions: [
           IconButton(
             tooltip: '新增',

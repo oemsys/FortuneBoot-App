@@ -54,7 +54,7 @@ class BookConfigGroup extends StatelessWidget {
           const Divider(height: 1),
           ListTile(
             leading: Icon(Icons.people_alt, color: theme.primaryColor),
-            title: const Text('交易对象管理'),
+            title: const Text('交易对象'),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {
               Navigator.of(context).push(
