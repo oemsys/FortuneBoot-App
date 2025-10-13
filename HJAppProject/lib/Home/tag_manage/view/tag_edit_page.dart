@@ -38,7 +38,7 @@ class _TagEditPageState extends State<TagEditPage> {
   final _nameController = TextEditingController();
   final _sortController = TextEditingController();
   final _remarkController = TextEditingController();
-  
+
   bool _enable = true;
   bool _canExpense = false;
   bool _canIncome = false;
@@ -92,7 +92,7 @@ class _TagEditPageState extends State<TagEditPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('编辑标签'),
@@ -160,15 +160,8 @@ class _TagEditPageState extends State<TagEditPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _remarkController,
-                      decoration: const InputDecoration(
-                        labelText: '备注',
-                        border: OutlineInputBorder(),
-                      ),
-                      maxLines: 3,
-                    ),
+                    const SizedBox(height: 0),
+                    // 备注字段已移至表单底部（复用交易对象管理文案与校验）
                   ],
                 ),
               ),
@@ -226,6 +219,41 @@ class _TagEditPageState extends State<TagEditPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '备注',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _remarkController,
+                      decoration: const InputDecoration(
+                        labelText: '备注',
+                        hintText: '可选，最长200个字符',
+                        prefixIcon: Icon(Icons.note),
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 3,
+                      keyboardType: TextInputType.multiline,
+                      validator: (value) {
+                        if (value != null && value.length > 200) {
+                          return '备注长度不能超过200';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -251,7 +279,7 @@ class _TagEditPageState extends State<TagEditPage> {
         canTransfer: _canTransfer,
         remark: _remarkController.text.trim().isEmpty ? null : _remarkController.text.trim(),
       );
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('保存成功')),

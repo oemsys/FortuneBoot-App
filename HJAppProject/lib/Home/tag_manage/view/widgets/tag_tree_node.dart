@@ -60,27 +60,23 @@ class TagTreeNode<T> extends StatelessWidget {
       color: cs.secondary,
     );
 
-    // 构建状态标识
+    // 构建状态标识：四态固定展示（支出/收入/转账/启用），true高亮、false置灰，使用主题色
     Widget _buildStatusChips() {
       final List<Widget> chips = [];
-      
-      if (enableOf != null && !enableOf!(node)) {
-        chips.add(_buildStatusChip('禁用', Colors.grey, cs));
-      }
-      
-      if (canExpenseOf != null && canExpenseOf!(node)) {
-        chips.add(_buildStatusChip('支出', Colors.red, cs));
-      }
-      
-      if (canIncomeOf != null && canIncomeOf!(node)) {
-        chips.add(_buildStatusChip('收入', Colors.green, cs));
-      }
-      
-      if (canTransferOf != null && canTransferOf!(node)) {
-        chips.add(_buildStatusChip('转账', Colors.blue, cs));
-      }
-      
-      if (chips.isEmpty) return const SizedBox.shrink();
+      final bool exp = canExpenseOf?.call(node) ?? false;
+      final bool inc = canIncomeOf?.call(node) ?? false;
+      final bool trf = canTransferOf?.call(node) ?? false;
+      final bool en = enableOf?.call(node) ?? true;
+
+      // 固定四态展示，颜色由 _buildStatusChip 内部统一映射
+      chips.add(_buildStatusChip('支出', exp, 'expense', context));
+      chips.add(_buildStatusChip('收入', inc, 'income', context));
+      chips.add(_buildStatusChip('转账', trf, 'transfer', context));
+      chips.add(_buildStatusChip('启用', en, 'enabled', context));
+
+      // 在四态之后追加中性信息的子标签数量Chip（始终展示）
+      final int childrenCount = _resolveChildrenCount(node, children);
+      chips.add(_buildChildrenCountChip(context, childrenCount));
       
       return Wrap(
         spacing: 4,
@@ -89,18 +85,6 @@ class TagTreeNode<T> extends StatelessWidget {
       );
     }
 
-    final Widget countChip = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: cs.secondaryContainer,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        '$childCount 子标签',
-        textAlign: TextAlign.center,
-        style: tt.labelSmall?.copyWith(color: cs.onSecondaryContainer),
-      ),
-    );
 
     final Widget menu = Tooltip(
       message: '更多操作',
@@ -159,8 +143,6 @@ class TagTreeNode<T> extends StatelessWidget {
     final Widget trailing = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (hasChildren) countChip,
-        if (hasChildren) const SizedBox(width: 8),
         menu,
         const SizedBox(width: 8),
         hasChildren
@@ -263,21 +245,118 @@ class TagTreeNode<T> extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusChip(String label, Color color, ColorScheme cs) {
+  Widget _buildStatusChip(String label, bool active, String type, BuildContext context) {
+    final ColorScheme cs = Theme.of(context).colorScheme;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // 统一的类型到颜色映射
+    Color colorByType;
+    switch (type) {
+      case 'expense':
+        colorByType = Colors.red;
+        break;
+      case 'income':
+        colorByType = Colors.green;
+        break;
+      case 'transfer':
+        colorByType = Colors.black;
+        break;
+      case 'enabled':
+        colorByType = Colors.blue;
+        break;
+      default:
+        colorByType = cs.primary; // 兜底，理论上不会走到
+    }
+
+    // active 配色与置灰策略
+    final Color bg = active
+        ? (type == 'transfer' && isDark ? Colors.white10 : colorByType.withOpacity(0.08))
+        : cs.surfaceVariant;
+    final Color border = active ? colorByType : cs.outlineVariant;
+    final Color text = active ? colorByType : cs.onSurfaceVariant;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: bg,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: border),
       ),
       child: Text(
         label,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 10,
-          color: color,
           fontWeight: FontWeight.w500,
-        ),
+        ).copyWith(color: text),
+      ),
+    );
+  }
+
+  // 获取子标签数量的逻辑：
+  // 优先从 node 中取：childrenCount ?? children?.length ?? childCount ?? 0
+  // 若存在 hasChildren 字段但没有数量，则显示 0
+  // 最后兜底使用当前 childrenOf 适配器提供的列表长度
+  int _resolveChildrenCount(T node, List<T> currentChildren) {
+    // 1) childrenCount
+    try {
+      final d = node as dynamic;
+      final v = d.childrenCount;
+      if (v != null) {
+        return v as int;
+      }
+    } catch (_) {}
+
+    // 2) children?.length
+    try {
+      final d = node as dynamic;
+      final v = d.children;
+      if (v is List) {
+        return v.length;
+      }
+    } catch (_) {}
+
+    // 3) childCount
+    try {
+      final d = node as dynamic;
+      final v = d.childCount;
+      if (v != null) {
+        return v as int;
+      }
+    } catch (_) {}
+
+    // 4) hasChildren提示但没有数量 => 显示0
+    bool hasChildrenHint = false;
+    try {
+      final d = node as dynamic;
+      final v = d.hasChildren;
+      if (v is bool) {
+        hasChildrenHint = v;
+      }
+    } catch (_) {}
+    if (hasChildrenHint) {
+      return 0;
+    }
+
+    // 5) 兜底：使用当前childrenOf返回的长度
+    return currentChildren.length;
+  }
+
+  // 渲染中性信息样式的“{count}个子标签”Chip
+  Widget _buildChildrenCountChip(BuildContext context, int count) {
+    final ColorScheme cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: cs.surfaceVariant,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Text(
+        '$count个子标签',
+        style: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+        ).copyWith(color: cs.onSurfaceVariant),
       ),
     );
   }

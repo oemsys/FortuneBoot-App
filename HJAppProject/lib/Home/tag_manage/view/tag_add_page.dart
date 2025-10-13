@@ -201,24 +201,8 @@ class _TagAddPageState extends State<TagAddPage> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _remarkController,
-                            decoration: const InputDecoration(
-                              labelText: '备注',
-                              border: OutlineInputBorder(),
-                              hintText: '请输入备注信息（可选）',
-                              helperText: '最多200个字符',
-                            ),
-                            maxLines: 3,
-                            keyboardType: TextInputType.multiline,
-                            validator: (value) {
-                              if (value != null && value.length > 200) {
-                                return '备注不能超过200个字符';
-                              }
-                              return null;
-                            },
-                          ),
+                          const SizedBox(height: 0),
+                          // 备注字段已移至表单底部（复用“交易对象管理”文案与样式）
                         ],
                       ),
                     ),
@@ -285,6 +269,43 @@ class _TagAddPageState extends State<TagAddPage> {
                                 _canTransfer = value;
                                 _markDirty();
                               });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '备注',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _remarkController,
+                            decoration: const InputDecoration(
+                              labelText: '备注',
+                              hintText: '可选，最长200个字符',
+                              prefixIcon: Icon(Icons.note),
+                              border: OutlineInputBorder(),
+                            ),
+                            maxLines: 3,
+                            keyboardType: TextInputType.multiline,
+                            validator: (value) {
+                              if (value != null && value.length > 200) {
+                                return '备注长度不能超过200';
+                              }
+                              return null;
                             },
                           ),
                         ],

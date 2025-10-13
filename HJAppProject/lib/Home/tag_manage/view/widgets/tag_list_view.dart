@@ -118,6 +118,11 @@ class TagListView<T> extends StatelessWidget {
               onModify: onModify,
               onMoveToRecycle: onMoveToRecycle,
               onAddChild: onAddChild,
+              // 传递四态适配器以供节点渲染使用
+              enableOf: enableOf,
+              canExpenseOf: canExpenseOf,
+              canIncomeOf: canIncomeOf,
+              canTransferOf: canTransferOf,
             ),
           ),
           const SizedBox(height: 12),
