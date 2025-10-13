@@ -14,6 +14,7 @@ class TagEditPage extends StatefulWidget {
   final bool canTransfer;
   final int parentId;
   final int bookId;
+  final String? parentName;
 
   const TagEditPage({
     Key? key,
@@ -27,6 +28,7 @@ class TagEditPage extends StatefulWidget {
     required this.canTransfer,
     required this.parentId,
     required this.bookId,
+    this.parentName,
   }) : super(key: key);
 
   @override
@@ -45,6 +47,7 @@ class _TagEditPageState extends State<TagEditPage> {
   bool _canTransfer = false;
   bool _isLoading = false;
   bool _dirty = false;
+  String? _parentTagName;
 
   final TagPageService _service = TagPageService();
 
@@ -79,6 +82,7 @@ class _TagEditPageState extends State<TagEditPage> {
     _canExpense = widget.canExpense;
     _canIncome = widget.canIncome;
     _canTransfer = widget.canTransfer;
+    _parentTagName = widget.parentName;
   }
 
   @override
@@ -96,27 +100,48 @@ class _TagEditPageState extends State<TagEditPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('编辑标签'),
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _handleSave,
-            child: _isLoading
-                ? SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: theme.colorScheme.primary,
-                    ),
-                  )
-                : const Text('保存'),
-          ),
-        ],
       ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            if (widget.parentId != -1 && _parentTagName != null)
+              Card(
+                color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            color: theme.colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '编辑子标签',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '父级标签: $_parentTagName',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            if (widget.parentId != -1) const SizedBox(height: 16),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -256,6 +281,16 @@ class _TagEditPageState extends State<TagEditPage> {
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: '保存',
+        shape: const ContinuousRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(32)),
+        ),
+        onPressed: _isLoading || !_isValid ? null : _handleSave,
+        child: _isLoading
+            ? const CupertinoActivityIndicator()
+            : const Icon(Icons.check_rounded),
       ),
     );
   }

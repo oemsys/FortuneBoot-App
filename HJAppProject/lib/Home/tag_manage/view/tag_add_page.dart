@@ -6,11 +6,13 @@ import '../data/tag_service.dart';
 class TagAddPage extends StatefulWidget {
   final int initialParentId;
   final int bookId;
+  final String? initialParentName;
 
   const TagAddPage({
     Key? key,
     required this.initialParentId,
     required this.bookId,
+    this.initialParentName,
   }) : super(key: key);
 
   @override
@@ -61,17 +63,16 @@ class _TagAddPageState extends State<TagAddPage> {
     _sortController.addListener(_markDirty);
     _remarkController.addListener(_markDirty);
     
-    // 如果是添加子标签，加载父标签名称
+    // 如果是添加子标签，显示父标签名称（来自树结构）
     if (widget.initialParentId != -1) {
       _loadParentTagName();
     }
   }
 
   Future<void> _loadParentTagName() async {
-    // 这里可以添加API调用来获取父标签名称
-    // 暂时使用简单的显示方式
+    // 复用树结构传入的父标签名称，避免新增接口
     setState(() {
-      _parentTagName = "父标签 ID: ${widget.initialParentId}";
+      _parentTagName = widget.initialParentName;
     });
   }
 

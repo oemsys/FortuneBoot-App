@@ -259,7 +259,7 @@ class TagTreeNode<T> extends StatelessWidget {
         colorByType = Colors.green;
         break;
       case 'transfer':
-        colorByType = Colors.black;
+        colorByType = Colors.amber.shade700;
         break;
       case 'enabled':
         colorByType = Colors.blue;
@@ -270,7 +270,9 @@ class TagTreeNode<T> extends StatelessWidget {
 
     // active 配色与置灰策略
     final Color bg = active
-        ? (type == 'transfer' && isDark ? Colors.white10 : colorByType.withOpacity(0.08))
+        ? (type == 'transfer'
+            ? (isDark ? colorByType.withOpacity(0.16) : colorByType.withOpacity(0.10))
+            : colorByType.withOpacity(0.08))
         : cs.surfaceVariant;
     final Color border = active ? colorByType : cs.outlineVariant;
     final Color text = active ? colorByType : cs.onSurfaceVariant;

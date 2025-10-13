@@ -162,6 +162,24 @@ class _TagManagePageState extends State<TagManagePage> {
     }
   }
 
+String? _findTagNameById(int id) {
+    if (id == -1) return null;
+    String? result;
+    void dfs(List<TagNode> nodes) {
+      for (final n in nodes) {
+        if (n.tagId == id) {
+          result = n.tagName;
+          return;
+        }
+        if (n.children.isNotEmpty) {
+          dfs(n.children);
+          if (result != null) return;
+        }
+      }
+    }
+    dfs(_roots);
+    return result;
+  }
   Future<void> _openEditPage(TagNode node) async {
     final int bookId = context.read<BillsRepository>().bookId() ?? 1;
     final bool? ok = await Navigator.of(context).push<bool>(
@@ -177,6 +195,7 @@ class _TagManagePageState extends State<TagManagePage> {
           canTransfer: node.canTransfer,
           parentId: node.parentId,
           bookId: bookId,
+          parentName: _findTagNameById(node.parentId),
         ),
       ),
     );
@@ -192,6 +211,7 @@ class _TagManagePageState extends State<TagManagePage> {
         builder: (_) => TagAddPage(
           initialParentId: initialParentId,
           bookId: bookId,
+          initialParentName: _findTagNameById(initialParentId),
         ),
       ),
     );
