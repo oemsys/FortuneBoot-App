@@ -263,7 +263,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final nickname = _nicknameCtrl.text;
     final email = _emailCtrl.text;
     final phone = _phoneCtrl.text;
-    final sexText = (_sex == 1) ? '男' : '女';
+    final sexText = _sex == 1 ? '男' : _sex == 2 ? '女' : '未知';
 
     // 只读态：使用只读信息块样式，和账号/角色等一致
     if (!_editing) {
@@ -340,10 +340,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   const Text('性别'),
                   const Spacer(),
                   ToggleButtons(
-                    isSelected: [_sex == 1, _sex == 0],
+                    // 第一个按钮对应男(1)，第二个按钮对应女(2)
+                    isSelected: [_sex == 1, _sex == 2],
                     onPressed: (index) {
                       setState(() {
-                        _sex = index == 0 ? 1 : 0; // 1: 男, 0: 女
+                        // index=0时设为1(男)，index=1时设为2(女)
+                        _sex = index == 0 ? 1 : 2;
                       });
                     },
                     borderRadius: BorderRadius.circular(8),
