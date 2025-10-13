@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'web_download_stub.dart' if (dart.library.html) 'web_download.dart'
     as webdl;
@@ -27,7 +27,7 @@ class ImageSaveService {
       }
 
       // Android/iOS：保存到系统相册
-      final result = await ImageGallerySaver.saveImage(
+      final result = await ImageGallerySaverPlus.saveImage(
         bytes,
         name: name,
         quality: 100,
