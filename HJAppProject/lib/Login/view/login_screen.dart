@@ -353,7 +353,7 @@ class LoginScreen extends StatelessWidget {
         keyName: 'sex',
         displayName: S.of(context).sex,
         icon: const Icon(FontAwesomeIcons.venusMars),
-        tooltip: TextSpan(text: '男/女'),
+        tooltip: const TextSpan(text: '男/女'),
         userType: LoginUserType.text,
       ),
       UserFormField(

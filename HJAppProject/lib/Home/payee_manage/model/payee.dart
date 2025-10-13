@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 /// 交易对象模型与分页数据
 class Payee {
   final int payeeId;
@@ -31,8 +29,8 @@ class Payee {
     }
 
     return Payee(
-      payeeId: json['payeeId'] is String ? int.tryParse(json['payeeId']) ?? 0 : (json['payeeId'] ?? 0) as int,
-      bookId: json['bookId'] is String ? int.tryParse(json['bookId']) ?? 0 : (json['bookId'] ?? 0) as int,
+      payeeId: parseIntFromDynamic(json['payeeId']),
+      bookId: parseIntFromDynamic(json['bookId']),
       payeeName: (json['payeeName'] ?? '').toString(),
       sort: parseSort(json['sort']),
       canExpense: (json['canExpense'] as bool?) ?? false,
@@ -44,7 +42,7 @@ class Payee {
 
   @override
   String toString() {
-   return 'Payee(payeeId: $payeeId, name: $payeeName, sort: $sort, canExpense: $canExpense, canIncome: $canIncome, enable: $enable)';
+    return 'Payee(payeeId: $payeeId, name: $payeeName, sort: $sort, canExpense: $canExpense, canIncome: $canIncome, enable: $enable)';
   }
 }
 
@@ -58,11 +56,24 @@ class PayeePageData {
   });
 
   factory PayeePageData.fromJson(Map<String, dynamic> json) {
-    final total = json['total'] is String ? int.tryParse(json['total']) ?? 0 : (json['total'] ?? 0) as int;
+    final total = parseIntFromDynamic(json['total']);
     final list = json['rows'];
     final rows = (list is List ? list : const <dynamic>[])
         .map((e) => Payee.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();
     return PayeePageData(total: total, rows: rows);
   }
+}
+
+int parseIntFromDynamic(dynamic value, {int defaultValue = 0}) {
+  if (value == null) {
+    return defaultValue;
+  }
+  if (value is int) {
+    return value;
+  }
+  if (value is String) {
+    return int.tryParse(value) ?? defaultValue;
+  }
+  return defaultValue;
 }
