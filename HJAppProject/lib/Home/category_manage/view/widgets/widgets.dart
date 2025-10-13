@@ -8,6 +8,4 @@ export 'category_loading_indicator.dart';
 export 'category_error_view.dart';
 export 'category_list_view.dart';
 export 'category_tree_node.dart';
-export 'category_edit_dialog.dart';
-export 'category_add_dialog.dart';
 export 'category_delete_confirm_dialog.dart';

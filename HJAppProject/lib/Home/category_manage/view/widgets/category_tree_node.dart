@@ -81,6 +81,16 @@ class CategoryTreeNode<T> extends StatelessWidget {
         },
         itemBuilder: (context) => [
           PopupMenuItem(
+            value: 2,
+            child: Row(
+              children: [
+                Icon(Icons.add, color: cs.tertiary),
+                const SizedBox(width: 8),
+                const Text('新增子类'),
+              ],
+            ),
+          ),
+          PopupMenuItem(
             value: 0,
             child: Row(
               children: [
@@ -97,16 +107,6 @@ class CategoryTreeNode<T> extends StatelessWidget {
                 Icon(Icons.delete_outline, color: cs.error),
                 const SizedBox(width: 8),
                 const Text('移入回收站'),
-              ],
-            ),
-          ),
-          PopupMenuItem(
-            value: 2,
-            child: Row(
-              children: [
-                Icon(Icons.add, color: cs.tertiary),
-                const SizedBox(width: 8),
-                const Text('新增子类'),
               ],
             ),
           ),

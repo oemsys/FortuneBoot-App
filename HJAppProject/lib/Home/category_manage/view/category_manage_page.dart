@@ -5,8 +5,8 @@ import 'package:hjproject/util/dio_client.dart';
 import 'package:hjproject/repository/repository/bills_repository.dart';
 
 import 'widgets/category_delete_confirm_dialog.dart';
-import 'widgets/category_edit_dialog.dart';
-import 'widgets/category_add_dialog.dart';
+import 'category_edit_page.dart';
+import 'category_add_page.dart';
 import 'widgets/category_list_view.dart';
 import 'widgets/category_manage_appbar.dart';
 import 'widgets/category_filter_bar.dart';
@@ -86,7 +86,7 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
     final double gap = width < 600 ? 8 : 12;
     return Scaffold(
       appBar: CategoryManageAppBar(
-        onAddPressed: () => _openAddDialog(initialParentId: -1),
+        onAddPressed: () => _openAddPage(initialParentId: -1),
       ),
       body: Column(
         children: [
@@ -136,9 +136,9 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
           }
         });
       },
-      onModify: (node) => _openModifyDialog(node),
+      onModify: (node) => _openEditPage(node),
       onMoveToRecycle: (node) => _confirmMoveToRecycle(node),
-      onAddChild: (node) => _openAddDialog(initialParentId: node.categoryId),
+      onAddChild: (node) => _openAddPage(initialParentId: node.categoryId),
       hasPrev: _hasPrev,
       hasNext: _hasNext,
       onPrev: () {
@@ -187,126 +187,42 @@ class _CategoryManagePageState extends State<CategoryManagePage> {
 
 
 
-  Future<String> _loadParentName(int parentId, int categoryType) async {
-    if (parentId == -1) return '根分类';
-    final bookId = context.read<BillsRepository>().bookId() ?? 1;
-    final roots = await _service.fetchList(
-      bookId: bookId,
-      categoryType: categoryType,
-      recycleBin: false,
+  // 已被新的页面形式替代：原对话框交互改为页面导航
+  Future<void> _openEditPage(CategoryNode node) async {
+    final int bookId = context.read<BillsRepository>().bookId() ?? 1;
+    final bool? ok = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => CategoryEditPage(
+          categoryId: node.categoryId,
+          name: node.categoryName,
+          enable: node.enable,
+          sort: node.sort,
+          remark: node.remark,
+          categoryType: node.categoryType,
+          parentId: node.parentId,
+          bookId: bookId,
+        ),
+      ),
     );
-    final name = _findNameById(roots, parentId);
-    return name ?? '未知';
-  }
-
-  String? _findNameById(List<CategoryNode> nodes, int id) {
-    for (final n in nodes) {
-      if (n.id == id) return n.categoryName;
-      final found = _findNameById(n.children, id);
-      if (found != null) return found;
-    }
-    return null;
-  }
-
-  Future<void> _openModifyDialog(CategoryNode node) async {
-    final bool? ok = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogCtx) {
-        return CategoryEditDialog(
-          titleText: '修改${node.categoryType == 1 ? '支出' : '收入'}分类',
-          initialName: node.categoryName,
-          initialEnable: node.enable,
-          initialSort: node.sort,
-          initialRemark: node.remark,
-          fixedParentNameFuture: _loadParentName(node.parentId, node.categoryType),
-          onSubmit: ({
-            required String name,
-            required bool enable,
-            required int sort,
-            String? remark,
-          }) async {
-            final bookId = context.read<BillsRepository>().bookId() ?? 1;
-            await _service.modifyCategory(
-              enable: enable,
-              categoryId: node.categoryId,
-              categoryName: name,
-              categoryType: node.categoryType,
-              bookId: bookId,
-              parentId: node.parentId,
-              sort: sort,
-              remark: remark,
-              recycleBin: false,
-            );
-          },
-        );
-      },
-    );
-
     if (ok == true) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).removeCurrentSnackBar();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('修改成功')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('修改成功')),
+      );
       await _load();
     }
   }
 
-  Future<void> _openAddDialog({int initialParentId = -1}) async {
-    final int categoryType = _categoryType;
-    final int bookId = context.read<BillsRepository>().bookId() ?? 1;
-
-    List<ParentOption> _flattenToOptions(List<CategoryNode> nodes, {int depth = 0}) {
-      final List<ParentOption> result = [];
-      for (final n in nodes) {
-        final prefix = depth > 0 ? '${'—' * depth} ' : '';
-        result.add(ParentOption(id: n.id, label: '$prefix${n.categoryName}'));
-        result.addAll(_flattenToOptions(n.children, depth: depth + 1));
-      }
-      return result;
-    }
-
-    final bool? ok = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogCtx) {
-        return CategoryAddDialog(
-          titleText: '新增${categoryType == 1 ? '支出' : '收入'}分类',
+  Future<void> _openAddPage({int initialParentId = -1}) async {
+    final bool? ok = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => CategoryAddPage(
+          categoryType: _categoryType,
           initialParentId: initialParentId,
-          fixedParentNameFuture: initialParentId != -1
-              ? _loadParentName(initialParentId, categoryType)
-              : null,
-          fetchParentOptions: initialParentId == -1
-              ? () async {
-                  final roots = await _service.fetchList(
-                    bookId: bookId,
-                    categoryType: categoryType,
-                    recycleBin: false,
-                  );
-                  return _flattenToOptions(roots);
-                }
-              : null,
-          onSubmit: ({
-            required int parentId,
-            required String name,
-            required bool enable,
-            required int sort,
-            String? remark,
-          }) async {
-            await _service.addCategory(
-              enable: enable,
-              parentId: parentId,
-              categoryName: name,
-              categoryType: categoryType,
-              bookId: bookId,
-              sort: sort,
-              remark: remark,
-            );
-          },
-        );
-      },
+        ),
+      ),
     );
-
     if (ok == true) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).removeCurrentSnackBar();
