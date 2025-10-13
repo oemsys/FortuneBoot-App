@@ -31,19 +31,31 @@ class BillsOverviewBloc extends Bloc<BillsOverviewEvent, BillsOverviewState> {
     BillsOverviewSubscriptionRequested event,
     Emitter<BillsOverviewState> emit,
   ) async {
+    print('🔍 DEBUG: BLoC订阅请求开始');
     emit(state.copyWith(status: () => BillsOverviewStatus.loading));
+    print('🔍 DEBUG: BLoC状态设置为loading');
+    
     await emit.forEach<List<BillItem>>(
       _billsRepository.getBills(),
-      onData: (bills) => state.copyWith(
-        status: () => BillsOverviewStatus.success,
-        bills: bills,
-        hasMore: _billsRepository.hasMore(),
-        isLoadingMore: _billsRepository.isLoadingMore(),
-        statistics: _billsRepository.getStatistics(),
-      ),
-      onError: (_, __) => state.copyWith(
-        status: () => BillsOverviewStatus.failure,
-      ),
+      onData: (bills) {
+        print('🔍 DEBUG: BLoC收到账单数据 - 数量: ${bills.length}');
+        final statistics = _billsRepository.getStatistics();
+        print('🔍 DEBUG: 统计数据 - income: ${statistics?.income}, expense: ${statistics?.expense}');
+        return state.copyWith(
+          status: () => BillsOverviewStatus.success,
+          bills: bills,
+          hasMore: _billsRepository.hasMore(),
+          isLoadingMore: _billsRepository.isLoadingMore(),
+          statistics: statistics,
+        );
+      },
+      onError: (error, stackTrace) {
+        print('❌ ERROR: BLoC数据流出错 - $error');
+        print('❌ ERROR: 堆栈跟踪 - $stackTrace');
+        return state.copyWith(
+          status: () => BillsOverviewStatus.failure,
+        );
+      },
     );
   }
 

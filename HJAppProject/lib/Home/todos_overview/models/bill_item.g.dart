@@ -67,6 +67,8 @@ const _$BillTypeEnumMap = {
   BillType.income: 2,
   BillType.transfer: 3,
   BillType.adjust: 4,
+  BillType.advance: 7,
+  BillType.reimburse: 8,
 };
 
 CategoryAmountPair _$CategoryAmountPairFromJson(Map<String, dynamic> json) =>

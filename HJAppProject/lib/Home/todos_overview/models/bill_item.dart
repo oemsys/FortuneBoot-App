@@ -14,7 +14,11 @@ enum BillType {
   @JsonValue(3)
   transfer(3, '转账'), // 转账
   @JsonValue(4)
-  adjust(4, '余额调整'); // 余额调整
+  adjust(4, '余额调整'), // 余额调整
+  @JsonValue(7)
+  advance(7,'垫付'), // 垫付
+  @JsonValue(8)
+  reimburse(8,'报销'); // 报销
 
   final int value;
   final String title;

@@ -170,7 +170,10 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
               ],
               child: BlocBuilder<BillsOverviewBloc, BillsOverviewState>(
                 builder: (context, state) {
+                  print('🔍 DEBUG: UI构建 - status: ${state.status}, bills数量: ${state.bills?.length ?? 0}');
+                  print('🔍 DEBUG: UI构建 - statistics: income=${state.statistics?.income}, expense=${state.statistics?.expense}');
                   if (!(state.bills?.isNotEmpty == true)) {
+                    print('🔍 DEBUG: UI显示空状态或加载状态');
                     if (state.status == BillsOverviewStatus.loading) {
                       return const Center(child: CupertinoActivityIndicator());
                     } else if (state.status != BillsOverviewStatus.success) {

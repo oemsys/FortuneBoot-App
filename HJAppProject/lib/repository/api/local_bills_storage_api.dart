@@ -187,17 +187,81 @@ class LocalStorageBillsApi extends BillsApi {
   Future<void> queryNewBills({bool clear = true}) async {
     isLoadingMore = true;
     List<BillItem> items = [..._billStreamController.value];
+    print('🔍 DEBUG: 当前Stream中的账单数量: ${items.length}');
+
+    if (bookId == null) {
+      print('❌ ERROR: bookId为null，无法查询账单数据');
+      isLoadingMore = false;
+      return;
+    }
+
     var billResponse = await _billService.getPage(
       pageNum: pageNum,
       pageSize: pageSize,
       bookId: '$bookId',
     );
+    print('🔍 DEBUG: API响应 - code: ${billResponse.code}, data: ${billResponse.data != null ? "有数据" : "无数据"}');
     await refreshStatic(startTime, endTime);
     if (billResponse.code == 0) {
-      var billList = billResponse.data['rows'] as List? ?? [];
-      List<BillItem> remoteItems = billList.map((ele) {
-        return BillItem.fromJson(Map<String, dynamic>.from(ele as Map? ?? {}));
-      }).toList();
+      print('🔍 DEBUG: 开始解析API响应数据...');
+      
+      // 检查 billResponse.data 是否存在
+      if (billResponse.data == null) {
+        print('❌ ERROR: billResponse.data为null');
+        isLoadingMore = false;
+        return;
+      }
+      
+      print('🔍 DEBUG: billResponse.data类型: ${billResponse.data.runtimeType}');
+      print('🔍 DEBUG: billResponse.data内容: ${billResponse.data}');
+      
+      // 检查 rows 字段是否存在
+      if (billResponse.data['rows'] == null) {
+        print('❌ ERROR: billResponse.data[\'rows\']为null');
+        isLoadingMore = false;
+        return;
+      }
+      
+      final billList = billResponse.data['rows'] as List? ?? [];
+      print('🔍 DEBUG: API返回的原始数据行数: ${billList.length}');
+      print('🔍 DEBUG: billList类型: ${billList.runtimeType}');
+      
+      if (billList.isEmpty) {
+        print('⚠️ WARNING: billList为空，没有数据需要解析');
+        isLoadingMore = false;
+        return;
+      }
+      
+      print('🔍 DEBUG: 开始逐个解析BillItem...');
+      final List<BillItem> remoteItems = [];
+      
+      for (int i = 0; i < billList.length; i++) {
+        try {
+          print('🔍 DEBUG: 解析第${i + 1}个数据项...');
+          final ele = billList[i];
+          print('🔍 DEBUG: 第${i + 1}项原始数据类型: ${ele.runtimeType}');
+          print('🔍 DEBUG: 第${i + 1}项原始数据: $ele');
+          
+          if (ele == null) {
+            print('❌ ERROR: 第${i + 1}项数据为null，跳过');
+            continue;
+          }
+          
+          final Map<String, dynamic> itemMap = Map<String, dynamic>.from(ele as Map? ?? {});
+          print('🔍 DEBUG: 第${i + 1}项转换后的Map: $itemMap');
+          
+          final billItem = BillItem.fromJson(itemMap);
+          remoteItems.add(billItem);
+          print('✅ SUCCESS: 第${i + 1}项解析成功，BillItem ID: ${billItem.billId}');
+          
+        } catch (e, stackTrace) {
+          print('❌ ERROR: 解析第${i + 1}项时发生异常: $e');
+          print('❌ ERROR: 异常堆栈: $stackTrace');
+          continue;
+        }
+      }
+      print('🔍 DEBUG: 解析完成！成功解析的BillItem数量: ${remoteItems.length}');
+      
       if (clear) {
         items.addAll(remoteItems);
       } else {
@@ -206,9 +270,12 @@ class LocalStorageBillsApi extends BillsApi {
       final allBillsCount = billResponse.data['total'] as int? ?? 20;
       hasMore = items.length < allBillsCount;
       isLoadingMore = false;
-      print('lxjbill $items');
+      print('🔍 DEBUG: 最终添加到Stream的items数量: ${items.length}');
+      print('🔍 DEBUG: hasMore: $hasMore, total: $allBillsCount');
       _billStreamController.add(items);
       // _setValue(kBillsCollectionKey, json.encode(items));
+    } else {
+      print('❌ ERROR: API响应失败 - code: ${billResponse.code}, message: ');
     }
     isLoadingMore = false;
   }

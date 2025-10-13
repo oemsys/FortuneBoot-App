@@ -68,6 +68,15 @@ class _BillDetailContent extends StatelessWidget {
                 Colors.orange;
         billIcon = Icons.settings;
         break;
+      case BillType.advance:
+        billColor = Colors.purple;
+        billIcon = Icons.payment;
+        break;
+      case BillType.reimburse:
+        billColor = Colors.teal;
+        billIcon = Icons.receipt;
+        break;
+
       default:
         billColor = Colors.grey;
         billIcon = Icons.help_outline;
