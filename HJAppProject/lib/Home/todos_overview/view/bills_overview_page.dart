@@ -287,6 +287,13 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                                           _showBillDetails(context, bill);
                                         },
                                         onCopy: () {
+                                          // 余额调整账单不允许复制：直接提示并阻断
+                                          if (bill.billType == BillType.adjust) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(content: Text('余额调整账单不支持复制或编辑')),
+                                            );
+                                            return;
+                                          }
                                           Navigator.pop(context);
                                           ScaffoldMessenger.of(context)
                                               .removeCurrentSnackBar();
@@ -298,8 +305,8 @@ class _BillsOverviewViewState extends State<BillsOverviewView>
                                           Navigator.of(context).push(
                                               EditBillPage.route(
                                                   initialBill:
-                                                      BillItemAdd.fromBillItem(
-                                                          bill),
+                                                          BillItemAdd.fromBillItem(
+                                                              bill),
                                                   isCopyBill: true));
                                         },
                                         onDismissed: (direction) {

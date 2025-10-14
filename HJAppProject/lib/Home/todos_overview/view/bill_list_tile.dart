@@ -265,6 +265,13 @@ class BillListTile extends StatelessWidget {
                 false;
           }
         } else if (direction == DismissDirection.startToEnd) {
+          // 余额调整账单不允许复制：直接提示并阻断
+          if (bill.billType == BillType.adjust) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('余额调整账单不支持复制或编辑')),
+            );
+            return false;
+          }
           await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(

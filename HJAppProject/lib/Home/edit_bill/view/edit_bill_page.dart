@@ -126,6 +126,22 @@ class _EditBillViewState extends State<EditBillView> {
   Widget build(BuildContext context) {
     final status = context.select((EditBillBloc bloc) => bloc.state.status);
     final state = context.select((EditBillBloc bloc) => bloc.state);
+
+    // 强校验：拦截“余额调整”账单进入编辑页（无论是复制还是编辑）
+    final bool isEditingOrCopyingAdjust = state.initialBill != null &&
+        (BillType.fromValue(state.editBill.data?.billType ?? 1) == BillType.adjust);
+    if (isEditingOrCopyingAdjust) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // 轻提示并返回上一页，防止通过路由参数直接进入
+        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('余额调整账单不支持复制或编辑')),
+        );
+        Navigator.of(context).maybePop();
+      });
+      return const SizedBox.shrink();
+    }
+
     if (_confirm.value == null || _include.value == null) {
       // 如果是转账类型，则强制设置为 true
       if (curBillType() == BillType.transfer) {

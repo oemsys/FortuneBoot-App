@@ -151,19 +151,21 @@ class _BillDetailContent extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {
-                            Navigator.pop(context);
-                            Navigator.of(context).push(EditBillPage.route(
-                                initialBill: BillItemAdd.fromBillItem(bill)));
-                            // 跳转到编辑页面
-                          },
-                          tooltip: '编辑',
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                        ),
-                        const SizedBox(width: 16),
+                        if (bill.billType != BillType.adjust) ...[
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () {
+                              Navigator.pop(context);
+                              Navigator.of(context).push(EditBillPage.route(
+                                  initialBill: BillItemAdd.fromBillItem(bill)));
+                              // 跳转到编辑页面
+                            },
+                            tooltip: '编辑',
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                          const SizedBox(width: 16),
+                        ],
                         IconButton(
                           icon: const Icon(Icons.delete_outline,
                               color: Colors.red),
@@ -323,24 +325,25 @@ class _BillDetailContent extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        // 复制账单
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('账单已复制，请编辑后保存')),
-                        );
-                        Navigator.of(context).push(EditBillPage.route(
-                            initialBill: BillItemAdd.fromBillItem(bill),
-                            isCopyBill: true));
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                  if (bill.billType != BillType.adjust)
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          // 复制账单
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('账单已复制，请编辑后保存')),
+                          );
+                          Navigator.of(context).push(EditBillPage.route(
+                              initialBill: BillItemAdd.fromBillItem(bill),
+                              isCopyBill: true));
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: const Text('复制账单'),
                       ),
-                      child: const Text('复制账单'),
-                    ),
                   ),
                   // const SizedBox(width: 16),
                   // Expanded(

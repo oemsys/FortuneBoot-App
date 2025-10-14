@@ -33,6 +33,14 @@ enum BillType {
     }
   }
 }
+// 统一的类型辅助扩展，避免各处魔法判断
+extension BillTypeX on BillType? {
+  bool get isAdjust => this == BillType.adjust;
+}
+
+extension BillItemX on BillItem {
+  bool get isAdjust => billType == BillType.adjust;
+}
 
 // 使用下面命令自动生成代码
 // flutter pub run build_runner build
