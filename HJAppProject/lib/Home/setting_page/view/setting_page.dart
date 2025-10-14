@@ -238,10 +238,10 @@ class _MineViewState extends State<MineView> {
   void _handleSettingTap(BuildContext context, Setting element) {
     switch (element.type) {
       case SettingType.currentTheme:
-        _showThemeSelectionDialog(context);
+        emptyPage();
         break;
       case SettingType.currentLanguage:
-        _showLanguageSelectionDialog(context);
+        emptyPage();
         break;
       case SettingType.api:
         _showApiSettingDialog(context, element);
