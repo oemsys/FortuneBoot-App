@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hjproject/Home/payee_manage/view/payee_manage_page.dart';
 import 'package:hjproject/home/category_manage/view/category_manage_page.dart';
 import 'package:hjproject/Home/tag_manage/view/tag_manage_page.dart';
+import 'package:hjproject/Home/account_manage/view/account_manage_page.dart';
 
 /// 账本配置分组组件：包含“分类管理”入口
 /// 从主页面拆分，保障样式与交互行为一致。
@@ -74,6 +75,19 @@ class BookConfigGroup extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const PayeeManagePage(),
+                ),
+              );
+            },
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: Icon(Icons.account_balance, color: theme.primaryColor),
+            title: const Text('账户管理'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AccountManagePage(),
                 ),
               );
             },

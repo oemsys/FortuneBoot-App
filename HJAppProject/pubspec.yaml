@@ -44,7 +44,8 @@ dependencies:
   rxdart: ^0.28.0
   time: ^2.1.5
   flutter_randomcolor: ^1.0.18
-  # intl: ^0.19.0
+  intl: ^0.19.0
+  money2: ^6.0.8
 
 dev_dependencies:
   build_runner: ^2.3.3

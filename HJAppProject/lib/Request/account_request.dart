@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/widgets.dart';
+import 'package:hjproject/Home/account_manage/models/fortune_account.dart';
 import 'package:hjproject/login/model/login_model.dart';
 import 'package:hjproject/request/base_request.dart';
 import 'package:hjproject/util/dio_client.dart';
@@ -25,4 +25,44 @@ abstract class AccountService extends BaseService {
   /// 查询启动的账户列表
   @GET('/fortune/account/{groupId}/getEnableList')
   Future<HJResponse> getEnableList(@Path('groupId') int id, {int? type});
+}
+
+// 封装账户分页查询（避免依赖 Retrofit 代码生成），与现有 PayeeService 风格一致
+// - GET /fortune/account/getPage
+// - 固定 recycleBin=false
+// - 入参：groupId, accountType（1-4），可选 pageNum/pageSize
+class AccountQueryService {
+  final Dio _dio = DioClient().dio;
+
+  Future<FortuneAccountPageData> getPage({
+    required int groupId,
+    required int accountType,
+    int pageNum = 1,
+    int pageSize = 20,
+  }) async {
+    final response = await _dio.get(
+      '/fortune/account/getPage',
+      queryParameters: {
+        'groupId': groupId,
+        'recycleBin': false,
+        'accountType': accountType,
+        'pageNum': pageNum,
+        'pageSize': pageSize,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+      final code = data['code'] as int? ?? -1;
+      if (code == 0) {
+        final d = data['data'] as Map<String, dynamic>? ?? {};
+        return FortuneAccountPageData.fromJson(d);
+      } else {
+        final msg = data['msg']?.toString() ?? '服务返回错误';
+        throw Exception(msg);
+      }
+    } else {
+      throw Exception('网络错误: ${response.statusCode}');
+    }
+  }
 }

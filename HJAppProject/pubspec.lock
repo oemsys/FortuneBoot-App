@@ -77,10 +77,10 @@ packages:
     dependency: "direct main"
     description:
       name: bloc
-      sha256: e18b8e7825e9921d67a6d256dba0b6015ece8a577eb0a411845c46a352994d78
+      sha256: a2cebb899f91d36eeeaa55c7b20b5915db5a9df1b8fd4a3c9c825e22e474537d
       url: "https://pub.dev"
     source: hosted
-    version: "9.0.1"
+    version: "9.1.0"
   bloc_concurrency:
     dependency: "direct main"
     description:
@@ -265,6 +265,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.11"
+  decimal:
+    dependency: transitive
+    description:
+      name: decimal
+      sha256: fc706a5618b81e5b367b01dd62621def37abc096f2b46a9bd9068b64c1fa36d0
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.4"
   dio:
     dependency: transitive
     description:
@@ -369,6 +377,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.9.3+4"
+  fixed:
+    dependency: transitive
+    description:
+      name: fixed
+      sha256: da3733efb93270eb003e69c5177c8454b12620c023ba2c4599ff2140f3af5221
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.1.0"
   fixnum:
     dependency: transitive
     description:
@@ -590,7 +606,7 @@ packages:
     source: hosted
     version: "0.2.2"
   intl:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: intl
       sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
@@ -717,6 +733,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  money2:
+    dependency: "direct main"
+    description:
+      name: money2
+      sha256: be5e05ef98502f476248fa29336ddf16dfe2027f02788997e7c55104e84f0b12
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.8"
   multi_dropdown:
     dependency: "direct main"
     description:
@@ -965,6 +989,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.2"
+  rational:
+    dependency: transitive
+    description:
+      name: rational
+      sha256: cb808fb6f1a839e6fc5f7d8cb3b0a10e1db48b3be102de73938c627f0b636336
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.3"
   retrofit:
     dependency: "direct main"
     description:

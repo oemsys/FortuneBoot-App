@@ -25,7 +25,7 @@ class _PayeeManagePageState extends State<PayeeManagePage> {
 
   // 分页状态
   int _pageNum = 1;
-  final int _pageSize = 10;
+  final int _pageSize = 20;
 
   @override
   void initState() {
