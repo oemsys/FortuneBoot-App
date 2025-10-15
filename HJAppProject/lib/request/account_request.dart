@@ -4,6 +4,7 @@ import 'package:hjproject/login/model/login_model.dart';
 import 'package:hjproject/request/base_request.dart';
 import 'package:hjproject/util/dio_client.dart';
 import 'package:retrofit/retrofit.dart';
+import 'package:intl/intl.dart';
 
 part 'account_request.g.dart'; // 代码生成文件
 
@@ -73,8 +74,72 @@ class AccountQueryService {
     required int groupId,
     required int accountId,
   }) async {
-    final response = await _dio.post(
+    final response = await _dio.patch(
       '/fortune/account/$groupId/$accountId/moveToRecycleBin',
+    );
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+      final code = data['code'] as int? ?? -1;
+      if (code == 0) {
+        return true;
+      } else {
+        final msg = data['msg']?.toString() ?? '服务返回错误';
+        throw Exception(msg);
+      }
+    } else {
+      throw Exception('网络错误: ${response.statusCode}');
+    }
+  }
+Map<String, dynamic> _buildModifyBody(FortuneAccount a) {
+    String? _fmtDate(DateTime? d) =>
+        d == null ? null : DateFormat('yyyy-MM-dd').format(d);
+    final Map<String, dynamic> body = {
+      // 共同参数
+      'groupId': a.groupId,
+      'accountId': a.accountId,
+      'accountName': a.accountName,
+      'accountType': a.accountType,
+      'currencyCode': a.currencyCode,
+      'cardNo': a.cardNo,
+      'sort': a.sort,
+      'balance': a.balance,
+      'initialBalance': a.initialBalance,
+      'include': a.include,
+      'canExpense': a.canExpense,
+      'canIncome': a.canIncome,
+      'enable': a.enable,
+      'canTransferOut': a.canTransferOut,
+      'canTransferIn': a.canTransferIn,
+      'remark': a.remark,
+    };
+
+    // 类型差异字段
+    final t = a.accountType ?? 0;
+    if (t == 2) {
+      // 信用账户：额度/账单日/还款日
+      body['creditLimit'] = a.creditLimit;
+      body['billDay'] = _fmtDate(a.billDay);
+      body['repayDay'] = _fmtDate(a.repayDay);
+    } else if (t == 4) {
+      // 贷款账户：额度/利率/还款日
+      body['creditLimit'] = a.creditLimit;
+      body['apr'] = a.apr;
+      body['repayDay'] = _fmtDate(a.repayDay);
+    }
+    // 去除 null 值，避免后端覆盖为 null
+    body.removeWhere((k, v) => v == null);
+    return body;
+  }
+
+  /// 修改账户
+  /// - PUT /fortune/account/modify
+  /// - 请求体：共同参数 + 类型特有参数（见 _buildModifyBody）
+  /// - 成功：HTTP 200 且返回体 code==0
+  Future<bool> modifyAccount(FortuneAccount a) async {
+    final response = await _dio.put(
+      '/fortune/account/modify',
+      data: _buildModifyBody(a),
     );
 
     if (response.statusCode == 200) {

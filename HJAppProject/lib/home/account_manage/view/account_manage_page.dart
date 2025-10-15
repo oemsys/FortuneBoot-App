@@ -7,6 +7,8 @@ import 'package:hjproject/Home/category_manage/view/widgets/category_summary_bar
 import 'package:hjproject/Home/tag_manage/view/widgets/tag_pager.dart';
 
 import 'package:hjproject/Home/account_manage/view/widgets/account_move_to_recycle_dialog.dart';
+import 'package:hjproject/Home/account_manage/view/widgets/account_edit_sheet.dart';
+import 'package:hjproject/request/group_request.dart';
 
 class AccountManagePage extends StatefulWidget {
   const AccountManagePage({Key? key}) : super(key: key);
@@ -281,6 +283,7 @@ class _AccountManagePageState extends State<AccountManagePage> {
         return _AccountTile(
           item: item,
           onMoveToRecycle: () => _onMoveToRecyclePressed(item),
+          onEdit: () => _onEditAccountPressed(item),
         );
       },
     );
@@ -298,6 +301,47 @@ class _AccountManagePageState extends State<AccountManagePage> {
         return '贷款账户';
       default:
         return '账户';
+    }
+  }
+
+  Future<void> _onEditAccountPressed(FortuneAccount item) async {
+    // 获取分组ID
+    final int groupId =
+        item.groupId ?? (context.read<BillsRepository>().groupId() ?? 1);
+    // 查询分组名称，只读展示
+    String groupName = '未知分组';
+    try {
+      final resp = await GroupService().getByGroupId(groupId);
+      if (resp.code == 0) {
+        final data = resp.data as Map? ?? {};
+        final name = (data['groupName'] ?? '').toString();
+        if (name.isNotEmpty) groupName = name;
+      }
+    } catch (_) {
+      // 忽略错误，使用默认值
+    }
+
+    final bool? ok = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return AccountEditSheet(
+          account: item,
+          groupName: groupName,
+        );
+      },
+    );
+
+    if (ok == true) {
+      final theme = Theme.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('修改成功'),
+          backgroundColor: theme.colorScheme.secondary,
+        ),
+      );
+      // 刷新当前页保持分页一致性（复用现有逻辑）
+      await _load();
     }
   }
 }
@@ -362,10 +406,15 @@ class _TypeSegmented extends StatelessWidget {
 }
 
 class _AccountTile extends StatelessWidget {
-  const _AccountTile({required this.item, required this.onMoveToRecycle});
+  const _AccountTile({
+    required this.item,
+    required this.onMoveToRecycle,
+    required this.onEdit,
+  });
 
   final FortuneAccount item;
   final VoidCallback onMoveToRecycle;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -428,9 +477,21 @@ class _AccountTile extends StatelessWidget {
                         onSelected: (value) {
                           if (value == 1) {
                             onMoveToRecycle();
+                          } else if (value == 2) {
+                            onEdit();
                           }
                         },
                         itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 2,
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit, color: theme.colorScheme.primary),
+                                const SizedBox(width: 8),
+                                const Text('修改账户'),
+                              ],
+                            ),
+                          ),
                           PopupMenuItem(
                             value: 1,
                             child: Row(
