@@ -65,4 +65,29 @@ class AccountQueryService {
       throw Exception('网络错误: ${response.statusCode}');
     }
   }
+/// 将账户移入回收站
+  /// - POST /fortune/account/{groupId}/{accountId}/moveToRecycleBin
+  /// - 返回值：{"code":0,"msg":"操作成功","data":null}
+  /// - code == 0 视为成功，否则抛出异常（沿用本文件分页查询的错误处理风格）
+  Future<bool> moveToRecycleBin({
+    required int groupId,
+    required int accountId,
+  }) async {
+    final response = await _dio.post(
+      '/fortune/account/$groupId/$accountId/moveToRecycleBin',
+    );
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+      final code = data['code'] as int? ?? -1;
+      if (code == 0) {
+        return true;
+      } else {
+        final msg = data['msg']?.toString() ?? '服务返回错误';
+        throw Exception(msg);
+      }
+    } else {
+      throw Exception('网络错误: ${response.statusCode}');
+    }
+  }
 }

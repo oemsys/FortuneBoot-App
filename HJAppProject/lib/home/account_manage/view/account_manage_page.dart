@@ -6,6 +6,8 @@ import 'package:hjproject/Request/account_request.dart';
 import 'package:hjproject/Home/category_manage/view/widgets/category_summary_bar.dart';
 import 'package:hjproject/Home/tag_manage/view/widgets/tag_pager.dart';
 
+import 'package:hjproject/Home/account_manage/view/widgets/account_move_to_recycle_dialog.dart';
+
 class AccountManagePage extends StatefulWidget {
   const AccountManagePage({Key? key}) : super(key: key);
 
@@ -90,6 +92,57 @@ class _AccountManagePageState extends State<AccountManagePage> {
       _pageNum += 1;
     });
     _load();
+  }
+
+  Future<void> _onMoveToRecyclePressed(FortuneAccount item) async {
+    final theme = Theme.of(context);
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return AccountMoveToRecycleDialog(
+          accountName: item.accountName ?? '未命名账户',
+          onConfirm: () async {
+            final int? groupId =
+                item.groupId ?? context.read<BillsRepository>().groupId();
+            final int? accountId = item.accountId;
+            if (groupId == null || accountId == null) {
+              throw Exception('缺少必要参数：groupId或accountId为空');
+            }
+            await _service.moveToRecycleBin(
+              groupId: groupId,
+              accountId: accountId,
+            );
+          },
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      // 成功反馈与列表移除
+      setState(() {
+        _rows = List.of(_rows)
+          ..removeWhere((x) => x.accountId == item.accountId);
+        _total = (_total > 0) ? _total - 1 : 0;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('移入回收站成功'),
+          backgroundColor: theme.colorScheme.secondary,
+        ),
+      );
+
+      // 分页边界：若当前页为空且页码>1，则回退一页
+      final int startIndex = (_pageNum - 1) * _pageSize;
+      if (_rows.isEmpty && _pageNum > 1 && startIndex >= _total) {
+        setState(() {
+          _pageNum -= 1;
+        });
+      }
+
+      // 刷新当前页（同步顶部摘要/统计）
+      _load();
+    }
   }
 
   @override
@@ -225,7 +278,10 @@ class _AccountManagePageState extends State<AccountManagePage> {
           return const SizedBox(height: 12);
         }
         final item = _rows[index - 1];
-        return _AccountTile(item: item);
+        return _AccountTile(
+          item: item,
+          onMoveToRecycle: () => _onMoveToRecyclePressed(item),
+        );
       },
     );
   }
@@ -298,16 +354,18 @@ class _TypeSegmented extends StatelessWidget {
       showSelectedIcon: false,
       style: ButtonStyle(
         visualDensity: VisualDensity.compact,
-        padding: MaterialStateProperty.all(const EdgeInsets.symmetric(horizontal: 12)),
+        padding: MaterialStateProperty.all(
+            const EdgeInsets.symmetric(horizontal: 12)),
       ),
     );
   }
 }
 
 class _AccountTile extends StatelessWidget {
-  const _AccountTile({required this.item});
+  const _AccountTile({required this.item, required this.onMoveToRecycle});
 
   final FortuneAccount item;
+  final VoidCallback onMoveToRecycle;
 
   @override
   Widget build(BuildContext context) {
@@ -331,30 +389,62 @@ class _AccountTile extends StatelessWidget {
                     item.accountName ?? '未命名账户',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
                 const SizedBox(width: 12),
-                Column(
+                Row(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      item.balanceText,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.primary,
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          item.balanceText,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                        if ((item.currencyCode ?? '').isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            item.currencyCode!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(width: 8),
+                    Tooltip(
+                      message: '更多操作',
+                      child: PopupMenuButton<int>(
+                        tooltip: '更多操作',
+                        icon: const Icon(Icons.more_vert),
+                        onSelected: (value) {
+                          if (value == 1) {
+                            onMoveToRecycle();
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 1,
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete_outline,
+                                    color: theme.colorScheme.error),
+                                const SizedBox(width: 8),
+                                const Text('移入回收站'),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    if ((item.currencyCode ?? '').isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        item.currencyCode!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ],
@@ -564,7 +654,7 @@ class _StatusWrap extends StatelessWidget {
           filled: true,
         );
 
-      // 计入净资产：青/紫，避免冲突（使用 inverse 系列，跨深浅色对比良好）
+      // 计入资产：青/紫，避免冲突（使用 inverse 系列，跨深浅色对比良好）
       case _StatusKind.includeInNetWorth:
         if (!active) return _disabledStyle(cs);
         return _ChipStyle(
