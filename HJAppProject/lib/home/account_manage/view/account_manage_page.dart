@@ -4,6 +4,7 @@ import 'package:hjproject/Home/account_manage/models/fortune_account.dart';
 import 'package:hjproject/repository/repository/bills_repository.dart';
 import 'package:hjproject/Request/account_request.dart';
 import 'package:hjproject/Home/category_manage/view/widgets/category_summary_bar.dart';
+import 'package:hjproject/Home/tag_manage/view/widgets/tag_pager.dart';
 
 class AccountManagePage extends StatefulWidget {
   const AccountManagePage({Key? key}) : super(key: key);
@@ -22,6 +23,11 @@ class _AccountManagePageState extends State<AccountManagePage> {
   // 顶部类型切换：1活期、2信用、3资产、4贷款；默认资产(3)
   int _accountType = 1;
 
+  // 分页状态
+  int _pageNum = 1;
+  int _pageSize = 20;
+  int _total = 0;
+
   @override
   void initState() {
     super.initState();
@@ -38,11 +44,14 @@ class _AccountManagePageState extends State<AccountManagePage> {
       final data = await _service.getPage(
         groupId: groupId,
         accountType: _accountType,
-        pageNum: 1,
-        pageSize: 50, // 保留分页参数，当前仅做首屏展示
+        pageNum: _pageNum,
+        pageSize: _pageSize,
       );
       setState(() {
         _rows = data.rows;
+        _total = data.total;
+        _pageNum = data.pageNum ?? _pageNum;
+        _pageSize = data.pageSize ?? _pageSize;
         _error = null;
       });
     } catch (e) {
@@ -61,6 +70,24 @@ class _AccountManagePageState extends State<AccountManagePage> {
     if (_accountType == t) return;
     setState(() {
       _accountType = t;
+      _pageNum = 1; // 切换类型回到第一页
+    });
+    _load();
+  }
+
+  void _prevPage() {
+    if (_pageNum <= 1) return;
+    setState(() {
+      _pageNum -= 1;
+    });
+    _load();
+  }
+
+  void _nextPage() {
+    final hasNext = _pageNum * _pageSize < _total;
+    if (!hasNext) return;
+    setState(() {
+      _pageNum += 1;
     });
     _load();
   }
@@ -153,10 +180,18 @@ class _AccountManagePageState extends State<AccountManagePage> {
     if (_rows.isEmpty) {
       return ListView(
         padding: EdgeInsets.symmetric(horizontal: hPadding),
-        children: const [
-          SizedBox(height: 80),
-          _EmptyState(),
-          SizedBox(height: 16),
+        children: [
+          const SizedBox(height: 80),
+          const _EmptyState(),
+          const SizedBox(height: 8),
+          TagPager(
+            total: _total,
+            hasPrev: _pageNum > 1,
+            hasNext: _pageNum * _pageSize < _total,
+            onPrev: _prevPage,
+            onNext: _nextPage,
+          ),
+          const SizedBox(height: 12),
         ],
       );
     }
@@ -164,20 +199,29 @@ class _AccountManagePageState extends State<AccountManagePage> {
     return ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.symmetric(horizontal: hPadding),
-      itemCount: _rows.length + 2, // 顶部摘要 + 列表项 + 底部间距
+      itemCount: _rows.length + 3, // 顶部摘要 + 列表项 + 翻页 + 底部间距
       itemBuilder: (context, index) {
         if (index == 0) {
           return Padding(
             padding: const EdgeInsets.only(top: 12, bottom: 8),
             child: CategorySummaryBar(
               typeText: _typeLabel(_accountType),
-              total: _rows.length,
-              currentPage: 1,
-              // 暂无分页，展示当前数量即可
+              total: _total,
+              currentPage: _pageNum,
             ),
           );
         }
         if (index == _rows.length + 1) {
+          // 翻页控件
+          return TagPager(
+            total: _total,
+            hasPrev: _pageNum > 1,
+            hasNext: _pageNum * _pageSize < _total,
+            onPrev: _prevPage,
+            onNext: _nextPage,
+          );
+        }
+        if (index == _rows.length + 2) {
           return const SizedBox(height: 12);
         }
         final item = _rows[index - 1];
@@ -275,58 +319,67 @@ class _AccountTile extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // 左侧：名称 + 次要信息 + 标签
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
+            // 第一行：左侧主信息（账户名） + 右侧金额/币种（紧凑对齐）
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Text(
                     item.accountName ?? '未命名账户',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      item.balanceText,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    if ((item.currencyCode ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        item.currencyCode!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+            // 第二行：整行用于状态区（可选备注 + 状态 Wrap），与右侧金额宽度解耦
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   if (hasRemark) ...[
-                    const SizedBox(height: 4),
                     Text(
                       item.remark!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
+                    const SizedBox(height: 6),
                   ],
-                  const SizedBox(height: 6),
-                  _AbilityWrap(item: item),
-                  const SizedBox(height: 4),
-                  _MicroStatusRow(item: item),
+                  _StatusWrap(item: item),
                 ],
               ),
-            ),
-            const SizedBox(width: 12),
-            // 右侧：金额
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  item.balanceText,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                if ((item.currencyCode ?? '').isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    item.currencyCode!,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ],
             ),
           ],
         ),
@@ -335,122 +388,191 @@ class _AccountTile extends StatelessWidget {
   }
 }
 
-class _AbilityWrap extends StatelessWidget {
-  const _AbilityWrap({required this.item});
+enum _StatusKind {
+  expenseAllowed,
+  incomeAllowed,
+  transferOutAllowed,
+  transferInAllowed,
+  enabled,
+  includeInNetWorth,
+}
+
+class _ChipStyle {
+  final Color background;
+  final Color foreground;
+  final Color border;
+  final bool filled; // true = filled/tonal, false = outlined/tonal-variant
+
+  const _ChipStyle({
+    required this.background,
+    required this.foreground,
+    required this.border,
+    required this.filled,
+  });
+}
+
+class _StatusWrap extends StatelessWidget {
+  const _StatusWrap({required this.item});
 
   final FortuneAccount item;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final chips = <Widget>[
-      _statusChip(
+      _buildChip(
         context,
-        label: item.canExpense ? '支出允许' : '支出禁止',
-        color: item.canExpense ? Colors.redAccent : Colors.grey,
-        icon: Icons.arrow_upward,
-        tooltip: item.canExpense ? '可支出' : '不可支出',
+        label: '支出允许',
+        kind: _StatusKind.expenseAllowed,
+        active: item.canExpense,
       ),
-      _statusChip(
+      _buildChip(
         context,
-        label: item.canIncome ? '收入允许' : '收入禁止',
-        color: item.canIncome ? Colors.green : Colors.grey,
-        icon: Icons.arrow_downward,
-        tooltip: item.canIncome ? '可收入' : '不可收入',
+        label: '收入允许',
+        kind: _StatusKind.incomeAllowed,
+        active: item.canIncome,
       ),
-      _statusChip(
+      _buildChip(
         context,
-        label: item.canTransferOut ? '转出允许' : '转出禁止',
-        color: item.canTransferOut ? theme.colorScheme.primary : Colors.grey,
-        icon: Icons.upload_outlined,
+        label: '转出允许',
+        kind: _StatusKind.transferOutAllowed,
+        active: item.canTransferOut,
       ),
-      _statusChip(
+      _buildChip(
         context,
-        label: item.canTransferIn ? '转入允许' : '转入禁止',
-        color: item.canTransferIn ? theme.colorScheme.primary : Colors.grey,
-        icon: Icons.download_outlined,
+        label: '转入允许',
+        kind: _StatusKind.transferInAllowed,
+        active: item.canTransferIn,
+      ),
+      _buildChip(
+        context,
+        label: item.enable ? '启用账户' : '停用账户',
+        kind: _StatusKind.enabled,
+        active: item.enable,
+      ),
+      _buildChip(
+        context,
+        label: '计入资产',
+        kind: _StatusKind.includeInNetWorth,
+        active: item.include,
       ),
     ];
 
     return Wrap(
-      spacing: 6,
-      runSpacing: 6,
+      spacing: 8,
+      runSpacing: 8,
       children: chips,
     );
   }
 
-  Widget _statusChip(
+  Widget _buildChip(
     BuildContext context, {
     required String label,
-    required Color color,
-    required IconData icon,
-    String? tooltip,
+    required _StatusKind kind,
+    required bool active,
   }) {
-    final bg = color.withOpacity(0.12);
-    final fg = color;
-    final chip = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: fg.withOpacity(0.5)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: fg),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(fontSize: 12, color: fg, fontWeight: FontWeight.w600),
+    final style = _styleFor(context, kind: kind, active: active);
+    // 统一 Chip 外观：高度、圆角、内边距、字重
+    return Semantics(
+      label: label,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: style.filled ? style.background : style.background,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: style.border, width: 1),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: style.foreground,
           ),
-        ],
+        ),
       ),
     );
-    if (tooltip != null) {
-      return Tooltip(message: tooltip, child: chip);
+  }
+
+  _ChipStyle _disabledStyle(ColorScheme cs) {
+    return _ChipStyle(
+      background: cs.surfaceVariant.withOpacity(0.12),
+      foreground: cs.onSurfaceVariant,
+      border: cs.outline,
+      filled: false,
+    );
+  }
+
+  _ChipStyle _styleFor(
+    BuildContext context, {
+    required _StatusKind kind,
+    required bool active,
+  }) {
+    final cs = Theme.of(context).colorScheme;
+
+    switch (kind) {
+      // 危险/红系：支出允许
+      case _StatusKind.expenseAllowed:
+        if (!active) return _disabledStyle(cs);
+        return _ChipStyle(
+          background: cs.errorContainer,
+          foreground: cs.onErrorContainer,
+          border: cs.error,
+          filled: true,
+        );
+
+      // 成功/绿系：收入允许（使用 secondary 派生）
+      case _StatusKind.incomeAllowed:
+        if (!active) return _disabledStyle(cs);
+        return _ChipStyle(
+          background: cs.secondaryContainer,
+          foreground: cs.onSecondaryContainer,
+          border: cs.secondary,
+          filled: true,
+        );
+
+      // 警示/橙系：转出允许（使用 tertiary 派生，确保与其它不冲突）
+      case _StatusKind.transferOutAllowed:
+        if (!active) return _disabledStyle(cs);
+        return _ChipStyle(
+          background: cs.tertiaryContainer,
+          foreground: cs.onTertiaryContainer,
+          border: cs.tertiary,
+          filled: true,
+        );
+
+      // 信息/蓝系：转入允许（使用 primary 派生）
+      case _StatusKind.transferInAllowed:
+        if (!active) return _disabledStyle(cs);
+        return _ChipStyle(
+          background: cs.primaryContainer,
+          foreground: cs.onPrimaryContainer,
+          border: cs.primary,
+          filled: true,
+        );
+
+      // 启用账户/停用账户：品牌色强调 or 中性色弱化
+      case _StatusKind.enabled:
+        if (!active) {
+          // 停用账户：中性色/灰系（弱化/描边）
+          return _disabledStyle(cs);
+        }
+        // 启用账户：主色调强调（使用 Tonal 以保证可读性与对比）
+        return _ChipStyle(
+          background: cs.primaryContainer,
+          foreground: cs.onPrimaryContainer,
+          border: cs.primary,
+          filled: true,
+        );
+
+      // 计入净资产：青/紫，避免冲突（使用 inverse 系列，跨深浅色对比良好）
+      case _StatusKind.includeInNetWorth:
+        if (!active) return _disabledStyle(cs);
+        return _ChipStyle(
+          background: cs.inverseSurface,
+          foreground: cs.onInverseSurface,
+          border: cs.inversePrimary,
+          filled: true,
+        );
     }
-    return chip;
-  }
-}
-
-class _MicroStatusRow extends StatelessWidget {
-  const _MicroStatusRow({required this.item});
-  final FortuneAccount item;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _microTag(
-          context,
-          label: item.enable ? '启用' : '停用',
-          color: item.enable ? theme.colorScheme.primary : Colors.grey,
-        ),
-        const SizedBox(width: 6),
-        _microTag(
-          context,
-          label: item.include ? '计入' : '不计入',
-          color: item.include ? Colors.teal : Colors.grey,
-        ),
-      ],
-    );
-  }
-
-  Widget _microTag(BuildContext context, {required String label, required Color color}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.5)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600),
-      ),
-    );
   }
 }
