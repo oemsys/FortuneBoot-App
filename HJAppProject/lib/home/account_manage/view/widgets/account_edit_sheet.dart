@@ -48,6 +48,7 @@ class _AccountEditSheetState extends State<AccountEditSheet> {
 
   bool _busy = false;
   String? _errorText;
+  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -236,20 +237,86 @@ class _AccountEditSheetState extends State<AccountEditSheet> {
   }
 
   Future<void> _pickDate({required bool isBillDay}) async {
+    // 去抖，避免一次点击触发多次导航操作
+    if (_isNavigating) return;
+    _isNavigating = true;
+    await Future.delayed(Duration.zero);
+
     final now = DateTime.now();
     final init = isBillDay ? (_billDay ?? now) : (_repayDay ?? now);
-    final picked = await showDatePicker(
+
+    final picked = await showModalBottomSheet<DateTime>(
       context: context,
-      initialDate: init,
-      firstDate: DateTime(now.year - 5, 1, 1),
-      lastDate: DateTime(now.year + 5, 12, 31),
+      useRootNavigator: true,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        DateTime tempDate = DateTime(init.year, init.month, init.day);
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            final cs = Theme.of(context).colorScheme;
+            return Column(
+              children: [
+                // 顶部标题栏
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(color: cs.outlineVariant, width: 0.5)),
+                  ),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(ctx),
+                        child: Text('取消', style: TextStyle(fontSize: 16, color: Theme.of(context).hintColor)),
+                      ),
+                      const Expanded(
+                        child: Text(
+                          '选择日期',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(ctx, DateTime(tempDate.year, tempDate.month, tempDate.day)),
+                        child: Text('确定', style: TextStyle(fontSize: 16, color: cs.primary)),
+                      ),
+                    ],
+                  ),
+                ),
+                // 日期选择内容（仅年月日）
+                Expanded(
+                  child: CalendarDatePicker(
+                    initialDate: tempDate,
+                    firstDate: DateTime(now.year - 5, 1, 1),
+                    lastDate: DateTime(now.year + 5, 12, 31),
+                    onDateChanged: (d) {
+                      tempDate = DateTime(d.year, d.month, d.day);
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
+
+    _isNavigating = false;
+
     if (picked != null) {
+      if (!mounted) return;
       setState(() {
+        final onlyDate = DateTime(picked.year, picked.month, picked.day);
         if (isBillDay) {
-          _billDay = picked;
+          _billDay = onlyDate;
         } else {
-          _repayDay = picked;
+          _repayDay = onlyDate;
         }
       });
     }
@@ -285,8 +352,8 @@ class _AccountEditSheetState extends State<AccountEditSheet> {
       // 类型特有
       creditLimit: _creditLimitCtl.text.trim().isEmpty ? null : _tryDouble(_creditLimitCtl.text.trim()),
       apr: _aprCtl.text.trim().isEmpty ? null : _tryDouble(_aprCtl.text.trim()),
-      billDay: _billDay,
-      repayDay: _repayDay,
+      billDay: _billDay == null ? null : DateTime(_billDay!.year, _billDay!.month, _billDay!.day),
+      repayDay: _repayDay == null ? null : DateTime(_repayDay!.year, _repayDay!.month, _repayDay!.day),
     );
 
     try {
@@ -461,31 +528,28 @@ class _AccountEditSheetState extends State<AccountEditSheet> {
                     onChanged: (_) => setState(() {}),
                   ),
                 const SizedBox(height: 12),
-                Row(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: _dateField(
-                        label: _accountType == 2 ? '账单日' : '还款日',
-                        date: _accountType == 2 ? _billDay : _repayDay,
-                        onPick: () => _pickDate(isBillDay: _accountType == 2),
-                        onClear: () => setState(() {
-                          if (_accountType == 2) {
-                            _billDay = null;
-                          } else {
-                            _repayDay = null;
-                          }
-                        }),
-                      ),
+                    _dateField(
+                      label: _accountType == 2 ? '账单日' : '还款日',
+                      date: _accountType == 2 ? _billDay : _repayDay,
+                      onPick: () => _pickDate(isBillDay: _accountType == 2),
+                      onClear: () => setState(() {
+                        if (_accountType == 2) {
+                          _billDay = null;
+                        } else {
+                          _repayDay = null;
+                        }
+                      }),
                     ),
                     if (_accountType == 2) ...[
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _dateField(
-                          label: '还款日',
-                          date: _repayDay,
-                          onPick: () => _pickDate(isBillDay: false),
-                          onClear: () => setState(() => _repayDay = null),
-                        ),
+                      const SizedBox(height: 12),
+                      _dateField(
+                        label: '还款日',
+                        date: _repayDay,
+                        onPick: () => _pickDate(isBillDay: false),
+                        onClear: () => setState(() => _repayDay = null),
                       ),
                     ],
                   ],
