@@ -66,7 +66,8 @@ class AccountQueryService {
       throw Exception('网络错误: ${response.statusCode}');
     }
   }
-/// 将账户移入回收站
+
+  /// 将账户移入回收站
   /// - POST /fortune/account/{groupId}/{accountId}/moveToRecycleBin
   /// - 返回值：{"code":0,"msg":"操作成功","data":null}
   /// - code == 0 视为成功，否则抛出异常（沿用本文件分页查询的错误处理风格）
@@ -91,7 +92,8 @@ class AccountQueryService {
       throw Exception('网络错误: ${response.statusCode}');
     }
   }
-Map<String, dynamic> _buildModifyBody(FortuneAccount a) {
+
+  Map<String, dynamic> _buildModifyBody(FortuneAccount a) {
     String? _fmtDate(DateTime? d) =>
         d == null ? null : DateFormat('yyyy-MM-dd').format(d);
     final Map<String, dynamic> body = {
@@ -140,6 +142,53 @@ Map<String, dynamic> _buildModifyBody(FortuneAccount a) {
     final response = await _dio.put(
       '/fortune/account/modify',
       data: _buildModifyBody(a),
+    );
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+      final code = data['code'] as int? ?? -1;
+      if (code == 0) {
+        return true;
+      } else {
+        final msg = data['msg']?.toString() ?? '服务返回错误';
+        throw Exception(msg);
+      }
+    } else {
+      throw Exception('网络错误: ${response.statusCode}');
+    }
+  }
+
+  /// 余额调整
+  /// - PATCH /fortune/account/balanceAdjust
+  /// - 请求体：accountId, balance, tradeTime(yyyy-MM-dd HH:mm:ss), bookId, [title], [remark]
+  /// - 成功：HTTP 200 且返回体 code==0
+  Future<bool> balanceAdjust({
+    required int accountId,
+    required double balance,
+    required DateTime tradeTime,
+    required int bookId,
+    String? title,
+    String? remark,
+  }) async {
+    final fmt = DateFormat('yyyy-MM-dd HH:mm:ss');
+    final Map<String, dynamic> body = {
+      'accountId': accountId,
+      'balance': balance,
+      'tradeTime': fmt.format(tradeTime),
+      'bookId': bookId,
+    };
+
+    // 剔除空值字段，避免后端误覆盖
+    if (title != null && title.trim().isNotEmpty) {
+      body['title'] = title.trim();
+    }
+    if (remark != null && remark.trim().isNotEmpty) {
+      body['remark'] = remark.trim();
+    }
+
+    final response = await _dio.patch(
+      '/fortune/account/balanceAdjust',
+      data: body,
     );
 
     if (response.statusCode == 200) {

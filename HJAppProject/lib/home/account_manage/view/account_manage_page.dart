@@ -9,6 +9,7 @@ import 'package:hjproject/Home/tag_manage/view/widgets/tag_pager.dart';
 import 'package:hjproject/Home/account_manage/view/widgets/account_move_to_recycle_dialog.dart';
 import 'package:hjproject/Home/account_manage/view/widgets/account_edit_sheet.dart';
 import 'package:hjproject/request/group_request.dart';
+import 'package:hjproject/Home/account_manage/view/widgets/account_balance_adjust_sheet.dart';
 
 class AccountManagePage extends StatefulWidget {
   const AccountManagePage({Key? key}) : super(key: key);
@@ -284,6 +285,7 @@ class _AccountManagePageState extends State<AccountManagePage> {
           item: item,
           onMoveToRecycle: () => _onMoveToRecyclePressed(item),
           onEdit: () => _onEditAccountPressed(item),
+          onBalanceAdjust: () { _onBalanceAdjustPressed(item); },
         );
       },
     );
@@ -343,7 +345,28 @@ class _AccountManagePageState extends State<AccountManagePage> {
       // 刷新当前页保持分页一致性（复用现有逻辑）
       await _load();
     }
-  }
+   }
+ 
+ // 余额调整入口
+ Future<void> _onBalanceAdjustPressed(FortuneAccount item) async {
+   final bool? ok = await showModalBottomSheet<bool>(
+     context: context,
+     isScrollControlled: true,
+     builder: (ctx) {
+       return AccountBalanceAdjustSheet(account: item);
+     },
+   );
+   if (ok == true) {
+     final theme = Theme.of(context);
+     ScaffoldMessenger.of(context).showSnackBar(
+       SnackBar(
+         content: const Text('调整成功'),
+         backgroundColor: theme.colorScheme.secondary,
+       ),
+     );
+     await _load();
+   }
+ }
 }
 
 class _EmptyState extends StatelessWidget {
@@ -410,11 +433,13 @@ class _AccountTile extends StatelessWidget {
     required this.item,
     required this.onMoveToRecycle,
     required this.onEdit,
+    required this.onBalanceAdjust,
   });
 
   final FortuneAccount item;
   final VoidCallback onMoveToRecycle;
   final VoidCallback onEdit;
+  final VoidCallback onBalanceAdjust;
 
   @override
   Widget build(BuildContext context) {
@@ -479,6 +504,8 @@ class _AccountTile extends StatelessWidget {
                             onMoveToRecycle();
                           } else if (value == 2) {
                             onEdit();
+                          } else if (value == 3) {
+                            onBalanceAdjust();
                           }
                         },
                         itemBuilder: (context) => [
@@ -489,6 +516,16 @@ class _AccountTile extends StatelessWidget {
                                 Icon(Icons.edit, color: theme.colorScheme.primary),
                                 const SizedBox(width: 8),
                                 const Text('修改账户'),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 3,
+                            child: Row(
+                              children: [
+                                Icon(Icons.swap_vert, color: theme.colorScheme.primary),
+                                const SizedBox(width: 8),
+                                const Text('余额调整'),
                               ],
                             ),
                           ),
