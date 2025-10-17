@@ -365,7 +365,7 @@ class _AccountAddSheetState extends State<AccountAddSheet> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _groupTitle('基本信息', subtitle: '名称必填；卡号、排序可选'),
+              _groupTitle('基本信息', subtitle: '名称必填；卡号、余额可选'),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _nameCtl,
@@ -384,16 +384,18 @@ class _AccountAddSheetState extends State<AccountAddSheet> {
                 maxLength: 32,
                 onChanged: (_) => setState(() {}),
               ),
+
               const SizedBox(height: 12),
               TextFormField(
-                controller: _sortCtl,
+                controller: _balanceCtl,
                 decoration: _dec(context,
-                    label: '顺序', hint: '非负整数，可留空', icon: Icons.sort),
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                keyboardType: TextInputType.number,
+                    label: '余额', hint: '可留空', icon: Icons.account_balance),
+                keyboardType:
+                const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]'))
+                ],
                 textAlign: TextAlign.end,
-                maxLength: 9,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
                 onChanged: (_) => setState(() {}),
               ),
             ],
@@ -511,18 +513,17 @@ class _AccountAddSheetState extends State<AccountAddSheet> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _groupTitle('金额与备注', subtitle: '余额为数值（可空），备注可多行'),
+              _groupTitle('顺序与备注', subtitle: '顺序为数值（可空），备注可多行'),
               const SizedBox(height: 12),
               TextFormField(
-                controller: _balanceCtl,
+                controller: _sortCtl,
                 decoration: _dec(context,
-                    label: '余额', hint: '可留空', icon: Icons.account_balance),
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]'))
-                ],
+                    label: '顺序', hint: '非负整数，可留空', icon: Icons.sort),
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                keyboardType: TextInputType.number,
                 textAlign: TextAlign.end,
+                maxLength: 9,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 onChanged: (_) => setState(() {}),
               ),
               const SizedBox(height: 12),
