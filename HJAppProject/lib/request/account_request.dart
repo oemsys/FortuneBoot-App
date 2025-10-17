@@ -266,6 +266,10 @@ extension AccountQueryServiceExtensions on AccountQueryService {
     required bool canTransferIn,
     required bool include,
     required bool enable,
+    DateTime? repayDay,
+    DateTime? billDay,
+    double? creditLimit,
+    double? apr,
   }) async {
     final Map<String, dynamic> body = {
       'groupId': groupId,

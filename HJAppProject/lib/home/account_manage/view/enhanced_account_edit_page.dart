@@ -33,7 +33,6 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
   late TextEditingController _cardNoCtl;
   late TextEditingController _sortCtl;
   late TextEditingController _balanceCtl;
-  late TextEditingController _initialBalanceCtl;
   late TextEditingController _remarkCtl;
 
   // 类型特有
@@ -73,7 +72,6 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
     _cardNoCtl = TextEditingController();
     _sortCtl = TextEditingController();
     _balanceCtl = TextEditingController();
-    _initialBalanceCtl = TextEditingController();
     _remarkCtl = TextEditingController();
     _creditLimitCtl = TextEditingController();
     _aprCtl = TextEditingController();
@@ -104,7 +102,6 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
     _cardNoCtl.text = account.cardNo ?? '';
     _sortCtl.text = account.sort?.toString() ?? '';
     _balanceCtl.text = account.balance?.toString() ?? '';
-    _initialBalanceCtl.text = account.initialBalance?.toString() ?? '';
     _remarkCtl.text = account.remark ?? '';
 
     _include = account.include == 1;
@@ -120,8 +117,13 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
     // 信用卡特有字段
     if (_accountType == 2) {
       _creditLimitCtl.text = account.creditLimit?.toString() ?? '';
-      _aprCtl.text = account.apr?.toString() ?? '';
       _billDay = account.billDay;
+      _repayDay = account.repayDay;
+    }
+
+    if(_accountType == 4) {
+      _aprCtl.text = account.apr?.toString() ?? '';
+      _creditLimitCtl.text = account.creditLimit?.toString() ?? '';
       _repayDay = account.repayDay;
     }
   }
@@ -133,7 +135,6 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
     _cardNoCtl.dispose();
     _sortCtl.dispose();
     _balanceCtl.dispose();
-    _initialBalanceCtl.dispose();
     _remarkCtl.dispose();
     _creditLimitCtl.dispose();
     _aprCtl.dispose();
@@ -522,7 +523,6 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
         cardNo: _cardNoCtl.text.trim().isEmpty ? null : _cardNoCtl.text.trim(),
         sort: _sortCtl.text.trim().isEmpty ? null : int.tryParse(_sortCtl.text.trim()),
         balance: _balanceCtl.text.trim().isEmpty ? null : double.tryParse(_balanceCtl.text.trim()),
-        initialBalance: _initialBalanceCtl.text.trim().isEmpty ? null : double.tryParse(_initialBalanceCtl.text.trim()),
         remark: _remarkCtl.text.trim().isEmpty ? null : _remarkCtl.text.trim(),
         include: _include,
         canExpense: _canExpense,
@@ -533,14 +533,14 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
         accountType: _accountType,
         currencyCode: _currencyCode,
         groupId: widget.account.groupId,
-        creditLimit: _accountType == 2 && _creditLimitCtl.text.trim().isNotEmpty
+        creditLimit: (_accountType == 2 || _accountType == 4) && _creditLimitCtl.text.trim().isNotEmpty
             ? double.tryParse(_creditLimitCtl.text.trim())
             : null,
-        apr: _accountType == 2 && _aprCtl.text.trim().isNotEmpty
+        apr: _accountType == 4 && _aprCtl.text.trim().isNotEmpty
             ? double.tryParse(_aprCtl.text.trim())
             : null,
         billDay: _accountType == 2 ? _billDay : null,
-        repayDay: _accountType == 2 ? _repayDay : null,
+        repayDay: (_accountType == 2 || _accountType == 4) ? _repayDay : null,
       );
 
       final success = await _service.modifyAccount(updatedAccount);
@@ -723,8 +723,51 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
               // 信用卡特有信息
               if (_accountType == 2)
                 _buildSectionCard(
-                  title: '信用卡信息',
-                  subtitle: '信用额度、利率和账单日期',
+                  title: '信用账户信息',
+                  subtitle: '信用额度、账单日、还款日',
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _creditLimitCtl,
+                        decoration: _buildInputDecoration(
+                          label: '信用额度',
+                          hint: '请输入信用额度',
+                          icon: Icons.credit_score,
+                        ),
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]'))
+                        ],
+                        textAlign: TextAlign.end,
+                      ),
+                      SizedBox(height: ds.Spacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDateField(
+                              label: '账单日',
+                              date: _billDay,
+                              onTap: () => _selectBillDay(context),
+                            ),
+                          ),
+                          SizedBox(width: ds.Spacing.md),
+                          Expanded(
+                            child: _buildDateField(
+                              label: '还款日',
+                              date: _repayDay,
+                              onTap: () => _selectRepayDay(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              // 贷款账户特有信息
+              if (_accountType == 4)
+                _buildSectionCard(
+                  title: '贷款账户信息',
+                  subtitle: '信用额度、利率和还款日',
                   child: Column(
                     children: [
                       TextFormField(
@@ -757,14 +800,6 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                       SizedBox(height: ds.Spacing.md),
                       Row(
                         children: [
-                          Expanded(
-                            child: _buildDateField(
-                              label: '账单日',
-                              date: _billDay,
-                              onTap: () => _selectBillDay(context),
-                            ),
-                          ),
-                          SizedBox(width: ds.Spacing.md),
                           Expanded(
                             child: _buildDateField(
                               label: '还款日',

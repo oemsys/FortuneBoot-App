@@ -34,7 +34,11 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
   late TextEditingController _sortCtl;
   late TextEditingController _balanceCtl;
   late TextEditingController _remarkCtl;
+  late TextEditingController _creditLimitCtl;
+  late TextEditingController _aprCtl;
 
+  DateTime? _billDay;
+  DateTime? _repayDay;
   // 六个状态（默认选中/启用）
   bool _include = true;
   bool _canExpense = true;
@@ -42,7 +46,6 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
   bool _enable = true;
   bool _canTransferOut = true;
   bool _canTransferIn = true;
-
   // 币种模板
   List<CurrencyOption> _currencyOptions = const <CurrencyOption>[];
   String? _selectedCurrencyCode;
@@ -74,6 +77,8 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
     _sortCtl = TextEditingController();
     _balanceCtl = TextEditingController();
     _remarkCtl = TextEditingController();
+    _creditLimitCtl = TextEditingController();
+    _aprCtl = TextEditingController();
   }
 
   void _initAnimations() {
@@ -107,6 +112,8 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
     _sortCtl.dispose();
     _balanceCtl.dispose();
     _remarkCtl.dispose();
+    _creditLimitCtl.dispose();
+    _aprCtl.dispose();
     super.dispose();
   }
 
@@ -148,50 +155,6 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
         });
       }
     }
-  }
-
-  String _getCurrencySymbol(String currencyCode) {
-    switch (currencyCode) {
-      case 'CNY':
-        return '¥';
-      case 'USD':
-        return '\$';
-      case 'EUR':
-        return '€';
-      case 'GBP':
-        return '£';
-      case 'JPY':
-        return '¥';
-      default:
-        return currencyCode;
-    }
-  }
-
-  String _getCurrencyName(String currencyCode) {
-    switch (currencyCode) {
-      case 'CNY':
-        return '人民币';
-      case 'USD':
-        return '美元';
-      case 'EUR':
-        return '欧元';
-      case 'GBP':
-        return '英镑';
-      case 'JPY':
-        return '日元';
-      default:
-        return currencyCode;
-    }
-  }
-
-  List<Map<String, String>> _getAllCurrencies() {
-    return [
-      {'code': 'CNY', 'name': '人民币'},
-      {'code': 'USD', 'name': '美元'},
-      {'code': 'EUR', 'name': '欧元'},
-      {'code': 'GBP', 'name': '英镑'},
-      {'code': 'JPY', 'name': '日元'},
-    ];
   }
 
   // 增强版输入框装饰
@@ -490,6 +453,14 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
         canTransferIn: _canTransferIn,
         include: _include,
         enable: _enable,
+        creditLimit: (widget.accountType == 2 || widget.accountType == 4) && _creditLimitCtl.text.trim().isNotEmpty
+            ? double.tryParse(_creditLimitCtl.text.trim())
+            : null,
+        apr: widget.accountType == 4 && _aprCtl.text.trim().isNotEmpty
+            ? double.tryParse(_aprCtl.text.trim())
+            : null,
+        billDay: widget.accountType == 2 ? _billDay : null,
+        repayDay: (widget.accountType == 2 || widget.accountType == 4) ? _repayDay : null,
       );
       if (ok && mounted) {
         // 添加成功动画
@@ -785,6 +756,98 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
                 ),
               ),
 
+              // 信用卡特有信息
+              if (widget.accountType == 2)
+                _buildSectionCard(
+                  title: '信用账户信息',
+                  subtitle: '信用额度、账单日、还款日',
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _creditLimitCtl,
+                        decoration: _buildInputDecoration(
+                          label: '信用额度',
+                          hint: '请输入信用额度',
+                          icon: Icons.credit_score,
+                        ),
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]'))
+                        ],
+                        textAlign: TextAlign.end,
+                      ),
+                      SizedBox(height: ds.Spacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDateField(
+                              label: '账单日',
+                              date: _billDay,
+                              onTap: () => _selectBillDay(context),
+                            ),
+                          ),
+                          SizedBox(width: ds.Spacing.md),
+                          Expanded(
+                            child: _buildDateField(
+                              label: '还款日',
+                              date: _repayDay,
+                              onTap: () => _selectRepayDay(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              // 贷款账户特有信息
+              if (widget.accountType == 4)
+                _buildSectionCard(
+                  title: '贷款账户信息',
+                  subtitle: '信用额度、利率和还款日',
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _creditLimitCtl,
+                        decoration: _buildInputDecoration(
+                          label: '信用额度',
+                          hint: '请输入信用额度',
+                          icon: Icons.credit_score,
+                        ),
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]'))
+                        ],
+                        textAlign: TextAlign.end,
+                      ),
+                      SizedBox(height: ds.Spacing.md),
+                      TextFormField(
+                        controller: _aprCtl,
+                        decoration: _buildInputDecoration(
+                          label: '年化利率 (%)',
+                          hint: '请输入年化利率',
+                          icon: Icons.percent,
+                        ),
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+                        ],
+                        textAlign: TextAlign.end,
+                      ),
+                      SizedBox(height: ds.Spacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDateField(
+                              label: '还款日',
+                              date: _repayDay,
+                              onTap: () => _selectRepayDay(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               // 使用范围与状态卡片
               _buildSectionCard(
                 title: '使用范围与状态',
@@ -861,7 +924,7 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
           ),
         ),
       ),
-      
+
       // 底部操作按钮
       bottomNavigationBar: Container(
         padding: EdgeInsets.all(ds.Spacing.lg).copyWith(
@@ -881,25 +944,25 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
               child: OutlinedButton(
                 onPressed: _busy ? null : () => Navigator.pop(context),
                 style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(
+                  padding: const EdgeInsets.symmetric(
                     vertical: ds.Spacing.md,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   '取消',
                   style: ds.TextStyles.buttonText,
                 ),
               ),
             ),
-            SizedBox(width: ds.Spacing.md),
+            const SizedBox(width: ds.Spacing.md),
             Expanded(
               child: FilledButton.icon(
                 onPressed: _busy ? null : _submit,
                 style: FilledButton.styleFrom(
-                  padding: EdgeInsets.symmetric(
+                  padding: const EdgeInsets.symmetric(
                     vertical: ds.Spacing.md,
                   ),
                   shape: RoundedRectangleBorder(
@@ -928,6 +991,89 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
         ),
       ),
     );
+  }
+
+  Widget _buildDateField({
+    required String label,
+    required DateTime? date,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: ds.TextStyles.inputLabel.copyWith(
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+        SizedBox(height: ds.Spacing.sm),
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
+          child: Container(
+            padding: EdgeInsets.all(ds.Spacing.md),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
+              border: Border.all(
+                color: theme.colorScheme.outline,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.calendar_today_outlined,
+                  size: 16,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                SizedBox(width: ds.Spacing.sm),
+                Expanded(
+                  child: Text(
+                    date != null ? '${date.day}日' : '选择日期',
+                    style: ds.TextStyles.bodyMedium.copyWith(
+                      color: date != null
+                          ? theme.colorScheme.onSurface
+                          : theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _selectBillDay(BuildContext context) async {
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: _billDay ?? DateTime.now(),
+      firstDate: DateTime(2024, 1, 1),
+      lastDate: DateTime(2024, 1, 31),
+    );
+    if (selected != null) {
+      setState(() {
+        _billDay = selected;
+      });
+    }
+  }
+
+  Future<void> _selectRepayDay(BuildContext context) async {
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: _repayDay ?? DateTime.now(),
+      firstDate: DateTime(2024, 1, 1),
+      lastDate: DateTime(2024, 1, 31),
+    );
+    if (selected != null) {
+      setState(() {
+        _repayDay = selected;
+      });
+    }
   }
 
   Widget _buildCurrencySelector() {
