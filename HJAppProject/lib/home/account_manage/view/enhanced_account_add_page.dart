@@ -526,15 +526,16 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
     
     return SizedBox(
       width: 120, // 固定宽度，解决对齐问题
+      height: 40,  // 固定高度，解决对齐问题
       child: FilterChip(
         label: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              selected ? Icons.check : icon,
+              icon, // 始终显示原始图标，不切换为check
               size: 16,
-              color: selected 
-                  ? theme.colorScheme.onPrimary 
+              color: selected
+                  ? theme.colorScheme.onPrimary
                   : theme.colorScheme.onSurface,
             ),
             SizedBox(width: ds.Spacing.xs),
@@ -542,6 +543,11 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
               child: Text(
                 label,
                 overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: selected
+                      ? theme.colorScheme.onPrimary
+                      : theme.colorScheme.onSurface,
+                ),
               ),
             ),
           ],
@@ -549,11 +555,14 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
         selected: selected,
         onSelected: onChanged,
         selectedColor: theme.colorScheme.primary,
-        checkmarkColor: theme.colorScheme.onPrimary,
         backgroundColor: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+        showCheckmark: true, // 显示FilterChip自带的checkmark
+        checkmarkColor: theme.colorScheme.onPrimary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ds.BorderRadiusValues.pill),
         ),
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        visualDensity: VisualDensity.compact,
       ),
     );
   }

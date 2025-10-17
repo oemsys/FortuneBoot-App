@@ -6,7 +6,6 @@ import 'package:hjproject/Request/account_request.dart';
 import 'package:hjproject/Home/category_manage/view/widgets/category_summary_bar.dart';
 import 'package:hjproject/Home/tag_manage/view/widgets/tag_pager.dart';
 
-import 'package:hjproject/Home/account_manage/view/widgets/account_move_to_recycle_dialog.dart';
 import 'package:hjproject/request/group_request.dart';
 
 // 导入新的Page版本
@@ -20,6 +19,7 @@ import 'package:hjproject/Home/account_manage/view/widgets/enhanced_account_card
 import 'package:hjproject/Home/account_manage/view/widgets/enhanced_empty_state.dart';
 import 'package:hjproject/Home/account_manage/view/widgets/enhanced_loading_state.dart';
 import 'package:hjproject/Home/account_manage/view/widgets/enhanced_type_selector.dart';
+import 'package:hjproject/Home/account_manage/view/widgets/enhanced_account_move_to_recycle_dialog.dart';
 
 class AccountManagePage extends StatefulWidget {
   const AccountManagePage({Key? key}) : super(key: key);
@@ -114,8 +114,9 @@ class _AccountManagePageState extends State<AccountManagePage> {
   Future<void> _onMoveToRecyclePressed(FortuneAccount item) async {
     final bool? ok = await showDialog<bool>(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) {
-        return AccountMoveToRecycleDialog(
+        return EnhancedAccountMoveToRecycleDialog(
           accountName: item.accountName ?? '未命名账户',
           onConfirm: () async {
             final int? groupId = context.read<BillsRepository>().groupId();

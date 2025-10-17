@@ -332,15 +332,16 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
     
     return SizedBox(
       width: 120, // 固定宽度，解决对齐问题
+      height: 40,  // 固定高度，解决对齐问题
       child: FilterChip(
         label: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              selected ? Icons.check : icon,
+              icon, // 始终显示原始图标，不切换为check
               size: 16,
-              color: selected 
-                  ? theme.colorScheme.onPrimary 
+              color: selected
+                  ? theme.colorScheme.onPrimary
                   : theme.colorScheme.onSurface,
             ),
             SizedBox(width: ds.Spacing.xs),
@@ -348,6 +349,11 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
               child: Text(
                 label,
                 overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: selected
+                      ? theme.colorScheme.onPrimary
+                      : theme.colorScheme.onSurface,
+                ),
               ),
             ),
           ],
@@ -355,11 +361,14 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
         selected: selected,
         onSelected: onChanged,
         selectedColor: theme.colorScheme.primary,
-        checkmarkColor: theme.colorScheme.onPrimary,
         backgroundColor: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+        showCheckmark: true, // 显示FilterChip自带的checkmark
+        checkmarkColor: theme.colorScheme.onPrimary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ds.BorderRadiusValues.pill),
         ),
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        visualDensity: VisualDensity.compact,
       ),
     );
   }
@@ -659,38 +668,6 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                     ),
                     SizedBox(height: ds.Spacing.md),
                     TextFormField(
-                      controller: _sortCtl,
-                      decoration: _buildInputDecoration(
-                        label: '排序',
-                        hint: '请输入排序数字',
-                        icon: Icons.sort,
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      textAlign: TextAlign.end,
-                      maxLength: 9,
-                    ),
-                    SizedBox(height: ds.Spacing.md),
-                    TextFormField(
-                      controller: _remarkCtl,
-                      maxLines: 3,
-                      decoration: _buildInputDecoration(
-                        label: '备注',
-                        hint: '请输入备注信息',
-                        icon: Icons.notes,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // 余额信息卡片
-              _buildSectionCard(
-                title: '余额信息',
-                subtitle: '当前余额和初始余额',
-                child: Column(
-                  children: [
-                    TextFormField(
                       controller: _balanceCtl,
                       decoration: _buildInputDecoration(
                         label: '当前余额',
@@ -704,19 +681,41 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                       textAlign: TextAlign.end,
                     ),
                     SizedBox(height: ds.Spacing.md),
-                    TextFormField(
-                      controller: _initialBalanceCtl,
-                      decoration: _buildInputDecoration(
-                        label: '初始余额',
-                        hint: '请输入初始余额',
-                        icon: Icons.savings,
+
+
+                    // 错误提示
+                    if (_errorText != null)
+                      Container(
+                        margin: EdgeInsets.symmetric(
+                          horizontal: ds.Spacing.md,
+                          vertical: ds.Spacing.sm,
+                        ),
+                        padding: EdgeInsets.all(ds.Spacing.md),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.errorContainer,
+                          borderRadius: BorderRadius.circular(ds.BorderRadiusValues.sm),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: theme.colorScheme.error,
+                            ),
+                            SizedBox(width: ds.Spacing.sm),
+                            Expanded(
+                              child: Text(
+                                _errorText!,
+                                style: ds.TextStyles.bodyMedium.copyWith(
+                                  color: theme.colorScheme.error,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]'))
-                      ],
-                      textAlign: TextAlign.end,
-                    ),
+
+                    SizedBox(height: ds.Spacing.xl),
+
                   ],
                 ),
               ),
@@ -778,46 +777,43 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                     ],
                   ),
                 ),
-
               // 使用范围与状态卡片
               _buildSectionCard(
                 title: '使用范围与状态',
                 subtitle: '设置账户的使用权限和状态',
                 child: _buildStatusChips(),
               ),
-
-              // 错误提示
-              if (_errorText != null)
-                Container(
-                  margin: EdgeInsets.symmetric(
-                    horizontal: ds.Spacing.md,
-                    vertical: ds.Spacing.sm,
-                  ),
-                  padding: EdgeInsets.all(ds.Spacing.md),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.errorContainer,
-                    borderRadius: BorderRadius.circular(ds.BorderRadiusValues.sm),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        color: theme.colorScheme.error,
+              // 余额信息卡片
+              _buildSectionCard(
+                title: '顺序与备注',
+                subtitle: '顺序为数值（可空），备注可多行。',
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _sortCtl,
+                      decoration: _buildInputDecoration(
+                        label: '排序',
+                        hint: '请输入排序数字',
+                        icon: Icons.sort,
                       ),
-                      SizedBox(width: ds.Spacing.sm),
-                      Expanded(
-                        child: Text(
-                          _errorText!,
-                          style: ds.TextStyles.bodyMedium.copyWith(
-                            color: theme.colorScheme.error,
-                          ),
-                        ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      textAlign: TextAlign.end,
+                      maxLength: 9,
+                    ),
+                    SizedBox(height: ds.Spacing.md),
+                    TextFormField(
+                      controller: _remarkCtl,
+                      maxLines: 3,
+                      decoration: _buildInputDecoration(
+                        label: '备注',
+                        hint: '请输入备注信息',
+                        icon: Icons.notes,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-
-              SizedBox(height: ds.Spacing.xl),
+              ),
             ],
           ),
         ),
