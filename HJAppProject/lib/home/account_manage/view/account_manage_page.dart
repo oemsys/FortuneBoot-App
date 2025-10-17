@@ -10,6 +10,7 @@ import 'package:hjproject/Home/account_manage/view/widgets/account_move_to_recyc
 import 'package:hjproject/Home/account_manage/view/widgets/account_edit_sheet.dart';
 import 'package:hjproject/request/group_request.dart';
 import 'package:hjproject/Home/account_manage/view/widgets/account_balance_adjust_sheet.dart';
+import 'package:hjproject/Home/account_manage/view/widgets/account_add_sheet.dart';
 
 class AccountManagePage extends StatefulWidget {
   const AccountManagePage({Key? key}) : super(key: key);
@@ -32,6 +33,9 @@ class _AccountManagePageState extends State<AccountManagePage> {
   int _pageNum = 1;
   int _pageSize = 20;
   int _total = 0;
+
+  // 导航去抖，避免快速连点导致 navigator 锁冲突
+  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -148,6 +152,40 @@ class _AccountManagePageState extends State<AccountManagePage> {
     }
   }
 
+  // 新增账户入口
+  Future<void> _onAddAccountPressed() async {
+    if (_isNavigating) return;
+    _isNavigating = true;
+    await Future.delayed(Duration.zero);
+
+    final int groupId = context.read<BillsRepository>().groupId() ?? 1;
+
+    final bool? ok = await showModalBottomSheet<bool>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return AccountAddSheet(
+          groupId: groupId,
+          accountType: _accountType,
+        );
+      },
+    );
+
+    _isNavigating = false;
+
+    if (ok == true) {
+      final theme = Theme.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('新增成功'),
+          backgroundColor: theme.colorScheme.secondary,
+        ),
+      );
+      await _load(); // 刷新当前页与顶部摘要
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double horizontalPadding() {
@@ -162,6 +200,13 @@ class _AccountManagePageState extends State<AccountManagePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('账户管理'),
+        actions: [
+          IconButton(
+            tooltip: '新增账户',
+            icon: const Icon(Icons.add),
+            onPressed: _onAddAccountPressed,
+          ),
+        ],
       ),
       body: Column(
         children: [

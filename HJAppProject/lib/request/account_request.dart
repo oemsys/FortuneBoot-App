@@ -205,3 +205,111 @@ class AccountQueryService {
     }
   }
 }
+
+/// Currency template option model for selection
+class CurrencyOption {
+  final int? value;
+  final String label;
+
+  CurrencyOption({this.value, required this.label});
+
+  factory CurrencyOption.fromJson(Map<String, dynamic> json) {
+    return CurrencyOption(
+      value: (json['value'] as num?)?.toInt(),
+      label: (json['label'] ?? '').toString(),
+    );
+  }
+}
+
+extension AccountQueryServiceExtensions on AccountQueryService {
+  /// 获取币种模板
+  /// - GET /fortune/group/getCurrencyTemplate
+  /// - 成功返回 List<CurrencyOption>
+  Future<List<CurrencyOption>> getCurrencyTemplate() async {
+    final response = await _dio.get('/fortune/group/getCurrencyTemplate');
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+      final code = data['code'] as int? ?? -1;
+      if (code == 0) {
+        final list = (data['data'] as List? ?? [])
+            .map((e) => CurrencyOption.fromJson(
+                Map<String, dynamic>.from(e as Map)))
+            .toList();
+        return list;
+      } else {
+        final msg = data['msg']?.toString() ?? '服务返回错误';
+        throw Exception(msg);
+      }
+    } else {
+      throw Exception('网络错误: ${response.statusCode}');
+    }
+  }
+
+  /// 新增账户
+  /// - POST /fortune/account/add
+  /// - 必填：groupId、accountName、accountType、currencyCode、canExpense、canIncome、canTransferOut、canTransferIn、include、enable
+  /// - 可选：cardNo、sort、balance、remark
+  /// - 成功：HTTP 200 且返回体 code==0
+  Future<bool> addAccount({
+    required int groupId,
+    required String accountName,
+    required int accountType,
+    required String currencyCode,
+    String? cardNo,
+    int? sort,
+    double? balance,
+    String? remark,
+    required bool canExpense,
+    required bool canIncome,
+    required bool canTransferOut,
+    required bool canTransferIn,
+    required bool include,
+    required bool enable,
+  }) async {
+    final Map<String, dynamic> body = {
+      'groupId': groupId,
+      'accountName': accountName.trim(),
+      'accountType': accountType,
+      'currencyCode': currencyCode.trim(),
+      'canExpense': canExpense,
+      'canIncome': canIncome,
+      'canTransferOut': canTransferOut,
+      'canTransferIn': canTransferIn,
+      'include': include,
+      'enable': enable,
+    };
+
+    // 剔除空值字段，避免后端误覆盖
+    if (cardNo != null && cardNo.trim().isNotEmpty) {
+      body['cardNo'] = cardNo.trim();
+    }
+    if (sort != null) {
+      body['sort'] = sort;
+    }
+    if (balance != null) {
+      body['balance'] = balance;
+    }
+    if (remark != null && remark.trim().isNotEmpty) {
+      body['remark'] = remark.trim();
+    }
+
+    final response = await _dio.post(
+      '/fortune/account/add',
+      data: body,
+    );
+
+    if (response.statusCode == 200) {
+      final data = response.data;
+      final code = data['code'] as int? ?? -1;
+      if (code == 0) {
+        return true;
+      } else {
+        final msg = data['msg']?.toString() ?? '服务返回错误';
+        throw Exception(msg);
+      }
+    } else {
+      throw Exception('网络错误: ${response.statusCode}');
+    }
+  }
+}
