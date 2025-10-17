@@ -224,10 +224,8 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
   }) {
     final theme = Theme.of(context);
     return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: ds.Spacing.md,
-        vertical: ds.Spacing.sm,
-      ),
+      // 使用设计系统统一卡片间距，保证与页面其他卡片左右对齐
+      margin: ds.Paddings.cardMargin,
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(ds.BorderRadiusValues.lg),
@@ -486,55 +484,51 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
     }
   }
 
-  // 修复适用范围选择的对齐问题 - 使用固定宽度的FilterChip
-  Widget _buildFixedWidthChip({
+  // 使用范围与状态选项芯片（统一样式，去除双勾并避免文字遮挡）
+  Widget _buildStatusChip({
     required String label,
     required bool selected,
     required ValueChanged<bool> onChanged,
     required IconData icon,
   }) {
     final theme = Theme.of(context);
-    
-    return SizedBox(
-      width: 120, // 固定宽度，解决对齐问题
-      height: 40,  // 固定高度，解决对齐问题
-      child: FilterChip(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon, // 始终显示原始图标，不切换为check
-              size: 16,
-              color: selected
-                  ? theme.colorScheme.onPrimary
-                  : theme.colorScheme.onSurface,
-            ),
-            SizedBox(width: ds.Spacing.xs),
-            Expanded(
-              child: Text(
-                label,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: selected
-                      ? theme.colorScheme.onPrimary
-                      : theme.colorScheme.onSurface,
-                ),
+
+    return FilterChip(
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 16,
+            color: selected
+                ? theme.colorScheme.onPrimary
+                : theme.colorScheme.onSurfaceVariant,
+          ),
+          SizedBox(width: ds.Spacing.xs),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: ds.TextStyles.caption.copyWith(
+                color: selected
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.onSurface,
               ),
             ),
-          ],
-        ),
-        selected: selected,
-        onSelected: onChanged,
-        selectedColor: theme.colorScheme.primary,
-        backgroundColor: theme.colorScheme.surfaceVariant.withOpacity(0.5),
-        showCheckmark: true, // 显示FilterChip自带的checkmark
-        checkmarkColor: theme.colorScheme.onPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ds.BorderRadiusValues.pill),
-        ),
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        visualDensity: VisualDensity.compact,
+          ),
+        ],
       ),
+      labelPadding: EdgeInsets.symmetric(horizontal: ds.Spacing.sm),
+      selected: selected,
+      onSelected: onChanged,
+      selectedColor: theme.colorScheme.primary,
+      backgroundColor: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+      showCheckmark: false, // 关闭内置勾选，保留自定义前缀图标，避免“双勾”
+      shape: RoundedRectangleBorder(
+        borderRadius: ds.BorderRadii.chip,
+      ),
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      visualDensity: VisualDensity.compact,
     );
   }
 
@@ -543,37 +537,37 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
       spacing: ds.Spacing.sm,
       runSpacing: ds.Spacing.sm,
       children: [
-        _buildFixedWidthChip(
+        _buildStatusChip(
           label: '计入资产',
           selected: _include,
           onChanged: (v) => setState(() => _include = v),
           icon: Icons.account_balance_wallet,
         ),
-        _buildFixedWidthChip(
+        _buildStatusChip(
           label: '支出允许',
           selected: _canExpense,
           onChanged: (v) => setState(() => _canExpense = v),
           icon: Icons.remove_circle_outline,
         ),
-        _buildFixedWidthChip(
+        _buildStatusChip(
           label: '收入允许',
           selected: _canIncome,
           onChanged: (v) => setState(() => _canIncome = v),
           icon: Icons.add_circle_outline,
         ),
-        _buildFixedWidthChip(
+        _buildStatusChip(
           label: '启用账户',
           selected: _enable,
           onChanged: (v) => setState(() => _enable = v),
           icon: Icons.toggle_on,
         ),
-        _buildFixedWidthChip(
+        _buildStatusChip(
           label: '转出允许',
           selected: _canTransferOut,
           onChanged: (v) => setState(() => _canTransferOut = v),
           icon: Icons.call_made,
         ),
-        _buildFixedWidthChip(
+        _buildStatusChip(
           label: '转入允许',
           selected: _canTransferIn,
           onChanged: (v) => setState(() => _canTransferIn = v),
