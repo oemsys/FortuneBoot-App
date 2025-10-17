@@ -94,6 +94,48 @@ class TextStyles {
     fontWeight: FontWeights.regular,
     height: LineHeights.relaxed,
   );
+
+  // 输入框标签样式
+  static const TextStyle inputLabel = TextStyle(
+    fontSize: FontSizes.label,
+    fontWeight: FontWeights.medium,
+    height: LineHeights.normal,
+  );
+
+  // 输入框提示样式
+  static const TextStyle inputHint = TextStyle(
+    fontSize: FontSizes.body,
+    fontWeight: FontWeights.regular,
+    height: LineHeights.normal,
+  );
+
+  // 节标题样式
+  static const TextStyle sectionTitle = TextStyle(
+    fontSize: FontSizes.title,
+    fontWeight: FontWeights.semiBold,
+    height: LineHeights.normal,
+  );
+
+  // 正文样式
+  static const TextStyle bodyMedium = TextStyle(
+    fontSize: FontSizes.body,
+    fontWeight: FontWeights.regular,
+    height: LineHeights.normal,
+  );
+
+  // 按钮文字样式
+  static const TextStyle buttonText = TextStyle(
+    fontSize: FontSizes.body,
+    fontWeight: FontWeights.medium,
+    height: LineHeights.normal,
+  );
+
+  // 说明文字样式
+  static const TextStyle caption = TextStyle(
+    fontSize: FontSizes.caption,
+    fontWeight: FontWeights.regular,
+    height: LineHeights.normal,
+  );
 }
 
 /// 记账专用色彩语义
@@ -224,6 +266,26 @@ class Durations {
   static const Duration normal = Duration(milliseconds: 300);
   static const Duration slow = Duration(milliseconds: 500);
   static const Duration verySlow = Duration(milliseconds: 800);
+}
+
+/// 动画时长（别名类，用于兼容性）
+class AnimationDurations {
+  AnimationDurations._();
+  
+  static const Duration fast = Duration(milliseconds: 150);
+  static const Duration normal = Duration(milliseconds: 300);
+  static const Duration slow = Duration(milliseconds: 500);
+  static const Duration verySlow = Duration(milliseconds: 800);
+}
+
+/// 圆角半径（别名类，用于兼容性）
+class AppBorderRadius {
+  AppBorderRadius._();
+  
+  static final BorderRadius card = BorderRadii.card;
+  static final BorderRadius button = BorderRadii.button;
+  static final BorderRadius chip = BorderRadii.chip;
+  static final BorderRadius sheet = BorderRadii.sheet;
 }
 
 /// 动画曲线

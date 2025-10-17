@@ -7,10 +7,12 @@ import 'package:hjproject/Home/category_manage/view/widgets/category_summary_bar
 import 'package:hjproject/Home/tag_manage/view/widgets/tag_pager.dart';
 
 import 'package:hjproject/Home/account_manage/view/widgets/account_move_to_recycle_dialog.dart';
-import 'package:hjproject/Home/account_manage/view/widgets/account_edit_sheet.dart';
 import 'package:hjproject/request/group_request.dart';
-import 'package:hjproject/Home/account_manage/view/widgets/account_balance_adjust_sheet.dart';
-import 'package:hjproject/Home/account_manage/view/widgets/account_add_sheet.dart';
+
+// 导入新的Page版本
+import 'package:hjproject/Home/account_manage/view/enhanced_account_add_page.dart';
+import 'package:hjproject/Home/account_manage/view/enhanced_account_edit_page.dart';
+import 'package:hjproject/Home/account_manage/view/enhanced_account_balance_adjust_page.dart';
 
 // 导入增强版组件
 import 'package:hjproject/Home/account_manage/constants/design_system.dart' as ds;
@@ -146,7 +148,7 @@ class _AccountManagePageState extends State<AccountManagePage> {
     }
   }
 
-  // 新增账户入口
+  // 新增账户入口 - 改为Page导航
   Future<void> _onAddAccountPressed() async {
     if (_isNavigating) return;
     _isNavigating = true;
@@ -154,16 +156,13 @@ class _AccountManagePageState extends State<AccountManagePage> {
 
     final int groupId = context.read<BillsRepository>().groupId() ?? 1;
 
-    final bool? ok = await showModalBottomSheet<bool>(
-      context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      builder: (ctx) {
-        return AccountAddSheet(
+    final bool? ok = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => EnhancedAccountAddPage(
           groupId: groupId,
           accountType: _accountType,
-        );
-      },
+        ),
+      ),
     );
 
     _isNavigating = false;
@@ -421,6 +420,7 @@ class _AccountManagePageState extends State<AccountManagePage> {
     }
   }
 
+  // 修改账户 - 改为Page导航
   Future<void> _onEditAccountPressed(FortuneAccount item) async {
     String groupName = '默认账本';
     try {
@@ -437,12 +437,13 @@ class _AccountManagePageState extends State<AccountManagePage> {
       // 忽略错误，使用默认值
     }
 
-    final bool? ok = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) {
-        return AccountEditSheet(account: item, groupName: groupName);
-      },
+    final bool? ok = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => EnhancedAccountEditPage(
+          account: item,
+          groupName: groupName,
+        ),
+      ),
     );
     if (ok == true) {
       final theme = Theme.of(context);
@@ -456,13 +457,14 @@ class _AccountManagePageState extends State<AccountManagePage> {
     }
   }
 
+  // 余额调整 - 改为Page导航
   Future<void> _onBalanceAdjustPressed(FortuneAccount item) async {
-    final bool? ok = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) {
-        return AccountBalanceAdjustSheet(account: item);
-      },
+    final bool? ok = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (context) => EnhancedAccountBalanceAdjustPage(
+          account: item,
+        ),
+      ),
     );
     if (ok == true) {
       final theme = Theme.of(context);
