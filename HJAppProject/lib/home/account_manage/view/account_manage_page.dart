@@ -12,6 +12,13 @@ import 'package:hjproject/request/group_request.dart';
 import 'package:hjproject/Home/account_manage/view/widgets/account_balance_adjust_sheet.dart';
 import 'package:hjproject/Home/account_manage/view/widgets/account_add_sheet.dart';
 
+// 导入增强版组件
+import 'package:hjproject/Home/account_manage/constants/design_system.dart' as ds;
+import 'package:hjproject/Home/account_manage/view/widgets/enhanced_account_card.dart';
+import 'package:hjproject/Home/account_manage/view/widgets/enhanced_empty_state.dart';
+import 'package:hjproject/Home/account_manage/view/widgets/enhanced_loading_state.dart';
+import 'package:hjproject/Home/account_manage/view/widgets/enhanced_type_selector.dart';
+
 class AccountManagePage extends StatefulWidget {
   const AccountManagePage({Key? key}) : super(key: key);
 
@@ -48,44 +55,47 @@ class _AccountManagePageState extends State<AccountManagePage> {
       _loading = true;
       _error = null;
     });
+    
     try {
-      final groupId = context.read<BillsRepository>().groupId() ?? 1;
-      final data = await _service.getPage(
+      final int? groupId = context.read<BillsRepository>().groupId();
+      if (groupId == null) {
+        throw Exception('获取账本ID失败，请重新登录');
+      }
+
+      final pageData = await _service.getPage(
         groupId: groupId,
         accountType: _accountType,
         pageNum: _pageNum,
         pageSize: _pageSize,
       );
-      setState(() {
-        _rows = data.rows;
-        _total = data.total;
-        _pageNum = data.pageNum ?? _pageNum;
-        _pageSize = data.pageSize ?? _pageSize;
-        _error = null;
-      });
+
+      if (mounted) {
+        setState(() {
+          _rows = pageData.rows;
+          _total = pageData.total;
+          _loading = false;
+          _error = null;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-      });
-    } finally {
-      if (!mounted) return;
-      setState(() {
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = e.toString();
+        });
+      }
     }
   }
 
-  void _onTypeChanged(int t) {
-    if (_accountType == t) return;
+  void _onTypeChanged(int newType) {
     setState(() {
-      _accountType = t;
+      _accountType = newType;
       _pageNum = 1; // 切换类型回到第一页
     });
     _load();
   }
 
   void _prevPage() {
-    if (_pageNum <= 1) return;
     setState(() {
       _pageNum -= 1;
     });
@@ -93,8 +103,6 @@ class _AccountManagePageState extends State<AccountManagePage> {
   }
 
   void _nextPage() {
-    final hasNext = _pageNum * _pageSize < _total;
-    if (!hasNext) return;
     setState(() {
       _pageNum += 1;
     });
@@ -102,15 +110,13 @@ class _AccountManagePageState extends State<AccountManagePage> {
   }
 
   Future<void> _onMoveToRecyclePressed(FortuneAccount item) async {
-    final theme = Theme.of(context);
-    final bool? confirmed = await showDialog<bool>(
+    final bool? ok = await showDialog<bool>(
       context: context,
       builder: (ctx) {
         return AccountMoveToRecycleDialog(
           accountName: item.accountName ?? '未命名账户',
           onConfirm: () async {
-            final int? groupId =
-                item.groupId ?? context.read<BillsRepository>().groupId();
+            final int? groupId = context.read<BillsRepository>().groupId();
             final int? accountId = item.accountId;
             if (groupId == null || accountId == null) {
               throw Exception('缺少必要参数：groupId或accountId为空');
@@ -123,23 +129,11 @@ class _AccountManagePageState extends State<AccountManagePage> {
         );
       },
     );
-
-    if (confirmed == true) {
-      // 成功反馈与列表移除
+    if (ok == true) {
       setState(() {
-        _rows = List.of(_rows)
-          ..removeWhere((x) => x.accountId == item.accountId);
         _total = (_total > 0) ? _total - 1 : 0;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('移入回收站成功'),
-          backgroundColor: theme.colorScheme.secondary,
-        ),
-      );
-
-      // 分页边界：若当前页为空且页码>1，则回退一页
       final int startIndex = (_pageNum - 1) * _pageSize;
       if (_rows.isEmpty && _pageNum > 1 && startIndex >= _total) {
         setState(() {
@@ -188,18 +182,12 @@ class _AccountManagePageState extends State<AccountManagePage> {
 
   @override
   Widget build(BuildContext context) {
-    double horizontalPadding() {
-      final width = MediaQuery.of(context).size.width;
-      if (width < 600) return 16;
-      if (width < 1024) return 20;
-      return 24;
-    }
-
-    final hPadding = horizontalPadding();
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('账户管理'),
+        title: Text(
+          '账户管理',
+          style: ds.TextStyles.pageTitle,
+        ),
         actions: [
           IconButton(
             tooltip: '新增账户',
@@ -210,18 +198,20 @@ class _AccountManagePageState extends State<AccountManagePage> {
       ),
       body: Column(
         children: [
-          // 顶部类型切换
-          Padding(
-            padding: EdgeInsets.fromLTRB(hPadding, 12, hPadding, 8),
-            child: _TypeSegmented(
-              selected: _accountType,
-              onChanged: _onTypeChanged,
+          // 顶部类型切换 - 使用增强版组件
+          Container(
+            padding: context.responsiveHorizontalPadding,
+            child: EnhancedTypeSelector(
+              selectedType: _accountType,
+              onTypeChanged: _onTypeChanged,
+              enabled: !_loading,
             ),
           ),
+          SizedBox(height: ds.Spacing.sm),
           Expanded(
             child: RefreshIndicator(
               onRefresh: _load,
-              child: _buildBody(hPadding),
+              child: _buildEnhancedBody(context),
             ),
           ),
         ],
@@ -229,115 +219,195 @@ class _AccountManagePageState extends State<AccountManagePage> {
     );
   }
 
-  Widget _buildBody(double hPadding) {
-    // 统一三态切换，风格参考“交易对象/分类管理”
+  Widget _buildEnhancedBody(BuildContext context) {
+    // 使用增强版组件的三态切换
     if (_loading) {
-      final theme = Theme.of(context);
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: theme.colorScheme.primary),
-            const SizedBox(height: 12),
-            Text(
-              '正在加载账户...',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
+      return const EnhancedLoadingState(
+        message: '正在加载账户数据...',
       );
     }
+    
     if (_error != null) {
-      final theme = Theme.of(context);
-      return ListView(
-        padding: EdgeInsets.symmetric(horizontal: hPadding),
-        children: [
-          const SizedBox(height: 80),
-          Icon(Icons.error_outline, color: theme.colorScheme.error, size: 48),
-          const SizedBox(height: 12),
-          Center(
-            child: Text(
-              _error ?? '加载失败',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Center(
-            child: OutlinedButton.icon(
-              onPressed: _load,
-              icon: const Icon(Icons.refresh),
-              label: const Text('重试'),
-            ),
-          ),
-        ],
-      );
+      return _buildErrorState(context);
     }
 
     if (_rows.isEmpty) {
-      return ListView(
-        padding: EdgeInsets.symmetric(horizontal: hPadding),
-        children: [
-          const SizedBox(height: 80),
-          const _EmptyState(),
-          const SizedBox(height: 8),
-          TagPager(
-            total: _total,
-            hasPrev: _pageNum > 1,
-            hasNext: _pageNum * _pageSize < _total,
-            onPrev: _prevPage,
-            onNext: _nextPage,
-          ),
-          const SizedBox(height: 12),
-        ],
+      return EnhancedEmptyState(
+        accountType: _accountType,
+        onAddAccount: _onAddAccountPressed,
       );
     }
 
-    return ListView.builder(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.symmetric(horizontal: hPadding),
-      itemCount: _rows.length + 3, // 顶部摘要 + 列表项 + 翻页 + 底部间距
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 8),
-            child: CategorySummaryBar(
-              typeText: _typeLabel(_accountType),
-              total: _total,
-              currentPage: _pageNum,
+    return _buildAccountList(context);
+  }
+
+  Widget _buildErrorState(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListView(
+      padding: context.responsiveHorizontalPadding,
+      children: [
+        SizedBox(height: ds.Spacing.xxxl),
+        Icon(
+          Icons.error_outline,
+          color: theme.colorScheme.error,
+          size: 48,
+        ),
+        SizedBox(height: ds.Spacing.md),
+        Center(
+          child: Text(
+            _error ?? '加载失败',
+            style: ds.TextStyles.emptyStateDescription.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
             ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        SizedBox(height: ds.Spacing.lg),
+        Center(
+          child: ElevatedButton.icon(
+            onPressed: _load,
+            icon: const Icon(Icons.refresh),
+            label: const Text('重试'),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(
+                horizontal: ds.Spacing.lg,
+                vertical: ds.Spacing.md,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAccountList(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 响应式网格布局
+        final crossAxisCount = context.gridColumns;
+        
+        if (crossAxisCount == 1) {
+          // 移动端：列表布局
+          return ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: context.responsiveHorizontalPadding,
+            itemCount: _rows.length + 3,
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    top: ds.Spacing.md,
+                    bottom: ds.Spacing.sm,
+                  ),
+                  child: CategorySummaryBar(
+                    typeText: _typeLabel(_accountType),
+                    total: _total,
+                    currentPage: _pageNum,
+                  ),
+                );
+              }
+              if (index == _rows.length + 1) {
+                return Padding(
+                  padding: EdgeInsets.symmetric(vertical: ds.Spacing.md),
+                  child: TagPager(
+                    total: _total,
+                    hasPrev: _pageNum > 1,
+                    hasNext: _pageNum * _pageSize < _total,
+                    onPrev: _prevPage,
+                    onNext: _nextPage,
+                  ),
+                );
+              }
+              if (index == _rows.length + 2) {
+                return SizedBox(height: ds.Spacing.md);
+              }
+              
+              final item = _rows[index - 1];
+              return EnhancedAccountCard(
+                account: item,
+                onTap: () {
+                  // 可以添加账户详情页导航
+                },
+                onEdit: () => _onEditAccountPressed(item),
+                onBalanceAdjust: () => _onBalanceAdjustPressed(item),
+                onMoveToRecycle: () => _onMoveToRecyclePressed(item),
+              );
+            },
+          );
+        } else {
+          // 平板/桌面端：网格布局
+          return CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: context.responsiveHorizontalPadding,
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      SizedBox(height: ds.Spacing.md),
+                      CategorySummaryBar(
+                        typeText: _typeLabel(_accountType),
+                        total: _total,
+                        currentPage: _pageNum,
+                      ),
+                      SizedBox(height: ds.Spacing.lg),
+                    ],
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: context.responsiveHorizontalPadding,
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    childAspectRatio: 1.4,
+                    crossAxisSpacing: ds.Spacing.md,
+                    mainAxisSpacing: ds.Spacing.md,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final item = _rows[index];
+                      return EnhancedAccountCard(
+                        account: item,
+                        onTap: () {
+                          // 可以添加账户详情页导航
+                        },
+                        onEdit: () => _onEditAccountPressed(item),
+                        onBalanceAdjust: () => _onBalanceAdjustPressed(item),
+                        onMoveToRecycle: () => _onMoveToRecyclePressed(item),
+                      );
+                    },
+                    childCount: _rows.length,
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: context.responsiveHorizontalPadding,
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      SizedBox(height: ds.Spacing.lg),
+                      TagPager(
+                        total: _total,
+                        hasPrev: _pageNum > 1,
+                        hasNext: _pageNum * _pageSize < _total,
+                        onPrev: _prevPage,
+                        onNext: _nextPage,
+                      ),
+                      SizedBox(height: ds.Spacing.md),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           );
         }
-        if (index == _rows.length + 1) {
-          // 翻页控件
-          return TagPager(
-            total: _total,
-            hasPrev: _pageNum > 1,
-            hasNext: _pageNum * _pageSize < _total,
-            onPrev: _prevPage,
-            onNext: _nextPage,
-          );
-        }
-        if (index == _rows.length + 2) {
-          return const SizedBox(height: 12);
-        }
-        final item = _rows[index - 1];
-        return _AccountTile(
-          item: item,
-          onMoveToRecycle: () => _onMoveToRecyclePressed(item),
-          onEdit: () => _onEditAccountPressed(item),
-          onBalanceAdjust: () { _onBalanceAdjustPressed(item); },
-        );
       },
     );
   }
 
-  String _typeLabel(int t) {
-    switch (t) {
+  String _typeLabel(int type) {
+    switch (type) {
       case 1:
         return '活期账户';
       case 2:
@@ -352,17 +422,16 @@ class _AccountManagePageState extends State<AccountManagePage> {
   }
 
   Future<void> _onEditAccountPressed(FortuneAccount item) async {
-    // 获取分组ID
-    final int groupId =
-        item.groupId ?? (context.read<BillsRepository>().groupId() ?? 1);
-    // 查询分组名称，只读展示
-    String groupName = '未知分组';
+    String groupName = '默认账本';
     try {
-      final resp = await GroupService().getByGroupId(groupId);
-      if (resp.code == 0) {
-        final data = resp.data as Map? ?? {};
-        final name = (data['groupName'] ?? '').toString();
-        if (name.isNotEmpty) groupName = name;
+      final int? groupId = context.read<BillsRepository>().groupId();
+      if (groupId != null) {
+        final resp = await GroupService().getByGroupId(groupId);
+        if (resp.code == 0) {
+          final data = resp.data as Map? ?? {};
+          final name = (data['groupName'] ?? '').toString();
+          if (name.isNotEmpty) groupName = name;
+        }
       }
     } catch (_) {
       // 忽略错误，使用默认值
@@ -372,13 +441,9 @@ class _AccountManagePageState extends State<AccountManagePage> {
       context: context,
       isScrollControlled: true,
       builder: (ctx) {
-        return AccountEditSheet(
-          account: item,
-          groupName: groupName,
-        );
+        return AccountEditSheet(account: item, groupName: groupName);
       },
     );
-
     if (ok == true) {
       final theme = Theme.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -387,425 +452,27 @@ class _AccountManagePageState extends State<AccountManagePage> {
           backgroundColor: theme.colorScheme.secondary,
         ),
       );
-      // 刷新当前页保持分页一致性（复用现有逻辑）
       await _load();
     }
-   }
- 
- // 余额调整入口
- Future<void> _onBalanceAdjustPressed(FortuneAccount item) async {
-   final bool? ok = await showModalBottomSheet<bool>(
-     context: context,
-     isScrollControlled: true,
-     builder: (ctx) {
-       return AccountBalanceAdjustSheet(account: item);
-     },
-   );
-   if (ok == true) {
-     final theme = Theme.of(context);
-     ScaffoldMessenger.of(context).showSnackBar(
-       SnackBar(
-         content: const Text('调整成功'),
-         backgroundColor: theme.colorScheme.secondary,
-       ),
-     );
-     await _load();
-   }
- }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      children: [
-        Icon(Icons.account_balance_wallet_outlined,
-            size: 56, color: theme.colorScheme.onSurfaceVariant),
-        const SizedBox(height: 12),
-        Text(
-          '暂无相关账户',
-          style: theme.textTheme.titleMedium,
-        ),
-        const SizedBox(height: 6),
-        Text(
-          '请切换类型或稍后重试',
-          style: theme.textTheme.bodySmall
-              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-        ),
-      ],
-    );
   }
-}
 
-class _TypeSegmented extends StatelessWidget {
-  const _TypeSegmented({
-    required this.selected,
-    required this.onChanged,
-  });
-
-  final int selected;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    // 使用 SegmentedButton 以保持与工程现有风格一致（参考编辑账单页）
-    return SegmentedButton<int>(
-      segments: const [
-        ButtonSegment(value: 1, label: Text('活期')),
-        ButtonSegment(value: 2, label: Text('信用')),
-        ButtonSegment(value: 3, label: Text('资产')),
-        ButtonSegment(value: 4, label: Text('贷款')),
-      ],
-      selected: {selected},
-      onSelectionChanged: (s) {
-        if (s.isNotEmpty) onChanged(s.first);
+  Future<void> _onBalanceAdjustPressed(FortuneAccount item) async {
+    final bool? ok = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return AccountBalanceAdjustSheet(account: item);
       },
-      showSelectedIcon: false,
-      style: ButtonStyle(
-        visualDensity: VisualDensity.compact,
-        padding: MaterialStateProperty.all(
-            const EdgeInsets.symmetric(horizontal: 12)),
-      ),
     );
-  }
-}
-
-class _AccountTile extends StatelessWidget {
-  const _AccountTile({
-    required this.item,
-    required this.onMoveToRecycle,
-    required this.onEdit,
-    required this.onBalanceAdjust,
-  });
-
-  final FortuneAccount item;
-  final VoidCallback onMoveToRecycle;
-  final VoidCallback onEdit;
-  final VoidCallback onBalanceAdjust;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final hasRemark = (item.remark != null) && (item.remark!.trim().isNotEmpty);
-
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 第一行：左侧主信息（账户名） + 右侧金额/币种（紧凑对齐）
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Text(
-                    item.accountName ?? '未命名账户',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          item.balanceText,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                        if ((item.currencyCode ?? '').isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            item.currencyCode!,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(width: 8),
-                    Tooltip(
-                      message: '更多操作',
-                      child: PopupMenuButton<int>(
-                        tooltip: '更多操作',
-                        icon: const Icon(Icons.more_vert),
-                        onSelected: (value) {
-                          if (value == 1) {
-                            onMoveToRecycle();
-                          } else if (value == 2) {
-                            onEdit();
-                          } else if (value == 3) {
-                            onBalanceAdjust();
-                          }
-                        },
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: 2,
-                            child: Row(
-                              children: [
-                                Icon(Icons.edit, color: theme.colorScheme.primary),
-                                const SizedBox(width: 8),
-                                const Text('修改账户'),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: 3,
-                            child: Row(
-                              children: [
-                                Icon(Icons.swap_vert, color: theme.colorScheme.primary),
-                                const SizedBox(width: 8),
-                                const Text('余额调整'),
-                              ],
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: 1,
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete_outline,
-                                    color: theme.colorScheme.error),
-                                const SizedBox(width: 8),
-                                const Text('移入回收站'),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            // 第二行：整行用于状态区（可选备注 + 状态 Wrap），与右侧金额宽度解耦
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (hasRemark) ...[
-                    Text(
-                      item.remark!,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                  ],
-                  _StatusWrap(item: item),
-                ],
-              ),
-            ),
-          ],
+    if (ok == true) {
+      final theme = Theme.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('调整成功'),
+          backgroundColor: theme.colorScheme.secondary,
         ),
-      ),
-    );
-  }
-}
-
-enum _StatusKind {
-  expenseAllowed,
-  incomeAllowed,
-  transferOutAllowed,
-  transferInAllowed,
-  enabled,
-  includeInNetWorth,
-}
-
-class _ChipStyle {
-  final Color background;
-  final Color foreground;
-  final Color border;
-  final bool filled; // true = filled/tonal, false = outlined/tonal-variant
-
-  const _ChipStyle({
-    required this.background,
-    required this.foreground,
-    required this.border,
-    required this.filled,
-  });
-}
-
-class _StatusWrap extends StatelessWidget {
-  const _StatusWrap({required this.item});
-
-  final FortuneAccount item;
-
-  @override
-  Widget build(BuildContext context) {
-    final chips = <Widget>[
-      _buildChip(
-        context,
-        label: '支出允许',
-        kind: _StatusKind.expenseAllowed,
-        active: item.canExpense,
-      ),
-      _buildChip(
-        context,
-        label: '收入允许',
-        kind: _StatusKind.incomeAllowed,
-        active: item.canIncome,
-      ),
-      _buildChip(
-        context,
-        label: '转出允许',
-        kind: _StatusKind.transferOutAllowed,
-        active: item.canTransferOut,
-      ),
-      _buildChip(
-        context,
-        label: '转入允许',
-        kind: _StatusKind.transferInAllowed,
-        active: item.canTransferIn,
-      ),
-      _buildChip(
-        context,
-        label: item.enable ? '启用账户' : '停用账户',
-        kind: _StatusKind.enabled,
-        active: item.enable,
-      ),
-      _buildChip(
-        context,
-        label: '计入资产',
-        kind: _StatusKind.includeInNetWorth,
-        active: item.include,
-      ),
-    ];
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: chips,
-    );
-  }
-
-  Widget _buildChip(
-    BuildContext context, {
-    required String label,
-    required _StatusKind kind,
-    required bool active,
-  }) {
-    final style = _styleFor(context, kind: kind, active: active);
-    // 统一 Chip 外观：高度、圆角、内边距、字重
-    return Semantics(
-      label: label,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: style.filled ? style.background : style.background,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: style.border, width: 1),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: style.foreground,
-          ),
-        ),
-      ),
-    );
-  }
-
-  _ChipStyle _disabledStyle(ColorScheme cs) {
-    return _ChipStyle(
-      background: cs.surfaceVariant.withOpacity(0.12),
-      foreground: cs.onSurfaceVariant,
-      border: cs.outline,
-      filled: false,
-    );
-  }
-
-  _ChipStyle _styleFor(
-    BuildContext context, {
-    required _StatusKind kind,
-    required bool active,
-  }) {
-    final cs = Theme.of(context).colorScheme;
-
-    switch (kind) {
-      // 危险/红系：支出允许
-      case _StatusKind.expenseAllowed:
-        if (!active) return _disabledStyle(cs);
-        return _ChipStyle(
-          background: cs.errorContainer,
-          foreground: cs.onErrorContainer,
-          border: cs.error,
-          filled: true,
-        );
-
-      // 成功/绿系：收入允许（使用 secondary 派生）
-      case _StatusKind.incomeAllowed:
-        if (!active) return _disabledStyle(cs);
-        return _ChipStyle(
-          background: cs.secondaryContainer,
-          foreground: cs.onSecondaryContainer,
-          border: cs.secondary,
-          filled: true,
-        );
-
-      // 警示/橙系：转出允许（使用 tertiary 派生，确保与其它不冲突）
-      case _StatusKind.transferOutAllowed:
-        if (!active) return _disabledStyle(cs);
-        return _ChipStyle(
-          background: cs.tertiaryContainer,
-          foreground: cs.onTertiaryContainer,
-          border: cs.tertiary,
-          filled: true,
-        );
-
-      // 信息/蓝系：转入允许（使用 primary 派生）
-      case _StatusKind.transferInAllowed:
-        if (!active) return _disabledStyle(cs);
-        return _ChipStyle(
-          background: cs.primaryContainer,
-          foreground: cs.onPrimaryContainer,
-          border: cs.primary,
-          filled: true,
-        );
-
-      // 启用账户/停用账户：品牌色强调 or 中性色弱化
-      case _StatusKind.enabled:
-        if (!active) {
-          // 停用账户：中性色/灰系（弱化/描边）
-          return _disabledStyle(cs);
-        }
-        // 启用账户：主色调强调（使用 Tonal 以保证可读性与对比）
-        return _ChipStyle(
-          background: cs.primaryContainer,
-          foreground: cs.onPrimaryContainer,
-          border: cs.primary,
-          filled: true,
-        );
-
-      // 计入资产：青/紫，避免冲突（使用 inverse 系列，跨深浅色对比良好）
-      case _StatusKind.includeInNetWorth:
-        if (!active) return _disabledStyle(cs);
-        return _ChipStyle(
-          background: cs.inverseSurface,
-          foreground: cs.onInverseSurface,
-          border: cs.inversePrimary,
-          filled: true,
-        );
+      );
+      await _load();
     }
   }
 }
