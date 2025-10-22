@@ -24,7 +24,7 @@ class EnhancedAccountAddPage extends StatefulWidget {
 class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
     with TickerProviderStateMixin {
   final AccountQueryService _service = AccountQueryService();
-  
+
   // 动画控制器
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -39,6 +39,7 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
 
   DateTime? _billDay;
   DateTime? _repayDay;
+
   // 六个状态（默认选中/启用）
   bool _include = true;
   bool _canExpense = true;
@@ -46,6 +47,7 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
   bool _enable = true;
   bool _canTransferOut = true;
   bool _canTransferIn = true;
+
   // 币种模板
   List<CurrencyOption> _currencyOptions = const <CurrencyOption>[];
   String? _selectedCurrencyCode;
@@ -172,14 +174,14 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
       hintStyle: ds.TextStyles.inputHint,
       prefixIcon: Icon(
         icon,
-        color: hasError 
-            ? theme.colorScheme.error 
+        color: hasError
+            ? theme.colorScheme.error
             : theme.colorScheme.onSurfaceVariant,
       ),
       enabledBorder: OutlineInputBorder(
         borderSide: BorderSide(
-          color: hasError 
-              ? theme.colorScheme.error 
+          color: hasError
+              ? theme.colorScheme.error
               : theme.colorScheme.outline,
           width: 1,
         ),
@@ -187,8 +189,8 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
       ),
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(
-          color: hasError 
-              ? theme.colorScheme.error 
+          color: hasError
+              ? theme.colorScheme.error
               : theme.colorScheme.primary,
           width: 2,
         ),
@@ -223,38 +225,46 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
     required Widget child,
   }) {
     final theme = Theme.of(context);
-    return Container(
-      // 使用设计系统统一卡片间距，保证与页面其他卡片左右对齐
-      margin: ds.Paddings.cardMargin,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(ds.BorderRadiusValues.lg),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.2),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    // DEBUG: 添加调试日志验证卡片宽度
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        print('DEBUG: SectionCard "$title" available width: ${constraints
+            .maxWidth}');
+        return Container(
+          // 使用设计系统统一卡片间距，保证与页面其他卡片左右对齐
+          margin: ds.Paddings.cardMargin,
+          width: double.infinity, // 强制占满可用宽度
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(ds.BorderRadiusValues.lg),
+            border: Border.all(
+              color: theme.colorScheme.outline.withOpacity(0.2),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.shadow.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(ds.Spacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionTitle(title, subtitle),
-            SizedBox(height: ds.Spacing.md),
-            child,
-          ],
-        ),
-      ),
+          child: Padding(
+            padding: EdgeInsets.all(ds.Spacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionTitle(title, subtitle),
+                SizedBox(height: ds.Spacing.md),
+                child,
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildSectionTitle(String title, String? subtitle) {
+  Widget _buildSectionTitle(String title, String ? subtitle) {
     final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -332,7 +342,9 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
   }
 
   double? _tryDouble(String s) {
-    if (s.trim().isEmpty) return null;
+    if (s
+        .trim()
+        .isEmpty) return null;
     return double.tryParse(s.trim());
   }
 
@@ -351,7 +363,8 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
       return false;
     }
 
-    if (_selectedCurrencyCode == null || _selectedCurrencyCode!.trim().isEmpty) {
+    if (_selectedCurrencyCode == null ||
+        _selectedCurrencyCode!.trim().isEmpty) {
       _currencyError = '请选择币种';
       return false;
     }
@@ -380,11 +393,12 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
     await Future.delayed(Duration.zero);
 
     final options = _currencyOptions
-        .map((e) => SelectionOption<String>(
-              label: e.label,
-              value: e.label,
-              selected: e.label == _selectedCurrencyCode,
-            ))
+        .map((e) =>
+        SelectionOption<String>(
+          label: e.label,
+          value: e.label,
+          selected: e.label == _selectedCurrencyCode,
+        ))
         .toList();
 
     await showModalBottomSheet<void>(
@@ -395,7 +409,10 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
       builder: (ctx) {
         return Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+            color: Theme
+                .of(context)
+                .colorScheme
+                .surface,
             borderRadius: BorderRadius.vertical(
               top: Radius.circular(ds.BorderRadiusValues.xl),
             ),
@@ -428,12 +445,18 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
     });
 
     final String? cardNo =
-        _cardNoCtl.text.trim().isEmpty ? null : _cardNoCtl.text.trim();
+    _cardNoCtl.text
+        .trim()
+        .isEmpty ? null : _cardNoCtl.text.trim();
     final int? sort =
-        _sortCtl.text.trim().isEmpty ? null : int.tryParse(_sortCtl.text.trim());
+    _sortCtl.text
+        .trim()
+        .isEmpty ? null : int.tryParse(_sortCtl.text.trim());
     final double? balance = _tryDouble(_balanceCtl.text.trim());
     final String? remark =
-        _remarkCtl.text.trim().isEmpty ? null : _remarkCtl.text.trim();
+    _remarkCtl.text
+        .trim()
+        .isEmpty ? null : _remarkCtl.text.trim();
 
     try {
       final ok = await _service.addAccount(
@@ -451,14 +474,21 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
         canTransferIn: _canTransferIn,
         include: _include,
         enable: _enable,
-        creditLimit: (widget.accountType == 2 || widget.accountType == 4) && _creditLimitCtl.text.trim().isNotEmpty
+        creditLimit: (widget.accountType == 2 || widget.accountType == 4) &&
+            _creditLimitCtl.text
+                .trim()
+                .isNotEmpty
             ? double.tryParse(_creditLimitCtl.text.trim())
             : null,
-        apr: widget.accountType == 4 && _aprCtl.text.trim().isNotEmpty
+        apr: widget.accountType == 4 && _aprCtl.text
+            .trim()
+            .isNotEmpty
             ? double.tryParse(_aprCtl.text.trim())
             : null,
         billDay: widget.accountType == 2 ? _billDay : null,
-        repayDay: (widget.accountType == 2 || widget.accountType == 4) ? _repayDay : null,
+        repayDay: (widget.accountType == 2 || widget.accountType == 4)
+            ? _repayDay
+            : null,
       );
       if (ok && mounted) {
         // 添加成功动画
@@ -473,7 +503,10 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString()),
-            backgroundColor: Theme.of(context).colorScheme.error,
+            backgroundColor: Theme
+                .of(context)
+                .colorScheme
+                .error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(ds.BorderRadiusValues.sm),
@@ -523,7 +556,8 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
       onSelected: onChanged,
       selectedColor: theme.colorScheme.primary,
       backgroundColor: theme.colorScheme.surfaceVariant.withOpacity(0.5),
-      showCheckmark: false, // 关闭内置勾选，保留自定义前缀图标，避免“双勾”
+      showCheckmark: false,
+      // 关闭内置勾选，保留自定义前缀图标，避免“双勾”
       shape: RoundedRectangleBorder(
         borderRadius: ds.BorderRadii.chip,
       ),
@@ -532,48 +566,63 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
     );
   }
 
-  Widget _buildStatusChips() {
-    return Wrap(
+  /**
+      Widget _buildStatusChips() {
+      // DEBUG: 添加调试日志验证卡片宽度问题
+      return LayoutBuilder(
+      builder: (context, constraints) {
+      return Container(
+      width: double.infinity, // 强制占满父容器宽度
+      child: Wrap(
       spacing: ds.Spacing.sm,
       runSpacing: ds.Spacing.sm,
       children: [
-        _buildStatusChip(
-          label: '计入资产',
-          selected: _include,
-          onChanged: (v) => setState(() => _include = v),
-          icon: Icons.account_balance_wallet,
-        ),
-        _buildStatusChip(
-          label: '支出允许',
-          selected: _canExpense,
-          onChanged: (v) => setState(() => _canExpense = v),
-          icon: Icons.remove_circle_outline,
-        ),
-        _buildStatusChip(
-          label: '收入允许',
-          selected: _canIncome,
-          onChanged: (v) => setState(() => _canIncome = v),
-          icon: Icons.add_circle_outline,
-        ),
-        _buildStatusChip(
-          label: '启用账户',
-          selected: _enable,
-          onChanged: (v) => setState(() => _enable = v),
-          icon: Icons.toggle_on,
-        ),
-        _buildStatusChip(
-          label: '转出允许',
-          selected: _canTransferOut,
-          onChanged: (v) => setState(() => _canTransferOut = v),
-          icon: Icons.call_made,
-        ),
-        _buildStatusChip(
-          label: '转入允许',
-          selected: _canTransferIn,
-          onChanged: (v) => setState(() => _canTransferIn = v),
-          icon: Icons.call_received,
-        ),
-      ],
+   */
+  Widget _buildStatusChips() {
+    return Container(
+      width: double.infinity, // 强制占满父容器宽度
+      child: Wrap(
+        spacing: ds.Spacing.sm,
+        runSpacing: ds.Spacing.sm,
+        children: [
+            _buildStatusChip(
+            label: '计入资产',
+            selected: _include,
+            onChanged: (v) => setState(() => _include = v),
+            icon: Icons.account_balance_wallet,
+          ),
+          _buildStatusChip(
+            label: '支出允许',
+            selected: _canExpense,
+            onChanged: (v) => setState(() => _canExpense = v),
+            icon: Icons.remove_circle_outline,
+          ),
+          _buildStatusChip(
+            label: '收入允许',
+            selected: _canIncome,
+            onChanged: (v) => setState(() => _canIncome = v),
+            icon: Icons.add_circle_outline,
+          ),
+          _buildStatusChip(
+            label: '启用账户',
+            selected: _enable,
+            onChanged: (v) => setState(() => _enable = v),
+            icon: Icons.toggle_on,
+          ),
+          _buildStatusChip(
+            label: '转出允许',
+            selected: _canTransferOut,
+            onChanged: (v) => setState(() => _canTransferOut = v),
+            icon: Icons.call_made,
+          ),
+          _buildStatusChip(
+            label: '转入允许',
+            selected: _canTransferIn,
+            onChanged: (v) => setState(() => _canTransferIn = v),
+            icon: Icons.call_received,
+          ),
+        ],
+      ),
     );
   }
 
@@ -664,11 +713,12 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
                       ),
                     ],
                     SizedBox(height: ds.Spacing.md),
-                    
+
                     // 币种选择
                     InkWell(
                       onTap: _openCurrencySelector,
-                      borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
+                      borderRadius: BorderRadius.circular(
+                          ds.BorderRadiusValues.md),
                       child: Container(
                         padding: EdgeInsets.all(ds.Spacing.md),
                         decoration: BoxDecoration(
@@ -677,8 +727,10 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
                                 ? theme.colorScheme.error
                                 : theme.colorScheme.outline,
                           ),
-                          borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
-                          color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(
+                              ds.BorderRadiusValues.md),
+                          color: theme.colorScheme.surfaceVariant.withOpacity(
+                              0.3),
                         ),
                         child: Row(
                           children: [
@@ -721,7 +773,7 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
                       ),
                     ],
                     SizedBox(height: ds.Spacing.md),
-                    
+
                     TextFormField(
                       controller: _cardNoCtl,
                       decoration: _buildInputDecoration(
@@ -740,7 +792,8 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
                         icon: Icons.account_balance,
                         hasError: _errorText?.contains('余额') == true,
                       ),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true),
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]'))
                       ],
@@ -764,9 +817,11 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
                           hint: '请输入信用额度',
                           icon: Icons.credit_score,
                         ),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]'))
+                          FilteringTextInputFormatter.allow(RegExp(
+                              r'[0-9.\-]'))
                         ],
                         textAlign: TextAlign.end,
                       ),
@@ -807,9 +862,11 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
                           hint: '请输入信用额度',
                           icon: Icons.credit_score,
                         ),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]'))
+                          FilteringTextInputFormatter.allow(RegExp(
+                              r'[0-9.\-]'))
                         ],
                         textAlign: TextAlign.end,
                       ),
@@ -821,7 +878,8 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
                           hint: '请输入年化利率',
                           icon: Icons.percent,
                         ),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
                         ],
@@ -863,7 +921,9 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
                         icon: Icons.sort,
                         hasError: _errorText?.contains('顺序') == true,
                       ),
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.end,
                       maxLength: 9,
@@ -892,7 +952,8 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
                   padding: EdgeInsets.all(ds.Spacing.md),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.errorContainer,
-                    borderRadius: BorderRadius.circular(ds.BorderRadiusValues.sm),
+                    borderRadius: BorderRadius.circular(
+                        ds.BorderRadiusValues.sm),
                   ),
                   child: Row(
                     children: [
@@ -922,7 +983,10 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
       // 底部操作按钮
       bottomNavigationBar: Container(
         padding: EdgeInsets.all(ds.Spacing.lg).copyWith(
-          bottom: ds.Spacing.lg + MediaQuery.of(context).padding.bottom,
+          bottom: ds.Spacing.lg + MediaQuery
+              .of(context)
+              .padding
+              .bottom,
         ),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
@@ -942,7 +1006,8 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
                     vertical: ds.Spacing.md,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
+                    borderRadius: BorderRadius.circular(
+                        ds.BorderRadiusValues.md),
                   ),
                 ),
                 child: const Text(
@@ -960,18 +1025,19 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
                     vertical: ds.Spacing.md,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
+                    borderRadius: BorderRadius.circular(
+                        ds.BorderRadiusValues.md),
                   ),
                 ),
                 icon: _busy
                     ? SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: theme.colorScheme.onPrimary,
-                        ),
-                      )
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: theme.colorScheme.onPrimary,
+                  ),
+                )
                     : const Icon(Icons.add),
                 label: Text(
                   '新增',
@@ -1030,7 +1096,8 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
                     style: ds.TextStyles.bodyMedium.copyWith(
                       color: date != null
                           ? theme.colorScheme.onSurface
-                          : theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
+                          : theme.colorScheme.onSurfaceVariant.withOpacity(
+                          0.6),
                     ),
                   ),
                 ),
@@ -1072,7 +1139,7 @@ class _EnhancedAccountAddPageState extends State<EnhancedAccountAddPage>
 
   Widget _buildCurrencySelector() {
     final theme = Theme.of(context);
-    
+
     if (_loadingCurrency) {
       return Container(
         padding: EdgeInsets.all(ds.Spacing.md),

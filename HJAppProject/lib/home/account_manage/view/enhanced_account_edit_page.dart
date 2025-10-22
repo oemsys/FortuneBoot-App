@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:hjproject/Home/account_manage/models/fortune_account.dart';
 import 'package:hjproject/Request/account_request.dart';
-import 'package:hjproject/Home/account_manage/constants/design_system.dart' as ds;
+import 'package:hjproject/Home/account_manage/constants/design_system.dart'
+    as ds;
 
 /// 增强版修改账户页面
 /// 基于原有Sheet功能，改为Page形式展现，使用统一设计系统，提升UI/UX体验
@@ -18,7 +19,8 @@ class EnhancedAccountEditPage extends StatefulWidget {
   final String groupName;
 
   @override
-  State<EnhancedAccountEditPage> createState() => _EnhancedAccountEditPageState();
+  State<EnhancedAccountEditPage> createState() =>
+      _EnhancedAccountEditPageState();
 }
 
 class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
@@ -97,7 +99,7 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
 
   void _loadAccountData() {
     final account = widget.account;
-    
+
     _nameCtl.text = account.accountName ?? '';
     _cardNoCtl.text = account.cardNo ?? '';
     _sortCtl.text = account.sort?.toString() ?? '';
@@ -121,7 +123,7 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
       _repayDay = account.repayDay;
     }
 
-    if(_accountType == 4) {
+    if (_accountType == 4) {
       _aprCtl.text = account.apr?.toString() ?? '';
       _creditLimitCtl.text = account.creditLimit?.toString() ?? '';
       _repayDay = account.repayDay;
@@ -156,24 +158,20 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
       hintStyle: ds.TextStyles.inputHint,
       prefixIcon: Icon(
         icon,
-        color: hasError 
-            ? theme.colorScheme.error 
+        color: hasError
+            ? theme.colorScheme.error
             : theme.colorScheme.onSurfaceVariant,
       ),
       enabledBorder: OutlineInputBorder(
         borderSide: BorderSide(
-          color: hasError 
-              ? theme.colorScheme.error 
-              : theme.colorScheme.outline,
+          color: hasError ? theme.colorScheme.error : theme.colorScheme.outline,
           width: 1,
         ),
         borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
       ),
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(
-          color: hasError 
-              ? theme.colorScheme.error 
-              : theme.colorScheme.primary,
+          color: hasError ? theme.colorScheme.error : theme.colorScheme.primary,
           width: 2,
         ),
         borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
@@ -302,21 +300,31 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
 
   String _getAccountTypeName(int accountType) {
     switch (accountType) {
-      case 1: return '活期账户';
-      case 2: return '信用卡';
-      case 3: return '资产账户';
-      case 4: return '贷款账户';
-      default: return '未知类型';
+      case 1:
+        return '活期账户';
+      case 2:
+        return '信用卡';
+      case 3:
+        return '资产账户';
+      case 4:
+        return '贷款账户';
+      default:
+        return '未知类型';
     }
   }
 
   IconData _getAccountTypeIcon(int accountType) {
     switch (accountType) {
-      case 1: return Icons.account_balance_wallet;
-      case 2: return Icons.credit_card;
-      case 3: return Icons.savings;
-      case 4: return Icons.account_balance;
-      default: return Icons.account_balance_wallet;
+      case 1:
+        return Icons.account_balance_wallet;
+      case 2:
+        return Icons.credit_card;
+      case 3:
+        return Icons.savings;
+      case 4:
+        return Icons.account_balance;
+      default:
+        return Icons.account_balance_wallet;
     }
   }
 
@@ -359,7 +367,8 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
       onSelected: onChanged,
       selectedColor: theme.colorScheme.primary,
       backgroundColor: theme.colorScheme.surfaceVariant.withOpacity(0.5),
-      showCheckmark: false, // 关闭内置勾选，保留自定义前缀图标，避免“双勾”
+      showCheckmark: false,
+      // 关闭内置勾选，保留自定义前缀图标，避免“双勾”
       shape: RoundedRectangleBorder(
         borderRadius: ds.BorderRadii.chip,
       ),
@@ -369,47 +378,50 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
   }
 
   Widget _buildStatusChips() {
-    return Wrap(
-      spacing: ds.Spacing.sm,
-      runSpacing: ds.Spacing.sm,
-      children: [
-        _buildStatusChip(
-          label: '计入资产',
-          selected: _include,
-          onChanged: (v) => setState(() => _include = v),
-          icon: Icons.account_balance_wallet,
-        ),
-        _buildStatusChip(
-          label: '支出允许',
-          selected: _canExpense,
-          onChanged: (v) => setState(() => _canExpense = v),
-          icon: Icons.remove_circle_outline,
-        ),
-        _buildStatusChip(
-          label: '收入允许',
-          selected: _canIncome,
-          onChanged: (v) => setState(() => _canIncome = v),
-          icon: Icons.add_circle_outline,
-        ),
-        _buildStatusChip(
-          label: '启用账户',
-          selected: _enable,
-          onChanged: (v) => setState(() => _enable = v),
-          icon: Icons.toggle_on,
-        ),
-        _buildStatusChip(
-          label: '转出允许',
-          selected: _canTransferOut,
-          onChanged: (v) => setState(() => _canTransferOut = v),
-          icon: Icons.call_made,
-        ),
-        _buildStatusChip(
-          label: '转入允许',
-          selected: _canTransferIn,
-          onChanged: (v) => setState(() => _canTransferIn = v),
-          icon: Icons.call_received,
-        ),
-      ],
+    return Container(
+      width: double.infinity, // 强制占满父容器宽度，确保卡片宽度一致
+      child: Wrap(
+        spacing: ds.Spacing.sm,
+        runSpacing: ds.Spacing.sm,
+        children: [
+          _buildStatusChip(
+            label: '计入资产',
+            selected: _include,
+            onChanged: (v) => setState(() => _include = v),
+            icon: Icons.account_balance_wallet,
+          ),
+          _buildStatusChip(
+            label: '支出允许',
+            selected: _canExpense,
+            onChanged: (v) => setState(() => _canExpense = v),
+            icon: Icons.remove_circle_outline,
+          ),
+          _buildStatusChip(
+            label: '收入允许',
+            selected: _canIncome,
+            onChanged: (v) => setState(() => _canIncome = v),
+            icon: Icons.add_circle_outline,
+          ),
+          _buildStatusChip(
+            label: '启用账户',
+            selected: _enable,
+            onChanged: (v) => setState(() => _enable = v),
+            icon: Icons.toggle_on,
+          ),
+          _buildStatusChip(
+            label: '转出允许',
+            selected: _canTransferOut,
+            onChanged: (v) => setState(() => _canTransferOut = v),
+            icon: Icons.call_made,
+          ),
+          _buildStatusChip(
+            label: '转入允许',
+            selected: _canTransferIn,
+            onChanged: (v) => setState(() => _canTransferIn = v),
+            icon: Icons.call_received,
+          ),
+        ],
+      ),
     );
   }
 
@@ -419,7 +431,7 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
     required VoidCallback onTap,
   }) {
     final theme = Theme.of(context);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -454,7 +466,7 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                   child: Text(
                     date != null ? '${date.day}日' : '选择日期',
                     style: ds.TextStyles.bodyMedium.copyWith(
-                      color: date != null 
+                      color: date != null
                           ? theme.colorScheme.onSurface
                           : theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
                     ),
@@ -515,8 +527,12 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
         accountId: widget.account.accountId,
         accountName: _nameCtl.text.trim(),
         cardNo: _cardNoCtl.text.trim().isEmpty ? null : _cardNoCtl.text.trim(),
-        sort: _sortCtl.text.trim().isEmpty ? null : int.tryParse(_sortCtl.text.trim()),
-        balance: _balanceCtl.text.trim().isEmpty ? null : double.tryParse(_balanceCtl.text.trim()),
+        sort: _sortCtl.text.trim().isEmpty
+            ? null
+            : int.tryParse(_sortCtl.text.trim()),
+        balance: _balanceCtl.text.trim().isEmpty
+            ? null
+            : double.tryParse(_balanceCtl.text.trim()),
         remark: _remarkCtl.text.trim().isEmpty ? null : _remarkCtl.text.trim(),
         include: _include,
         canExpense: _canExpense,
@@ -527,7 +543,8 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
         accountType: _accountType,
         currencyCode: _currencyCode,
         groupId: widget.account.groupId,
-        creditLimit: (_accountType == 2 || _accountType == 4) && _creditLimitCtl.text.trim().isNotEmpty
+        creditLimit: (_accountType == 2 || _accountType == 4) &&
+                _creditLimitCtl.text.trim().isNotEmpty
             ? double.tryParse(_creditLimitCtl.text.trim())
             : null,
         apr: _accountType == 4 && _aprCtl.text.trim().isNotEmpty
@@ -538,7 +555,7 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
       );
 
       final success = await _service.modifyAccount(updatedAccount);
-      
+
       if (success && mounted) {
         // 成功动画
         await _fadeController.reverse();
@@ -615,7 +632,8 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                       _getAccountTypeIcon(_accountType),
                     ),
                     SizedBox(height: ds.Spacing.sm),
-                    _buildReadonlyRow('币种', _currencyCode, Icons.currency_exchange),
+                    _buildReadonlyRow(
+                        '币种', _currencyCode, Icons.currency_exchange),
                   ],
                 ),
               ),
@@ -650,7 +668,7 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                       ),
                     ],
                     SizedBox(height: ds.Spacing.md),
-                    
+
                     TextFormField(
                       controller: _cardNoCtl,
                       decoration: _buildInputDecoration(
@@ -668,14 +686,14 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                         hint: '请输入当前余额',
                         icon: Icons.account_balance,
                       ),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]'))
                       ],
                       textAlign: TextAlign.end,
                     ),
                     SizedBox(height: ds.Spacing.md),
-
 
                     // 错误提示
                     if (_errorText != null)
@@ -687,7 +705,8 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                         padding: EdgeInsets.all(ds.Spacing.md),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.errorContainer,
-                          borderRadius: BorderRadius.circular(ds.BorderRadiusValues.sm),
+                          borderRadius:
+                              BorderRadius.circular(ds.BorderRadiusValues.sm),
                         ),
                         child: Row(
                           children: [
@@ -709,7 +728,6 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                       ),
 
                     SizedBox(height: ds.Spacing.xl),
-
                   ],
                 ),
               ),
@@ -728,7 +746,8 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                           hint: '请输入信用额度',
                           icon: Icons.credit_score,
                         ),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]'))
                         ],
@@ -771,7 +790,8 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                           hint: '请输入信用额度',
                           icon: Icons.credit_score,
                         ),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-]'))
                         ],
@@ -785,7 +805,8 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                           hint: '请输入年化利率',
                           icon: Icons.percent,
                         ),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
                         ],
@@ -847,7 +868,7 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
           ),
         ),
       ),
-      
+
       // 底部操作按钮
       bottomNavigationBar: Container(
         padding: EdgeInsets.all(ds.Spacing.lg).copyWith(
@@ -871,7 +892,8 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                     vertical: ds.Spacing.md,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
+                    borderRadius:
+                        BorderRadius.circular(ds.BorderRadiusValues.md),
                   ),
                 ),
                 child: Text(
@@ -890,7 +912,8 @@ class _EnhancedAccountEditPageState extends State<EnhancedAccountEditPage>
                     vertical: ds.Spacing.md,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
+                    borderRadius:
+                        BorderRadius.circular(ds.BorderRadiusValues.md),
                   ),
                 ),
                 child: _busy
