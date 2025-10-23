@@ -8,7 +8,8 @@ import 'package:hjproject/Request/account_request.dart';
 import 'package:hjproject/repository/repository/bills_repository.dart';
 import 'package:hjproject/request/book_request.dart';
 import 'package:hjproject/Home/setting_page/view/widgets/selection_bottom_sheet.dart';
-import 'package:hjproject/Home/account_manage/constants/design_system.dart' as ds;
+import 'package:hjproject/Home/account_manage/constants/design_system.dart'
+    as ds;
 
 /// 增强版余额调整页面
 /// 基于原有Sheet功能，改为Page形式展现，使用统一设计系统，提升UI/UX体验
@@ -21,10 +22,12 @@ class EnhancedAccountBalanceAdjustPage extends StatefulWidget {
   final FortuneAccount account;
 
   @override
-  State<EnhancedAccountBalanceAdjustPage> createState() => _EnhancedAccountBalanceAdjustPageState();
+  State<EnhancedAccountBalanceAdjustPage> createState() =>
+      _EnhancedAccountBalanceAdjustPageState();
 }
 
-class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanceAdjustPage>
+class _EnhancedAccountBalanceAdjustPageState
+    extends State<EnhancedAccountBalanceAdjustPage>
     with TickerProviderStateMixin {
   final AccountQueryService _service = AccountQueryService();
 
@@ -78,12 +81,12 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
     final repo = context.read<BillsRepository>();
     _bookId = repo.bookId() ?? 1;
     _bookName = null; // 延迟拉取名称，避免阻塞
-    
+
     // 显示货币符号，仅做前缀展示（不参与校验）
     if (widget.account.balance != null) {
       _balanceCtl.text = _formatNumber(widget.account.balance);
     }
-    
+
     _loadBookList();
   }
 
@@ -160,25 +163,21 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
       hintStyle: ds.TextStyles.inputHint,
       prefixIcon: Icon(
         icon,
-        color: hasError 
-            ? theme.colorScheme.error 
+        color: hasError
+            ? theme.colorScheme.error
             : theme.colorScheme.onSurfaceVariant,
       ),
       prefix: prefix,
       enabledBorder: OutlineInputBorder(
         borderSide: BorderSide(
-          color: hasError 
-              ? theme.colorScheme.error 
-              : theme.colorScheme.outline,
+          color: hasError ? theme.colorScheme.error : theme.colorScheme.outline,
           width: 1,
         ),
         borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
       ),
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(
-          color: hasError 
-              ? theme.colorScheme.error 
-              : theme.colorScheme.primary,
+          color: hasError ? theme.colorScheme.error : theme.colorScheme.primary,
           width: 2,
         ),
         borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
@@ -272,7 +271,7 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
   Widget _buildCurrentBalanceCard() {
     final theme = Theme.of(context);
     final currentBalance = widget.account.balance ?? 0.0;
-    
+
     return _buildSectionCard(
       title: '当前余额',
       subtitle: '账户当前的余额信息',
@@ -288,8 +287,8 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
             child: Text(
               _formatNumber(currentBalance),
               style: ds.TextStyles.balanceAmount.copyWith(
-                color: currentBalance >= 0 
-                    ? ds.FinanceColors.income 
+                color: currentBalance >= 0
+                    ? ds.FinanceColors.income
                     : ds.FinanceColors.expense,
               ),
             ),
@@ -321,14 +320,14 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
     final currentBalance = widget.account.balance ?? 0.0;
     final newBalance = _parseNumber(_balanceCtl.text) ?? 0.0;
     final difference = newBalance - currentBalance;
-    
+
     if (difference == 0) return const SizedBox.shrink();
-    
+
     return Container(
       margin: EdgeInsets.only(top: ds.Spacing.md),
       padding: EdgeInsets.all(ds.Spacing.md),
       decoration: BoxDecoration(
-        color: difference > 0 
+        color: difference > 0
             ? ds.FinanceColors.incomeLight
             : ds.FinanceColors.expenseLight,
         borderRadius: BorderRadius.circular(ds.BorderRadiusValues.sm),
@@ -337,8 +336,8 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
         children: [
           Icon(
             difference > 0 ? Icons.trending_up : Icons.trending_down,
-            color: difference > 0 
-                ? ds.FinanceColors.income 
+            color: difference > 0
+                ? ds.FinanceColors.income
                 : ds.FinanceColors.expense,
             size: 16,
           ),
@@ -346,8 +345,8 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
           Text(
             difference > 0 ? '增加' : '减少',
             style: ds.TextStyles.caption.copyWith(
-              color: difference > 0 
-                  ? ds.FinanceColors.income 
+              color: difference > 0
+                  ? ds.FinanceColors.income
                   : ds.FinanceColors.expense,
               fontWeight: ds.FontWeights.medium,
             ),
@@ -356,8 +355,8 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
           Text(
             _formatNumber(difference.abs()),
             style: ds.TextStyles.bodyMedium.copyWith(
-              color: difference > 0 
-                  ? ds.FinanceColors.income 
+              color: difference > 0
+                  ? ds.FinanceColors.income
                   : ds.FinanceColors.expense,
               fontWeight: ds.FontWeights.semiBold,
             ),
@@ -375,7 +374,7 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
   }) {
     final theme = Theme.of(context);
     final formatter = DateFormat('yyyy-MM-dd HH:mm');
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -395,7 +394,7 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
               color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
               borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
               border: Border.all(
-                color: errorText != null 
+                color: errorText != null
                     ? theme.colorScheme.error
                     : theme.colorScheme.outline,
               ),
@@ -444,7 +443,7 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
     String? errorText,
   }) {
     final theme = Theme.of(context);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -464,7 +463,7 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
               color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
               borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
               border: Border.all(
-                color: errorText != null 
+                color: errorText != null
                     ? theme.colorScheme.error
                     : theme.colorScheme.outline,
               ),
@@ -513,13 +512,13 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 1)),
     );
-    
+
     if (date != null && mounted) {
       final time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(_tradeTime),
       );
-      
+
       if (time != null && mounted) {
         setState(() {
           _tradeTime = DateTime(
@@ -550,7 +549,9 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
     if (resp.code != 0) {
       _isNavigating = false;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(resp.msg ?? '获取账本失败'), backgroundColor: Theme.of(context).colorScheme.error),
+        SnackBar(
+            content: Text(resp.msg ?? '获取账本失败'),
+            backgroundColor: Theme.of(context).colorScheme.error),
       );
       return;
     }
@@ -577,14 +578,23 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
       useRootNavigator: true,
       isScrollControlled: true,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(ds.BorderRadiusValues.lg)),
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(ds.BorderRadiusValues.lg)),
       ),
       builder: (ctx) => SelectionBottomSheet<Map>(
         title: '选择账本',
         options: options,
         onSelected: (opt) {
-          // 仅关闭账本选择层本身
-          Navigator.pop(ctx, opt);
+          // 由底部弹窗内部负责 pop，这里只更新状态，避免二次 pop
+          if (!mounted) return;
+          setState(() {
+            _bookId = (opt.value['id'] as int?) ?? _bookId;
+            _bookName = (opt.value['name'] as String?) ?? _bookName;
+            if (_bookId != null && (_bookName?.isNotEmpty == true)) {
+              _bookMap[_bookId!] = _bookName!;
+            }
+            _bookError = null;
+          });
         },
       ),
     );
@@ -611,7 +621,7 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
 
     // 验证输入
     bool hasError = false;
-    
+
     final newBalance = _parseNumber(_balanceCtl.text);
     if (newBalance == null) {
       setState(() {
@@ -619,14 +629,14 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
       });
       hasError = true;
     }
-    
+
     if (_bookId == null) {
       setState(() {
         _bookError = '请选择账本';
       });
       hasError = true;
     }
-    
+
     if (hasError) return;
 
     setState(() {
@@ -642,7 +652,7 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
         title: _titleCtl.text.trim().isEmpty ? null : _titleCtl.text.trim(),
         remark: _remarkCtl.text.trim().isEmpty ? null : _remarkCtl.text.trim(),
       );
-      
+
       if (success && mounted) {
         // 成功动画
         await _fadeController.reverse();
@@ -664,7 +674,9 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
   }
 
   bool _hasErrors() {
-    return _balanceError != null || _tradeTimeError != null || _bookError != null;
+    return _balanceError != null ||
+        _tradeTimeError != null ||
+        _bookError != null;
   }
 
   @override
@@ -683,7 +695,9 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
         scrolledUnderElevation: 1,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
         ),
         actions: [
           if (_submitting)
@@ -710,14 +724,16 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
               // 账户信息卡片
               _buildSectionCard(
                 title: '账户信息',
-                subtitle: '${widget.account.accountName} · ${widget.account.currencyCode ?? 'CNY'}',
+                subtitle:
+                    '${widget.account.accountName} · ${widget.account.currencyCode ?? 'CNY'}',
                 child: Row(
                   children: [
                     Container(
                       padding: EdgeInsets.all(ds.Spacing.sm),
                       decoration: BoxDecoration(
                         color: ds.FinanceColors.transferLight,
-                        borderRadius: BorderRadius.circular(ds.BorderRadiusValues.sm),
+                        borderRadius:
+                            BorderRadius.circular(ds.BorderRadiusValues.sm),
                       ),
                       child: Icon(
                         Icons.account_balance_outlined,
@@ -762,7 +778,8 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
                           ),
                         ),
                       ),
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'[0-9.\-,]'))
                       ],
@@ -805,7 +822,6 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
                       ),
                     ),
                     SizedBox(height: ds.Spacing.md),
-                    
                     _buildDateTimeField(
                       label: '交易时间',
                       dateTime: _tradeTime,
@@ -813,7 +829,6 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
                       errorText: _tradeTimeError,
                     ),
                     SizedBox(height: ds.Spacing.md),
-                    
                     _buildBookField(
                       label: '所属账本',
                       bookName: _bookName ?? '加载中...',
@@ -821,7 +836,6 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
                       errorText: _bookError,
                     ),
                     SizedBox(height: ds.Spacing.md),
-                    
                     TextFormField(
                       controller: _remarkCtl,
                       maxLines: 3,
@@ -845,7 +859,8 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
                   padding: EdgeInsets.all(ds.Spacing.md),
                   decoration: BoxDecoration(
                     color: theme.colorScheme.errorContainer,
-                    borderRadius: BorderRadius.circular(ds.BorderRadiusValues.sm),
+                    borderRadius:
+                        BorderRadius.circular(ds.BorderRadiusValues.sm),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -870,7 +885,8 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
                       SizedBox(height: ds.Spacing.sm),
                       if (_balanceError != null)
                         Padding(
-                          padding: EdgeInsets.only(left: ds.Spacing.lg, bottom: ds.Spacing.xs),
+                          padding: EdgeInsets.only(
+                              left: ds.Spacing.lg, bottom: ds.Spacing.xs),
                           child: Text(
                             '• $_balanceError',
                             style: ds.TextStyles.bodyMedium.copyWith(
@@ -880,7 +896,8 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
                         ),
                       if (_tradeTimeError != null)
                         Padding(
-                          padding: EdgeInsets.only(left: ds.Spacing.lg, bottom: ds.Spacing.xs),
+                          padding: EdgeInsets.only(
+                              left: ds.Spacing.lg, bottom: ds.Spacing.xs),
                           child: Text(
                             '• $_tradeTimeError',
                             style: ds.TextStyles.bodyMedium.copyWith(
@@ -890,7 +907,8 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
                         ),
                       if (_bookError != null)
                         Padding(
-                          padding: EdgeInsets.only(left: ds.Spacing.lg, bottom: ds.Spacing.xs),
+                          padding: EdgeInsets.only(
+                              left: ds.Spacing.lg, bottom: ds.Spacing.xs),
                           child: Text(
                             '• $_bookError',
                             style: ds.TextStyles.bodyMedium.copyWith(
@@ -907,7 +925,7 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
           ),
         ),
       ),
-      
+
       // 底部操作按钮
       bottomNavigationBar: Container(
         padding: EdgeInsets.all(ds.Spacing.lg).copyWith(
@@ -931,7 +949,8 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
                     vertical: ds.Spacing.md,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
+                    borderRadius:
+                        BorderRadius.circular(ds.BorderRadiusValues.md),
                   ),
                 ),
                 child: Text(
@@ -950,7 +969,8 @@ class _EnhancedAccountBalanceAdjustPageState extends State<EnhancedAccountBalanc
                     vertical: ds.Spacing.md,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(ds.BorderRadiusValues.md),
+                    borderRadius:
+                        BorderRadius.circular(ds.BorderRadiusValues.md),
                   ),
                 ),
                 child: _submitting
