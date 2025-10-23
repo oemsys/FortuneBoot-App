@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:hjproject/Home/payee_manage/model/payee.dart';
-import 'package:hjproject/Home/payee_manage/data/payee_service.dart';
-import 'package:hjproject/Home/payee_manage/view/widgets/payee_form.dart';
+import 'package:hjproject/home/payee_manage/model/payee.dart';
+import 'package:hjproject/home/payee_manage/data/payee_service.dart';
+import 'package:hjproject/home/payee_manage/view/widgets/payee_form.dart';
 
 class PayeeEditPage extends StatefulWidget {
   final Payee payee;
