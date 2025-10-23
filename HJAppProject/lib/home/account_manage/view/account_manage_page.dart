@@ -9,17 +9,17 @@ import 'package:hjproject/Home/tag_manage/view/widgets/tag_pager.dart';
 import 'package:hjproject/request/group_request.dart';
 
 // 导入新的Page版本
-import 'package:hjproject/Home/account_manage/view/enhanced_account_add_page.dart';
-import 'package:hjproject/Home/account_manage/view/enhanced_account_edit_page.dart';
-import 'package:hjproject/Home/account_manage/view/enhanced_account_balance_adjust_page.dart';
+import 'package:hjproject/Home/account_manage/view/account_add_page.dart';
+import 'package:hjproject/Home/account_manage/view/account_edit_page.dart';
+import 'package:hjproject/Home/account_manage/view/account_balance_adjust_page.dart';
 
 // 导入增强版组件
 import 'package:hjproject/Home/account_manage/constants/design_system.dart' as ds;
-import 'package:hjproject/Home/account_manage/view/widgets/enhanced_account_card.dart';
-import 'package:hjproject/Home/account_manage/view/widgets/enhanced_empty_state.dart';
-import 'package:hjproject/Home/account_manage/view/widgets/enhanced_loading_state.dart';
-import 'package:hjproject/Home/account_manage/view/widgets/enhanced_type_selector.dart';
-import 'package:hjproject/Home/account_manage/view/widgets/enhanced_account_move_to_recycle_dialog.dart';
+import 'package:hjproject/Home/account_manage/view/widgets/account_card.dart';
+import 'package:hjproject/Home/account_manage/view/widgets/empty_state.dart';
+import 'package:hjproject/Home/account_manage/view/widgets/loading_state.dart';
+import 'package:hjproject/Home/account_manage/view/widgets/type_selector.dart';
+import 'package:hjproject/Home/account_manage/view/widgets/account_move_to_recycle_dialog.dart';
 
 class AccountManagePage extends StatefulWidget {
   const AccountManagePage({Key? key}) : super(key: key);
