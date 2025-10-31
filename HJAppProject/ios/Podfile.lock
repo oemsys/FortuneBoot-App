@@ -34,11 +34,10 @@ PODS:
     - DKImagePickerController/PhotoGallery
     - Flutter
   - Flutter (1.0.0)
+  - image_gallery_saver_plus (0.0.1):
+    - Flutter
   - image_picker_ios (0.0.1):
     - Flutter
-  - libphonenumber_plugin (0.0.1):
-    - Flutter
-    - PhoneNumberKit
   - package_info_plus (0.4.5):
     - Flutter
   - path_provider_foundation (0.0.1):
@@ -46,12 +45,6 @@ PODS:
     - FlutterMacOS
   - permission_handler_apple (9.3.0):
     - Flutter
-  - PhoneNumberKit (3.6.6):
-    - PhoneNumberKit/PhoneNumberKitCore (= 3.6.6)
-    - PhoneNumberKit/UIKit (= 3.6.6)
-  - PhoneNumberKit/PhoneNumberKitCore (3.6.6)
-  - PhoneNumberKit/UIKit (3.6.6):
-    - PhoneNumberKit/PhoneNumberKitCore
   - SDWebImage (5.21.1):
     - SDWebImage/Core (= 5.21.1)
   - SDWebImage/Core (5.21.1)
@@ -65,8 +58,8 @@ PODS:
 DEPENDENCIES:
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
+  - image_gallery_saver_plus (from `.symlinks/plugins/image_gallery_saver_plus/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
-  - libphonenumber_plugin (from `.symlinks/plugins/libphonenumber_plugin/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
@@ -77,7 +70,6 @@ SPEC REPOS:
   trunk:
     - DKImagePickerController
     - DKPhotoGallery
-    - PhoneNumberKit
     - SDWebImage
     - SwiftyGif
 
@@ -86,10 +78,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/file_picker/ios"
   Flutter:
     :path: Flutter
+  image_gallery_saver_plus:
+    :path: ".symlinks/plugins/image_gallery_saver_plus/ios"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
-  libphonenumber_plugin:
-    :path: ".symlinks/plugins/libphonenumber_plugin/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
@@ -106,12 +98,11 @@ SPEC CHECKSUMS:
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
   file_picker: b159e0c068aef54932bb15dc9fd1571818edaf49
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  image_gallery_saver_plus: 782ade975fe6a4600b53e7c1983e3a2979d1e9e5
   image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
-  libphonenumber_plugin: 48bf4078546377eedaab4aa54978cd0f6fa23072
   package_info_plus: c0502532a26c7662a62a356cebe2692ec5fe4ec4
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
-  PhoneNumberKit: 5b1be7ee4955dfeeb855f51eecdd829ab24b3484
   SDWebImage: f29024626962457f3470184232766516dee8dfea
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4

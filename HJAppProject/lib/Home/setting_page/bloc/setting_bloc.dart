@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
@@ -61,7 +60,6 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     SettingInitDataLoaded event,
     Emitter<SettingState> emit,
   ) async {
-    print('lxjtodo _onInitData');
     final elements = await _fetchStaticSettings();
     emit(
       state.copyWith(status: SettingStatus.initial, settings: elements),
@@ -109,8 +107,6 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     GroupSettingFetched event,
     Emitter<SettingState> emit,
   ) async {
-    // 这里更新分组ID，
-    print('lxjtodo _onFetchedGroup');
     var curSetting = state.settings;
     try {
       final groupSettings = await _fetchGroupSettings(event.groupId);
@@ -130,7 +126,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
   Future<List<Setting>> _fetchSettings() async {
     final HJResponse apiResponse = await _loginService.apiVersion();
     final HJResponse accountResponse =
-        await _accountService.getFortuneAssetsLiabilities(1);
+        await _accountService.getFortuneAssetsLiabilities(_billsRepository.groupId() ?? 1);
     var settings = <Setting>[];
     if (apiResponse.code == 0) {
       final String apiVersion = apiResponse.data as String? ?? '';
@@ -201,31 +197,34 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
 
   FutureOr<void> _onChangedBookId(
       BookIdChanged event, Emitter<SettingState> emit) async {
-    var newGroup = <Setting>[];
-    Setting? groupSetting;
-    Setting? bookSetting;
-    state.groupSettings.forEach((element) {
+    final newGroup = <Setting>[];
+    
+    // 使用更高效的方式查找和更新设置项
+    for (final element in state.groupSettings) {
       if (element.type == SettingType.currentGroup) {
-        groupSetting = element;
+        newGroup.add(element);
       } else if (element.type == SettingType.currentBook) {
-        bookSetting = Setting(SettingType.currentBook,
+        newGroup.add(
+          Setting(
+            SettingType.currentBook,
             content: event.bookName,
             leadingWidget: const Icon(Icons.book_online_outlined),
             data: {
               "groupId": _billsRepository.groupId(),
               "bookId": event.bookId,
-            });
+            },
+          ),
+        );
       }
-    });
+    }
+    
     _billsRepository.updateRemoteBill(bookId: event.bookId);
-    if (groupSetting != null) {
-      newGroup.add(groupSetting!);
-    }
-    if (bookSetting != null) {
-      newGroup.add(bookSetting!);
-    }
+    
     emit(
-      state.copyWith(status: SettingStatus.failure, groupSettings: newGroup),
+      state.copyWith(
+        status: SettingStatus.success,
+        groupSettings: newGroup,
+      ),
     );
   }
 }
