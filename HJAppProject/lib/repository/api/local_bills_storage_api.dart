@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:hjproject/home/todos_overview/models/bill_item.dart';
-import 'package:hjproject/home/todos_overview/models/bill_statistics.dart';
+import 'package:hjproject/home/bill_overview/models/bill_item.dart';
+import 'package:hjproject/home/bill_overview/models/bill_statistics.dart';
 import 'package:hjproject/request/bill_request.dart';
 import 'package:hjproject/repository/api/bills_api.dart';
 import 'package:hjproject/request/include_request.dart';
