@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -65,6 +66,8 @@ class _MineViewState extends State<MineView> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<SettingBloc>().state;
+    developer.log('🎨 UI重建 - 状态: ${state.status}, 设置数量: ${state.settings.length}, 远程设置: ${state.remoteSettings.length}, 分组设置: ${state.groupSettings.length}', name: 'SettingPage');
+    
     var elements = [
       ...state.settings,
       ...state.remoteSettings,
@@ -72,6 +75,14 @@ class _MineViewState extends State<MineView> {
     ];
     Setting.sortList(elements);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // 检查是否有白屏风险的状态
+    if (state.status == SettingStatus.failure) {
+      developer.log('⚠️ 检测到失败状态，可能导致白屏', name: 'SettingPage');
+    }
+    if (elements.isEmpty) {
+      developer.log('⚠️ 设置元素为空，可能导致白屏', name: 'SettingPage');
+    }
     
     return Scaffold(
       backgroundColor: isDark ? Colors.grey[950] : Colors.grey[50],
@@ -290,74 +301,20 @@ class _MineViewState extends State<MineView> {
           title: '选择${element.type.title}',
           options: options,
           onSelected: (selected) {
-            Navigator.of(context).pop();
+            developer.log('👆 用户选择了: ${selected.value.title} (ID: ${selected.value.id}) - 类型: ${element.type}', name: 'SettingPage');
+            
+            // 先触发BLoC事件，再关闭弹窗，避免Context失效
             if (element.type == SettingType.currentGroup) {
+              developer.log('🔄 触发分组切换事件', name: 'SettingPage');
               settingBloc.add(
                 GroupSettingFetched(groupId: selected.value.id),
               );
             } else if (element.type == SettingType.currentBook) {
+              developer.log('🔄 触发账本切换事件', name: 'SettingPage');
               settingBloc.add(
                 BookIdChanged(selected.value.id, selected.value.title),
               );
             }
-          },
-        );
-      },
-    );
-  }
-
-  void _showThemeSelectionDialog(BuildContext context) {
-    final themes = ['跟随系统', '浅色模式', '深色模式'];
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return ThemeSelectionSheet(
-          themes: themes,
-          current: '跟随系统',
-          onSelected: (selected) {
-            Navigator.of(context).pop();
-            ScaffoldMessenger.of(context).removeCurrentSnackBar();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('已切换到$selected'),
-                behavior: SnackBarBehavior.floating,
-                margin: const EdgeInsets.all(16),
-              ),
-            );
-            // TODO: 接入实际主题切换逻辑（如通过 Bloc/Provider 改变主题）
-          },
-        );
-      },
-    );
-  }
-
-  void _showLanguageSelectionDialog(BuildContext context) {
-    final languages = ['🇨🇳 简体中文', '🇺🇸 English'];
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return LanguageSelectionSheet(
-          languages: languages,
-          current: '🇨🇳 简体中文',
-          onSelected: (selected) {
-            Navigator.of(context).pop();
-            ScaffoldMessenger.of(context).removeCurrentSnackBar();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('已切换到$selected'),
-                behavior: SnackBarBehavior.floating,
-                margin: const EdgeInsets.all(16),
-              ),
-            );
-            // TODO: 接入实际语言切换逻辑（如通过 Bloc/Provider 改变 Locale）
           },
         );
       },

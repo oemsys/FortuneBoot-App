@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer' as developer;
 
 import 'package:hjproject/home/bill_overview/models/bill_item.dart';
 import 'package:hjproject/home/bill_overview/models/bill_statistics.dart';
@@ -282,15 +283,41 @@ class LocalStorageBillsApi extends BillsApi {
 
   @override
   Future<void> updateRemoteBill({int? groupId, int? bookId}) async {
-    print('lxjtodo change bookId $bookId $groupId ');
-    if ((groupId != null && groupId != this.groupId) ||
-        (bookId != null && bookId != this.bookId)) {
-      this.groupId = groupId ?? this.groupId;
-      this.bookId = bookId ?? this.bookId;
-      pageNum = 1;
-      _billStreamController.add([]);
-      // await _setValue(kBillsCollectionKey, json.encode([]));
-      queryNewBills();
+    developer.log('🔄 Repository更新请求 - 输入GroupId: $groupId, 输入BookId: $bookId', name: 'BillsApi');
+    developer.log('📊 当前状态 - 当前GroupId: ${this.groupId}, 当前BookId: ${this.bookId}', name: 'BillsApi');
+    
+    try {
+      if ((groupId != null && groupId != this.groupId) ||
+          (bookId != null && bookId != this.bookId)) {
+        
+        developer.log('✅ 检测到ID变化，开始更新...', name: 'BillsApi');
+        
+        final oldGroupId = this.groupId;
+        final oldBookId = this.bookId;
+        
+        this.groupId = groupId ?? this.groupId;
+        this.bookId = bookId ?? this.bookId;
+        
+        developer.log('📝 ID更新完成 - 新GroupId: ${this.groupId}, 新BookId: ${this.bookId}', name: 'BillsApi');
+        developer.log('📝 变更对比 - GroupId: $oldGroupId → ${this.groupId}, BookId: $oldBookId → ${this.bookId}', name: 'BillsApi');
+        
+        pageNum = 1;
+        developer.log('🔄 重置页码为1，清空Stream数据...', name: 'BillsApi');
+        
+        _billStreamController.add([]);
+        developer.log('✅ Stream已清空，当前数据量: ${_billStreamController.value.length}', name: 'BillsApi');
+        
+        developer.log('📡 开始查询新账单数据...', name: 'BillsApi');
+        await queryNewBills();
+        developer.log('✅ Repository更新完成', name: 'BillsApi');
+        
+      } else {
+        developer.log('ℹ️ ID未发生变化，跳过更新', name: 'BillsApi');
+      }
+    } catch (error, stackTrace) {
+      developer.log('❌ Repository更新失败', error: error, stackTrace: stackTrace, name: 'BillsApi');
+      // 重新抛出异常，让上层处理
+      rethrow;
     }
   }
 

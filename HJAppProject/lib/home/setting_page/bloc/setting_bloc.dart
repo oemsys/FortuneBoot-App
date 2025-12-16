@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
@@ -107,16 +108,22 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     GroupSettingFetched event,
     Emitter<SettingState> emit,
   ) async {
+    developer.log('🔄 开始获取分组设置 - GroupId: ${event.groupId}', name: 'SettingBloc');
     var curSetting = state.settings;
     try {
+      developer.log('📡 调用 _fetchGroupSettings...', name: 'SettingBloc');
       final groupSettings = await _fetchGroupSettings(event.groupId);
+      developer.log('✅ 分组设置获取成功 - 设置项数量: ${groupSettings.length}', name: 'SettingBloc');
+      
       emit(
         state.copyWith(
             status: SettingStatus.success,
             settings: curSetting,
             groupSettings: groupSettings),
       );
-    } catch (_) {
+      developer.log('✅ 状态更新完成 - 新状态: ${state.status}', name: 'SettingBloc');
+    } catch (error, stackTrace) {
+      developer.log('❌ 分组设置获取失败', error: error, stackTrace: stackTrace, name: 'SettingBloc');
       emit(
         state.copyWith(status: SettingStatus.failure, settings: curSetting),
       );
@@ -158,54 +165,85 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
 
   // 查询分组 & 账本设置
   Future<List<Setting>> _fetchGroupSettings(int? groupId) async {
-    // todo：groupId是空的话，本地有的话返回
-    // groupId不为空，查询分组 & 账本设置否则查询默认分组
+    developer.log('🔍 开始查询分组设置 - 输入GroupId: $groupId', name: 'SettingBloc');
     var settings = <Setting>[];
     int? findGroupId = groupId;
+    
     if (findGroupId == null) {
-      // 查询默认分组 & 账本设置，本地如果有groupId的话，用本地的去查
-      final HJResponse defaultGroupIdResponse =
-          await _groupService.getDefaultGroupId();
-      if (defaultGroupIdResponse.code == 0) {
-        findGroupId = defaultGroupIdResponse.data as int? ?? 0;
+      developer.log('🔍 GroupId为空，查询默认分组...', name: 'SettingBloc');
+      try {
+        final HJResponse defaultGroupIdResponse = await _groupService.getDefaultGroupId();
+        developer.log('📡 默认分组查询响应 - Code: ${defaultGroupIdResponse.code}', name: 'SettingBloc');
+        if (defaultGroupIdResponse.code == 0) {
+          findGroupId = defaultGroupIdResponse.data as int? ?? 0;
+          developer.log('✅ 获取到默认GroupId: $findGroupId', name: 'SettingBloc');
+        }
+      } catch (error) {
+        developer.log('❌ 查询默认分组失败', error: error, name: 'SettingBloc');
       }
     }
+    
     if (findGroupId == null) {
+      developer.log('⚠️ 无法获取有效的GroupId，返回空设置', name: 'SettingBloc');
       return settings;
     }
-    final HJResponse accountInfo =
-        await _groupService.getByGroupId(findGroupId);
-    if (accountInfo.code == 0) {
-      var data = accountInfo.data as Map? ?? {}; // todo：data存本地
-      var groupName = data['groupName'] as String? ?? '';
-      var defaultBookName = data['defaultBookName'] as String? ?? '默认账本';
-      // var bookListResponse = await _bookService.getByGroupId();
-      settings.add(Setting(SettingType.currentGroup,
-          content: groupName,
-          leadingWidget: const Icon(Icons.group),
-          data: {"groupId": data['groupId'], "bookId": data['defaultBookId']}));
-      settings.add(Setting(SettingType.currentBook,
-          content: defaultBookName,
-          leadingWidget: const Icon(Icons.book_online_outlined),
-          data: {"groupId": data['groupId'], "bookId": data['defaultBookId']}));
-      // 查询bills,更新repository
-      _billsRepository.updateRemoteBill(
-          groupId: findGroupId, bookId: data['defaultBookId'] as int? ?? 1);
+    
+    try {
+      developer.log('📡 查询分组详情 - GroupId: $findGroupId', name: 'SettingBloc');
+      final HJResponse accountInfo = await _groupService.getByGroupId(findGroupId);
+      developer.log('📡 分组详情响应 - Code: ${accountInfo.code}', name: 'SettingBloc');
+      
+      if (accountInfo.code == 0) {
+        var data = accountInfo.data as Map? ?? {};
+        var groupName = data['groupName'] as String? ?? '';
+        var defaultBookName = data['defaultBookName'] as String? ?? '默认账本';
+        var defaultBookId = data['defaultBookId'] as int? ?? 1;
+        
+        developer.log('📊 分组数据 - Name: $groupName, BookName: $defaultBookName, BookId: $defaultBookId', name: 'SettingBloc');
+        
+        settings.add(Setting(SettingType.currentGroup,
+            content: groupName,
+            leadingWidget: const Icon(Icons.group),
+            data: {"groupId": data['groupId'], "bookId": defaultBookId}));
+        settings.add(Setting(SettingType.currentBook,
+            content: defaultBookName,
+            leadingWidget: const Icon(Icons.book_online_outlined),
+            data: {"groupId": data['groupId'], "bookId": defaultBookId}));
+        
+        developer.log('🔄 更新Repository - GroupId: $findGroupId, BookId: $defaultBookId', name: 'SettingBloc');
+        try {
+          _billsRepository.updateRemoteBill(groupId: findGroupId, bookId: defaultBookId);
+          developer.log('✅ Repository更新成功', name: 'SettingBloc');
+        } catch (error) {
+          developer.log('❌ Repository更新失败', error: error, name: 'SettingBloc');
+        }
+      } else {
+        developer.log('⚠️ 分组详情查询失败 - Code: ${accountInfo.code}', name: 'SettingBloc');
+      }
+    } catch (error) {
+      developer.log('❌ 查询分组详情异常', error: error, name: 'SettingBloc');
     }
+    
+    developer.log('✅ 分组设置查询完成 - 设置项数量: ${settings.length}', name: 'SettingBloc');
     return settings;
   }
 
   FutureOr<void> _onChangedBookId(
       BookIdChanged event, Emitter<SettingState> emit) async {
-    final newGroup = <Setting>[];
+    developer.log('🔄 开始切换账本 - BookId: ${event.bookId}, BookName: ${event.bookName}', name: 'SettingBloc');
     
-    // 使用更高效的方式查找和更新设置项
-    for (final element in state.groupSettings) {
-      if (element.type == SettingType.currentGroup) {
-        newGroup.add(element);
-      } else if (element.type == SettingType.currentBook) {
-        newGroup.add(
-          Setting(
+    try {
+      final newGroup = <Setting>[];
+      
+      developer.log('📊 当前分组设置数量: ${state.groupSettings.length}', name: 'SettingBloc');
+      
+      // 使用更高效的方式查找和更新设置项
+      for (final element in state.groupSettings) {
+        if (element.type == SettingType.currentGroup) {
+          newGroup.add(element);
+          developer.log('✅ 保留分组设置: ${element.content}', name: 'SettingBloc');
+        } else if (element.type == SettingType.currentBook) {
+          final newBookSetting = Setting(
             SettingType.currentBook,
             content: event.bookName,
             leadingWidget: const Icon(Icons.book_online_outlined),
@@ -213,18 +251,34 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
               "groupId": _billsRepository.groupId(),
               "bookId": event.bookId,
             },
-          ),
-        );
+          );
+          newGroup.add(newBookSetting);
+          developer.log('✅ 更新账本设置: ${event.bookName} (ID: ${event.bookId})', name: 'SettingBloc');
+        }
       }
+      
+      developer.log('🔄 更新Repository账本ID...', name: 'SettingBloc');
+      try {
+        _billsRepository.updateRemoteBill(bookId: event.bookId);
+        developer.log('✅ Repository账本ID更新成功', name: 'SettingBloc');
+      } catch (error) {
+        developer.log('❌ Repository账本ID更新失败', error: error, name: 'SettingBloc');
+      }
+      
+      developer.log('🔄 发射新状态 - 新分组设置数量: ${newGroup.length}', name: 'SettingBloc');
+      emit(
+        state.copyWith(
+          status: SettingStatus.success,
+          groupSettings: newGroup,
+        ),
+      );
+      developer.log('✅ 账本切换完成', name: 'SettingBloc');
+      
+    } catch (error, stackTrace) {
+      developer.log('❌ 账本切换异常', error: error, stackTrace: stackTrace, name: 'SettingBloc');
+      emit(
+        state.copyWith(status: SettingStatus.failure),
+      );
     }
-    
-    _billsRepository.updateRemoteBill(bookId: event.bookId);
-    
-    emit(
-      state.copyWith(
-        status: SettingStatus.success,
-        groupSettings: newGroup,
-      ),
-    );
   }
 }
