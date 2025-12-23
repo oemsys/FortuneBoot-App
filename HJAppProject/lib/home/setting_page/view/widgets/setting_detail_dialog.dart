@@ -24,7 +24,7 @@ class SettingDetailDialog extends StatelessWidget {
           if (contentText != null) Text('内容: $contentText'),
           if (detailText != null) ...[
             const SizedBox(height: 8),
-            Text('详情: $detailText'),
+            Text('$detailText'),
           ],
         ],
       ),

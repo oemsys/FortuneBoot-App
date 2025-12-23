@@ -112,14 +112,23 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     var curSetting = state.settings;
     try {
       developer.log('📡 调用 _fetchGroupSettings...', name: 'SettingBloc');
-      final groupSettings = await _fetchGroupSettings(event.groupId);
-      developer.log('✅ 分组设置获取成功 - 设置项数量: ${groupSettings.length}', name: 'SettingBloc');
+      // 并行获取分组设置和新的账户概览信息
+      final results = await Future.wait([
+        _fetchGroupSettings(event.groupId),
+        _fetchSettings(groupId: event.groupId),
+      ]);
+
+      final groupSettings = results[0];
+      final remoteSettings = results[1];
+
+      developer.log('✅ 设置获取成功 - 分组设置: ${groupSettings.length}, 远程设置: ${remoteSettings.length}', name: 'SettingBloc');
       
       emit(
         state.copyWith(
             status: SettingStatus.success,
             settings: curSetting,
-            groupSettings: groupSettings),
+            groupSettings: groupSettings,
+            remoteSettings: remoteSettings),
       );
       developer.log('✅ 状态更新完成 - 新状态: ${state.status}', name: 'SettingBloc');
     } catch (error, stackTrace) {
@@ -130,10 +139,11 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     }
   }
 
-  Future<List<Setting>> _fetchSettings() async {
+  Future<List<Setting>> _fetchSettings({int? groupId}) async {
+    final targetGroupId = groupId ?? _billsRepository.groupId() ?? 1;
     final HJResponse apiResponse = await _loginService.apiVersion();
     final HJResponse accountResponse =
-        await _accountService.getFortuneAssetsLiabilities(_billsRepository.groupId() ?? 1);
+        await _accountService.getFortuneAssetsLiabilities(targetGroupId);
     var settings = <Setting>[];
     if (apiResponse.code == 0) {
       final String apiVersion = apiResponse.data as String? ?? '';
